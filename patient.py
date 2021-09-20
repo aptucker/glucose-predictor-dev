@@ -104,3 +104,38 @@ def createPatient(file, diabType='0'):
     
     newPat = Patient(diabType, patData, DailyData)
     return newPat
+
+
+def createLagData(data, lag, skip=0, dropNaN=True):
+    """Create a simple lagged data set.
+    
+    Arguments:
+        data - data to be lagged
+        lag - how many time steps to lag
+        skip - remove columns at the front end of the lag
+        dropNaN - drop rows which have NaN to avoid errors
+    """
+    
+    firstData = data.copy()
+    
+    for i in range(lag):
+        data.insert(i+1, "Lag: {}".format(i+1), firstData.shift(periods=i+1))
+    
+    # It's easiest to remove values which don't have a corresponding lag. Note
+    # that the more values lagged, the less training data there is.
+    
+    if dropNaN:
+        data.dropna(inplace=True)
+        
+    for e in range(skip):
+        data.drop(columns=["Lag: {}".format(e+1)], inplace=True)
+        
+
+def zscoreData(x):
+    """Normalization function which returns normalized data, mean, and std.
+    
+    Arguments:
+        x - data to be normalized
+    """
+    
+    return [(x - np.mean(x))/np.std(x), np.mean(x), np.std(x)]
