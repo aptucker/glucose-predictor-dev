@@ -21,6 +21,7 @@ class Patient:
         self.trainData = []
         self.valData = []
         self.testData = []
+        self.models = list()
         
         
     def partitionData(self, n, per, seed=None):
@@ -71,6 +72,10 @@ class Patient:
         self.trainData = []
         self.valData = []
         self.testData = []
+    
+    def resetModels(self):
+        
+        self.models = []
 
 
 
@@ -139,3 +144,15 @@ def zscoreData(x):
     """
     
     return [(x - np.mean(x))/np.std(x), np.mean(x), np.std(x)]
+
+
+def MSError(Y, y_trn):
+    """Calculate Mean Square Error from prediction and labeled data.
+    
+    Arguments: 
+        Y - predicted data
+        y_trn - labeled training data
+    """
+    
+    MSE = (1/len(Y)) * np.sum(np.square(Y-y_trn), axis=0)
+    return MSE

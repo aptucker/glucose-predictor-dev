@@ -45,7 +45,7 @@ class sbSeqModel(tf.keras.Model):
                                                 kernel_initializer = self.initializers[1],
                                                 ones_size = self.bias_size)
         
-        def call(self, inputs):
-            x = self.hLayer(inputs)
-            return self.outLayer(x)
+    def call(self, inputs):
+        x = self.hLayer(inputs)
+        return self.outLayer(x)
         

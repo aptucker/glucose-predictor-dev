@@ -59,6 +59,65 @@ bInit = np.random.normal(0, 0.005, (H+1, K))
 
 b_size = 1
 
-model = cModels.sbSeqModel(inShape = H, outShape = K, use_bias = True, initializers = [initializer1, initializer2], bias_size = b_size, activators = ["sigmoid", None])
+# initializers = [initializer1, initializer2]
+initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005), tf.keras.initializers.RandomNormal(mean=0, stddev=0.005)]
+
+model = cModels.sbSeqModel(H, K, use_bias = True, initializers = initializers, bias_size = b_size, activators = ["sigmoid", None])
+model(tf.keras.Input(shape=H))
+
+model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError())
+
+modelTest = model.fit(mlpNorm[:,4:7], mlpNorm[:,0:4], batch_size=b_size, epochs=5)
+
+YNewTest = model.predict(mlpNorm[:,4:7], batch_size=b_size)
+
+YReNorm = (YNewTest*std) + mean
+
+# Output Mapping -> Column 3 = 15min, Column 0 = 60min
+
+trnErrTest = pat.MSError(YReNorm[:,3], tf.reshape(Ltrn[:,3], [4671,1]))
+
+L1.models.append(model)
 
 
+# %%
+
+# inputs = tf.keras.Input(shape=(3,))
+# HLayer = cLayers.staticBiasLayer(units = 3, 
+#                  activation = "sigmoid", 
+#                  use_bias=True, 
+#                  kernel_initializer = initializer1, 
+#                  ones_size = b_size)(inputs)
+# outLayer = cLayers.staticBiasLayer(units = K, 
+#                    activation = None, 
+#                    use_bias=True, 
+#                    kernel_initializer = initializer2, 
+#                    ones_size = b_size)(HLayer)
+
+# model = tf.keras.Model(inputs = inputs, outputs = outLayer)
+
+# model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+#               loss=tf.keras.losses.MeanSquaredError(), 
+#               metrics=tf.keras.metrics.RootMeanSquaredError())
+
+# modelTest = model.fit(mlpNorm[:,4:7], mlpNorm[:,0:4], batch_size=b_size, epochs=5)
+
+# YNewTest = model.predict(mlpNorm[:,4:7], batch_size=b_size)
+
+# YReNorm = (YNewTest*std) + mean
+
+# # Output Mapping -> Column 3 = 15min, Column 0 = 60min
+
+# trnErrTest = pat.MSError(YReNorm[:,3], tf.reshape(Ltrn[:,3], [4671,1]))
+
+
+# %%
+# objects = []
+# with (open("KerasVal.pickle", "rb")) as openfile:
+#     while True:
+#         try:
+#             objects.append(pickle.load(openfile))
+#         except EOFError:
+#             break
