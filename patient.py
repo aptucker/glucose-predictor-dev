@@ -15,14 +15,31 @@ class Patient:
     type (0=not diabetic) and the CGM data."""
     
     def __init__(self, diabType, GenData, DayData):
+        # Diabetic type of the patient (unused)
         self.diabType = diabType
+        # Store general unmodified data
         self.GenData = GenData
+        # Currently unused
         self.DayData = DayData
+        # Store training data in pandas form
         self.trainData = []
+        # Store validation data in pandas form
         self.valData = []
+        # Store test data in pandas form
         self.testData = []
+        # Store the models to test in a list
         self.models = list()
+        # Temporary training data in numpy form for cross validation training
+        self.tempTrain = []
+        # Temporary validation data in numpy form for cross validation training
+        self.tempVal = []
+        # Error rates for models 
         
+        # CHANGE THIS 
+        self.llMSE1 = []
+        self.llMSE2 = []
+        self.lrMSE1 = []
+        self.lrMSE2 = []
         
     def partitionData(self, n, per, seed=None):
         """Method for splitting the patient data into training, test, and
@@ -64,6 +81,34 @@ class Patient:
             
             if (len(self.valData) < 2):
                 self.valData = pd.DataFrame(self.valData[0])
+    
+    def randomizeTrainingData(self, Kfold, seed=None):
+        """Function for randomly (repeatably if you pass a seed) splitting 
+        the training data into temporary train and validation sets
+        
+        Arguments:
+            Kfold = number of splits (Kfold - 1) e.g. Kfold = 2 will give 1 
+            halfway split
+            seed = the random seed initializer for repeatable splits
+            
+        Returns:
+            Updates self.tempVal and self.tempTrain
+        """
+        
+        splitPoint = int(len(self.trainData)/Kfold)
+        
+        np.random.seed(seed)
+        randData = self.trainData.sample(frac=1)
+        randData = randData.to_numpy()
+        self.tempVal = randData[0:splitPoint]
+        self.tempTrain = randData[splitPoint:-1]
+    
+    
+    
+    # CHANGE THIS 
+    def initializeErrors(self, nFoldIter, outSize):
+        self.llMSE1 = self.llMSE2 = self.lrMSE1 = self.lrMSE2 = np.zeros([nFoldIter, outSize])
+        
                 
     def resetData(self):
         """Eliminates data in trainData, valData, and testData so you can 
@@ -135,24 +180,3 @@ def createLagData(data, lag, skip=0, dropNaN=True):
     for e in range(skip):
         data.drop(columns=["Lag: {}".format(e+1)], inplace=True)
         
-
-def zscoreData(x):
-    """Normalization function which returns normalized data, mean, and std.
-    
-    Arguments:
-        x - data to be normalized
-    """
-    
-    return [(x - np.mean(x))/np.std(x), np.mean(x), np.std(x)]
-
-
-def MSError(Y, y_trn):
-    """Calculate Mean Square Error from prediction and labeled data.
-    
-    Arguments: 
-        Y - predicted data
-        y_trn - labeled training data
-    """
-    
-    MSE = (1/len(Y)) * np.sum(np.square(Y-y_trn), axis=0)
-    return MSE

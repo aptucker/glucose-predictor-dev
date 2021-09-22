@@ -20,6 +20,7 @@ import matplotlib.font_manager as font_manager
 import patient as pat
 import customLayers as cLayers
 import customModels as cModels
+import training as trn
 
 with open("processed_data\\patient1.pickle", "rb") as f:
     L1, Rdat = pickle.load(f)
@@ -35,15 +36,16 @@ pat.createLagData(L1.trainData, lag, dropNaN=True)
 pat.createLagData(L1.testData, lag, dropNaN=True)
 
 # %%
-Lsplit = int(len(L1.trainData)/2)
-np.random.seed(1)
-Lrand = L1.trainData.sample(frac=1)
-Ltrn = tf.convert_to_tensor(Lrand[0:Lsplit].to_numpy(), dtype=tf.float32)
-Lval = Lrand[Lsplit:-1].to_numpy()
+Kfold = 2
+nFoldIter = 5
 
 H = 3
 K = 4
 D = lag+1
+
+L1.randomizeTrainingData(Kfold, seed=1)
+L1.initializeErrors(nFoldIter, K)
+
 
 np.random.seed(1)
 initializer1 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (H, 4)))
@@ -55,7 +57,7 @@ initializer2 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (H+1, K
 np.random.seed(4)
 bInit = np.random.normal(0, 0.005, (H+1, K))
 
-[mlpNorm, mean, std] = pat.zscoreData(Ltrn)
+[mlpNorm, mean, std] = trn.zscoreData(L1.tempTrain)
 
 b_size = 1
 
@@ -77,7 +79,7 @@ YReNorm = (YNewTest*std) + mean
 
 # Output Mapping -> Column 3 = 15min, Column 0 = 60min
 
-trnErrTest = pat.MSError(YReNorm[:,3], tf.reshape(Ltrn[:,3], [4671,1]))
+trnErrTest = trn.MSError(YReNorm[:,3], tf.reshape(Ltrn[:,3], [4671,1]))
 
 L1.models.append(model)
 
