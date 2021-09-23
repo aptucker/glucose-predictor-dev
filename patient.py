@@ -28,13 +28,13 @@ class Patient:
         # Store test data in pandas form
         self.testData = []
         # Store the models to test in a list
-        self.models = {}
+        self.models = dict()
         # Temporary training data in numpy form for cross validation training
         self.tempTrain = []
         # Temporary validation data in numpy form for cross validation training
         self.tempVal = []
         # Error rates for models 
-        self.rmseStorage = {}
+        self.mseStorage = {}
         
     def partitionData(self, n, per, seed=None):
         """Method for splitting the patient data into training, test, and

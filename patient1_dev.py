@@ -22,8 +22,11 @@ import customLayers as cLayers
 import customModels as cModels
 import training as trn
 
-with open("processed_data\\patient1.pickle", "rb") as f:
-    L1, Rdat = pickle.load(f)
+# with open("processed_data\\patient1.pickle", "rb") as f:
+#     L1, Rdat = pickle.load(f)
+
+L1 = pat.createPatient("..\\raw_data\\CGM1Left.csv", 0)
+R1 = pat.createPatient("..\\raw_data\\CGM1Right.csv", 0)
     
 partNum = 1
 partSize = [0.1]
@@ -31,9 +34,12 @@ partSize = [0.1]
 lag = 6
 
 L1.partitionData(partNum, partSize)
+R1.partitionData(partNum, partSize)
 
 pat.createLagData(L1.trainData, lag, dropNaN=True)
 pat.createLagData(L1.testData, lag, dropNaN=True)
+pat.createLagData(R1.trainData, lag, dropNaN=True)
+pat.createLagData(R1.testData, lag, dropNaN=True)
 
 # %%
 Kfold = 2
@@ -44,7 +50,7 @@ K = 4
 D = lag+1
 
 L1.randomizeTrainingData(Kfold, seed=1)
-L1.initializeErrors(nFoldIter, K)
+# L1.initializeErrors(nFoldIter, K)
 
 
 np.random.seed(1)
@@ -71,17 +77,23 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError())
 
-modelTest = model.fit(mlpNorm[:,4:7], mlpNorm[:,0:4], batch_size=b_size, epochs=5)
+L1.models["JDST"] = model
+R1.models["JDST"] = model
 
-YNewTest = model.predict(mlpNorm[:,4:7], batch_size=b_size)
+trn.cvTraining(L1, R1, K, nFoldIter, Kfold, lag, b_size, 5, "JDST")
 
-YReNorm = (YNewTest*std) + mean
+# modelTest = model.fit(mlpNorm[:,4:7], mlpNorm[:,0:4], batch_size=b_size, epochs=5)
 
-# Output Mapping -> Column 3 = 15min, Column 0 = 60min
+# YNewTest = model.predict(mlpNorm[:,4:7], batch_size=b_size)
 
-trnErrTest = trn.MSError(YReNorm[:,3], tf.reshape(Ltrn[:,3], [4671,1]))
+# YReNorm = (YNewTest*std) + mean
 
-L1.models.append(model)
+# # Output Mapping -> Column 3 = 15min, Column 0 = 60min
+
+# trnErrTest = trn.MSError(YReNorm, L1.tempTrain[:,0:4])
+# # trnErrTest = trn.MSError(np.reshape(YReNorm[:,3], [4671, 1]), tf.reshape(L1.tempTrain[:,3], [4671,1]))
+
+
 
 
 # %%
