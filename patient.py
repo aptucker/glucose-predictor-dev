@@ -28,18 +28,13 @@ class Patient:
         # Store test data in pandas form
         self.testData = []
         # Store the models to test in a list
-        self.models = list()
+        self.models = {}
         # Temporary training data in numpy form for cross validation training
         self.tempTrain = []
         # Temporary validation data in numpy form for cross validation training
         self.tempVal = []
         # Error rates for models 
-        
-        # CHANGE THIS 
-        self.llMSE1 = []
-        self.llMSE2 = []
-        self.lrMSE1 = []
-        self.lrMSE2 = []
+        self.rmseStorage = {}
         
     def partitionData(self, n, per, seed=None):
         """Method for splitting the patient data into training, test, and
@@ -106,8 +101,8 @@ class Patient:
     
     
     # CHANGE THIS 
-    def initializeErrors(self, nFoldIter, outSize):
-        self.llMSE1 = self.llMSE2 = self.lrMSE1 = self.lrMSE2 = np.zeros([nFoldIter, outSize])
+    # def saveModelRMSE(self, nFoldIter, outSize, modelName):
+        
         
                 
     def resetData(self):
@@ -119,8 +114,7 @@ class Patient:
         self.testData = []
     
     def resetModels(self):
-        
-        self.models = []
+        self.models = {}
 
 
 
