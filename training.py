@@ -70,7 +70,7 @@ def fStatistic(error1, error2, nFoldIter):
     return fp
     
 
-def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, epochs, modelName):
+def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, epochs, models, modelName):
     """Cross validation training function uses model stored in patient object
     
     Arguments:
@@ -113,47 +113,47 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, e
         [rTempValNorm, rTempValMean, rTempValStd] = zscoreData(rPatient.tempVal)
         
         # LEFT-LEFT Training->Validation
-        llTrnTrain = lPatient.models[modelName].fit(lTempTrainNorm[:, outSize:], 
+        llTrnTrain = models[modelName].fit(lTempTrainNorm[:, outSize:], 
                                                     lTempTrainNorm[:, 0:outSize], 
                                                     batch_size = batch_size, 
                                                     epochs = epochs)
-        llValPred = lPatient.models[modelName].predict(lTempValNorm[:, outSize:], 
+        llValPred = models[modelName].predict(lTempValNorm[:, outSize:], 
                                                       batch_size = batch_size)
         # LEFT-RIGHT Validation
-        lrValPred = lPatient.models[modelName].predict(rTempValNorm[:, outSize:], 
+        lrValPred = models[modelName].predict(rTempValNorm[:, outSize:], 
                                                        batch_size = batch_size)
         
         # LEFT-LEFT Validation->Training
-        llValTrain = lPatient.models[modelName].fit(lTempValNorm[:, outSize:],
+        llValTrain = models[modelName].fit(lTempValNorm[:, outSize:],
                                                    lTempValNorm[:, 0:outSize],
                                                    batch_size = batch_size,
                                                    epochs = epochs)
-        llTrnPred = lPatient.models[modelName].predict(lTempTrainNorm[:, outSize:],
+        llTrnPred = models[modelName].predict(lTempTrainNorm[:, outSize:],
                                                       batch_size = batch_size)
         # LEFT-RIGHT Training
-        lrTrnPred = lPatient.models[modelName].predict(rTempTrainNorm[:, outSize:],
+        lrTrnPred = models[modelName].predict(rTempTrainNorm[:, outSize:],
                                                        batch_size = batch_size)
         
         # RIGHT-RIGHT Training->Validation
-        rrTrnTrain = lPatient.models[modelName].fit(rTempTrainNorm[:, outSize:], 
+        rrTrnTrain = models[modelName].fit(rTempTrainNorm[:, outSize:], 
                                                    rTempTrainNorm[:, 0:outSize], 
                                                    batch_size = batch_size, 
                                                    epochs = epochs)
-        rrValPred = lPatient.models[modelName].predict(rTempValNorm[:, outSize:], 
+        rrValPred = models[modelName].predict(rTempValNorm[:, outSize:], 
                                                       batch_size = batch_size)
         # RIGHT-LEFT Validation
-        rlValPred = lPatient.models[modelName].predict(lTempValNorm[:, outSize:], 
+        rlValPred = models[modelName].predict(lTempValNorm[:, outSize:], 
                                                        batch_size = batch_size)
         
         # RIGHT-RIGHT Validation->Training
-        rrValTrain = lPatient.models[modelName].fit(rTempValNorm[:, outSize:],
+        rrValTrain = models[modelName].fit(rTempValNorm[:, outSize:],
                                                    rTempValNorm[:, 0:outSize],
                                                    batch_size = batch_size,
                                                    epochs = epochs)
-        rrTrnPred = lPatient.models[modelName].predict(rTempTrainNorm[:, outSize:],
+        rrTrnPred = models[modelName].predict(rTempTrainNorm[:, outSize:],
                                                       batch_size = batch_size)
         # RIGHT-LEFT Training
-        rlTrnPred = lPatient.models[modelName].predict(lTempTrainNorm[:, outSize:],
+        rlTrnPred = models[modelName].predict(lTempTrainNorm[:, outSize:],
                                                        batch_size = batch_size)
         
         # DeNormalize the predictions
