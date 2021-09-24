@@ -33,8 +33,12 @@ class Patient:
         self.tempTrain = []
         # Temporary validation data in numpy form for cross validation training
         self.tempVal = []
-        # Error rates for models 
+        # MSE rates for models 
         self.mseStorage = {}
+        # RMSE rates for models
+        self.rmseStorage = {}
+        # F-statistic storage for models
+        self.fStorage = {}
         
     def partitionData(self, n, per, seed=None):
         """Method for splitting the patient data into training, test, and

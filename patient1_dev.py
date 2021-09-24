@@ -22,11 +22,11 @@ import customLayers as cLayers
 import customModels as cModels
 import training as trn
 
-# with open("processed_data\\patient1.pickle", "rb") as f:
-#     L1, Rdat = pickle.load(f)
+with open("processed_data\\patient1.pickle", "rb") as f:
+    L1, R1 = pickle.load(f)
 
-L1 = pat.createPatient("..\\raw_data\\CGM1Left.csv", 0)
-R1 = pat.createPatient("..\\raw_data\\CGM1Right.csv", 0)
+# L1 = pat.createPatient("..\\raw_data\\CGM1Left.csv", 0)
+# R1 = pat.createPatient("..\\raw_data\\CGM1Right.csv", 0)
     
 partNum = 1
 partSize = [0.1]

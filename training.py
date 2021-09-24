@@ -9,6 +9,7 @@ Classes and functions related to algorithm training
 
 import numpy as np
 import tensorflow as tf
+from scipy import stats
 
 import patient as pat
 
@@ -47,68 +48,115 @@ def MSError(Y, y_trn):
     MSE = (1/len(Y)) * np.sum(np.square(Y-y_trn), axis=0)
     return MSE
 
+def fStatistic(error1, error2, nFoldIter):
+    """Calculate the f-statistic for cross validation
+    
+    Arguments:
+        error1 = matrix of errors to compare
+        error2 = matrix of errors to compare
+        nFoldIter = matrix split point
+    
+    Returns:
+        fp = p-value from f-statistic calculation
+    """
+        
+    fp1 = error1[0:nFoldIter, :] - error2[0:nFoldIter, :]
+    fp2 = error1[nFoldIter:, :] - error2[nFoldIter:, :]
+    
+    fpbar = (fp1 + fp1)/2
+    fs = np.square(fp1 - fpbar) + np.square(fp2 - fpbar)
+    f = np.divide(np.sum(np.square(fp1) + np.square(fp2), axis=0), 2*np.sum(fs, axis=0))
+    fp = 1 - stats.f.cdf(f, 10, 5)
+    return fp
+    
 
 def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, epochs, modelName):
-    llMSE1 = np.zeros([nFoldIter, outSize])
-    llMSE2 = np.zeros([nFoldIter, outSize])
-    rlMSE1 = np.zeros([nFoldIter, outSize])
-    rlMSE2 = np.zeros([nFoldIter, outSize])
-    rrMSE1 = np.zeros([nFoldIter, outSize])
-    rrMSE2 = np.zeros([nFoldIter, outSize])
-    lrMSE1 = np.zeros([nFoldIter, outSize])
-    lrMSE2 = np.zeros([nFoldIter, outSize])
+    """Cross validation training function uses model stored in patient object
     
+    Arguments:
+        lPatient = left arm patient object
+        rPatient = right arm patient object
+        outSize = size of output (K)
+        nFoldIter = number of fold iterations
+        kFold = number of folds 
+        lag = amount to lag dataset
+        batch_size = batch size for model training
+        epochs = number of training epochs
+        modelName = name of model stored in patient models dictionary
+        
+    Returns:
+        None, updates error variables in patient object
+    """
+    
+    # Initialize error variables
+    llMSE = np.zeros([nFoldIter*2, outSize])
+    rrMSE = np.zeros([nFoldIter*2, outSize])
+    lrMSE = np.zeros([nFoldIter*2, outSize])
+    rlMSE = np.zeros([nFoldIter*2, outSize])
+    
+    # Lag data if not already lagged
     if (len(lPatient.trainData.columns) < 2):
         pat.createLagData(lPatient.trainData, lag = lag, skip=0, dropNaN=True)
         pat.createLagData(rPatient.trainData, lag = lag, skip=0, dropNaN=True)
     
     for i in range(nFoldIter):
+        
+        # Randomize the training data with every iteration
         lPatient.randomizeTrainingData(kFold, seed=i)
         rPatient.randomizeTrainingData(kFold, seed=i)
-    
+        
+        # Normalize the data
         [lTempTrainNorm, lTempTrainMean, lTempTrainStd] = zscoreData(lPatient.tempTrain)
         [lTempValNorm, lTempValMean, lTempValStd] = zscoreData(lPatient.tempVal)
         
         [rTempTrainNorm, rTempTrainMean, rTempTrainStd] = zscoreData(rPatient.tempTrain)
         [rTempValNorm, rTempValMean, rTempValStd] = zscoreData(rPatient.tempVal)
         
-        # Consider tying index to variable
+        # LEFT-LEFT Training->Validation
         llTrnTrain = lPatient.models[modelName].fit(lTempTrainNorm[:, outSize:], 
                                                     lTempTrainNorm[:, 0:outSize], 
                                                     batch_size = batch_size, 
                                                     epochs = epochs)
         llValPred = lPatient.models[modelName].predict(lTempValNorm[:, outSize:], 
                                                       batch_size = batch_size)
+        # LEFT-RIGHT Validation
         lrValPred = lPatient.models[modelName].predict(rTempValNorm[:, outSize:], 
                                                        batch_size = batch_size)
         
+        # LEFT-LEFT Validation->Training
         llValTrain = lPatient.models[modelName].fit(lTempValNorm[:, outSize:],
                                                    lTempValNorm[:, 0:outSize],
                                                    batch_size = batch_size,
                                                    epochs = epochs)
         llTrnPred = lPatient.models[modelName].predict(lTempTrainNorm[:, outSize:],
                                                       batch_size = batch_size)
+        # LEFT-RIGHT Training
         lrTrnPred = lPatient.models[modelName].predict(rTempTrainNorm[:, outSize:],
                                                        batch_size = batch_size)
         
+        # RIGHT-RIGHT Training->Validation
         rrTrnTrain = lPatient.models[modelName].fit(rTempTrainNorm[:, outSize:], 
                                                    rTempTrainNorm[:, 0:outSize], 
                                                    batch_size = batch_size, 
                                                    epochs = epochs)
         rrValPred = lPatient.models[modelName].predict(rTempValNorm[:, outSize:], 
                                                       batch_size = batch_size)
+        # RIGHT-LEFT Validation
         rlValPred = lPatient.models[modelName].predict(lTempValNorm[:, outSize:], 
                                                        batch_size = batch_size)
         
+        # RIGHT-RIGHT Validation->Training
         rrValTrain = lPatient.models[modelName].fit(rTempValNorm[:, outSize:],
                                                    rTempValNorm[:, 0:outSize],
                                                    batch_size = batch_size,
                                                    epochs = epochs)
         rrTrnPred = lPatient.models[modelName].predict(rTempTrainNorm[:, outSize:],
                                                       batch_size = batch_size)
+        # RIGHT-LEFT Training
         rlTrnPred = lPatient.models[modelName].predict(lTempTrainNorm[:, outSize:],
                                                        batch_size = batch_size)
         
+        # DeNormalize the predictions
         llValPredDeNorm = deNormData(llValPred, lTempValMean, lTempValStd)
         rrValPredDeNorm = deNormData(rrValPred, rTempValMean, rTempValStd)
         lrValPredDeNorm = deNormData(lrValPred, rTempValMean, rTempValStd)
@@ -119,32 +167,49 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, e
         lrTrnPredDeNorm = deNormData(lrTrnPred, rTempTrainMean, rTempTrainStd)
         rlTrnPredDeNorm = deNormData(rlTrnPred, lTempTrainMean, lTempTrainStd)
         
-        llMSE1[i, :] = MSError(llValPredDeNorm, lPatient.tempVal[:, 0:4])
-        llMSE2[i, :] = MSError(llTrnPredDeNorm, lPatient.tempTrain[:, 0:4])
-        rrMSE1[i, :] = MSError(rrValPredDeNorm, rPatient.tempVal[:, 0:4])
-        rrMSE2[i, :] = MSError(rrTrnPredDeNorm, rPatient.tempTrain[:, 0:4])
-        lrMSE1[i, :] = MSError(lrValPredDeNorm, rPatient.tempVal[:, 0:4])
-        lrMSE2[i, :] = MSError(lrTrnPredDeNorm, rPatient.tempTrain[:, 0:4])
-        rlMSE1[i, :] = MSError(rlValPredDeNorm, lPatient.tempVal[:, 0:4])
-        rlMSE2[i, :] = MSError(rlTrnPredDeNorm, lPatient.tempTrain[:, 0:4])
+        # Calculate the mean square error
+        llMSE[i, :] = MSError(llValPredDeNorm, lPatient.tempVal[:, 0:outSize])
+        llMSE[i+nFoldIter, :] = MSError(llTrnPredDeNorm, lPatient.tempTrain[:, 0:outSize])
+        rrMSE[i, :] = MSError(rrValPredDeNorm, rPatient.tempVal[:, 0:outSize])
+        rrMSE[i+nFoldIter, :] = MSError(rrTrnPredDeNorm, rPatient.tempTrain[:, 0:outSize])
+        lrMSE[i, :] = MSError(lrValPredDeNorm, rPatient.tempVal[:, 0:outSize])
+        lrMSE[i+nFoldIter, :] = MSError(lrTrnPredDeNorm, rPatient.tempTrain[:, 0:outSize])
+        rlMSE[i, :] = MSError(rlValPredDeNorm, lPatient.tempVal[:, 0:outSize])
+        rlMSE[i+nFoldIter, :] = MSError(rlTrnPredDeNorm, lPatient.tempTrain[:, 0:outSize])
     
-        
-    llMSE = np.append(llMSE1, llMSE2, axis = 0)
-    rrMSE = np.append(rrMSE1, rrMSE2, axis = 0)
-    lrMSE = np.append(lrMSE1, lrMSE2, axis = 0)
-    rlMSE = np.append(rlMSE1, rlMSE2, axis = 0)
     
-    lFinalErrors = {
+    # Store the mean square error
+    lFinalMSErrors = {
         "llMSE": llMSE,
         "lrMSE": lrMSE}
-    rFinalErrors = {
+    rFinalMSErrors = {
         "rrMSE": rrMSE,
         "rlMSE": rlMSE}
     
-    lPatient.mseStorage[modelName] = lFinalErrors
-    rPatient.mseStorage[modelName] = rFinalErrors
+    lPatient.mseStorage[modelName] = lFinalMSErrors
+    rPatient.mseStorage[modelName] = rFinalMSErrors
     
+    # Calculate and store the root mean square error
+    llRMSE = np.sqrt(llMSE)
+    rrRMSE = np.sqrt(rrMSE)
+    lrRMSE = np.sqrt(lrMSE)
+    rlRMSE = np.sqrt(rlMSE)
     
+    lFinalRMSErrors = {
+        "llRMSE": llRMSE,
+        "lrRMSE": lrRMSE}
+    rFinalRMSErrors = {
+        "rrRMSE": rrRMSE,
+        "rlRMSE": rlRMSE}
+    
+    lPatient.rmseStorage[modelName] = lFinalRMSErrors
+    rPatient.rmseStorage[modelName] = rFinalRMSErrors
+    
+    lPatientfStatistic = fStatistic(llRMSE, lrRMSE, nFoldIter)
+    rPatientfStatistic = fStatistic(rrRMSE, rlRMSE, nFoldIter)
+    
+    lPatient.fStorage[modelName] = {"pValues": lPatientfStatistic}
+    rPatient.fStorage[modelName] = {"pValues": rPatientfStatistic}
         
         
         
