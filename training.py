@@ -82,6 +82,7 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, e
         lag = amount to lag dataset
         batch_size = batch size for model training
         epochs = number of training epochs
+        models = dictionary of models
         modelName = name of model stored in patient models dictionary
         
     Returns:
