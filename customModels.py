@@ -14,8 +14,15 @@ class sbSeqModel(tf.keras.Model):
     """Simple sequential model using the custom staticBiasLayer
     
     Arguments:
+        inShape = shape of the input (columns)
+        outShape = shape of the output
+        use_bias = whether to use bias (currently unused)
+        initializers = pass initializers to the model if necessary
+        bias_size = size of the bias to add (also same as batch size)
+        activators = activation functions to pass to layers
         
     Returns:
+        outLayer = custom layer with linear activation
     """
     
     def __init__(self,
@@ -65,27 +72,40 @@ class parallelModel(tf.keras.Model):
         self.bias_size = bias_size
                 
         self.inLayer = tf.keras.Input(shape=(self.inShape*2, ))
-        self.hLayer = cLayers.staticBiasLayer(units = inShape,
+        self.hLayer1 = cLayers.staticBiasLayer(units = inShape,
                                      activation = 'sigmoid',
                                      use_bias = self.use_bias,
                                      kernel_initializer = tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
                                      ones_size = self.bias_size)
-        self.outLayer = cLayers.staticBiasLayer(units = outShape,
+        self.hLayer2 = cLayers.staticBiasLayer(units = inShape,
+                                     activation = 'sigmoid',
+                                     use_bias = self.use_bias,
+                                     kernel_initializer = tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
+                                     ones_size = self.bias_size)
+        self.outLayer1 = cLayers.staticBiasLayer(units = outShape,
+                                                activation = None,
+                                                use_bias = self.use_bias,
+                                                kernel_initializer = tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
+                                                ones_size = self.bias_size)
+        self.outLayer2 = cLayers.staticBiasLayer(units = outShape,
                                                 activation = None,
                                                 use_bias = self.use_bias,
                                                 kernel_initializer = tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
                                                 ones_size = self.bias_size)
         
+        self.denseLayer = tf.keras.layers.Dense(1, activation=None)
+        
+        
     def call(self, inputs):
-        tower1 = self.hLayer(inputs[:, 0:self.inShape])
-        tower2 = self.hLayer(inputs[:, self.inShape:])
+        tower1 = self.hLayer1(inputs[:, 0:self.inShape])
+        tower2 = self.hLayer2(inputs[:, self.inShape:])
         
-        tower1 = self.outLayer(tower1)
-        tower2 = self.outLayer(tower2)
+        tower1a = self.outLayer1(tower1)
+        tower2a = self.outLayer2(tower2)
         
-        merged = tf.keras.layers.concatenate([tower1, tower2], axis=0)
-        outputs = tf.keras.layers.Dense(1, activation=None)(tf.transpose(merged))
-        return outputs
+        merged = tf.keras.layers.concatenate([tower1a, tower2a], axis=0)
+        outputs = self.denseLayer(tf.transpose(merged))
+        return tf.transpose(outputs)
                  
                  
                  

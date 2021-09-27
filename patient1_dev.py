@@ -83,7 +83,6 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
 
 models["JDST"] = model
 
-# trn.cvTraining(L1, R1, K, nFoldIter, Kfold, lag, b_size, 5, models, "JDST")
 
 # modelTest = model.fit(mlpNorm[:,4:7], mlpNorm[:,0:4], batch_size=b_size, epochs=5)
 
@@ -95,8 +94,6 @@ models["JDST"] = model
 
 # trnErrTest = trn.MSError(YReNorm, lPat.tempTrain[:,0:4])
 # # trnErrTest = trn.MSError(np.reshape(YReNorm[:,3], [4671, 1]), tf.reshape(lPat.tempTrain[:,3], [4671,1]))
-
-
 
 
 # %% Parallel Network
@@ -132,37 +129,32 @@ tower2 = cLayers.staticBiasLayer(K,
                                  ones_size = b_size)(tower2)
 
 merged = tf.keras.layers.concatenate([tower1, tower2], axis=0)
-# outputs = cLayers.staticBiasLayer(2,
-#                                   activation = None,
-#                                   use_bias=True,
-#                                   kernel_initializer = tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
-#                                   ones_size = b_size)(merged)
+
 outputs = tf.keras.layers.Dense(1, activation=None)(tf.transpose(merged))
 
-
-model = tf.keras.Model(inputs, tf.transpose(outputs))
-model.summary()
-
-model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+parallelModel = cModels.parallelModel(H, K, use_bias=True, bias_size = b_size)
+parallelModel.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError())
+models["Parallel"] = parallelModel
 
-normInputs = np.append(rNorm[:, 4:7], lNorm[0:len(rNorm), 4:7], axis = 1)
-normValInputs = np.append(rValNorm[:, 4:7], lValNorm[0:len(rValNorm), 4:7], axis = 1)
 
-modelLTest = model.fit(normInputs, lNorm[0:len(rNorm),0:4], batch_size=b_size, epochs=5)
+# normInputs = np.append(rNorm[:, 4:7], lNorm[0:len(rNorm), 4:7], axis = 1)
+# normValInputs = np.append(rValNorm[:, 4:7], lValNorm[0:len(rValNorm), 4:7], axis = 1)
 
-YNewTest = model.predict(normValInputs, batch_size=b_size)
+# modelLTest = parallelModel.fit(normInputs, lNorm[0:len(rNorm),0:4], batch_size=b_size, epochs=5)
 
-YReNorm = (YNewTest*lStd) + lMean
+# YNewTest = parallelModel.predict(normValInputs, batch_size=b_size)
 
-trnErrTest = trn.MSError(YReNorm, lPat.tempTrain[0:len(rNorm),0:4])
+# YReNorm = (YNewTest*lStd) + lMean
 
-models["Parallel"] = model
+# trnErrTest = trn.MSError(YReNorm, lPat.tempTrain[0:len(rNorm),0:4])
+
+# %% Circadian Model 1
 
 # %%
 # trn.cvTraining(L1, R1, 4, nFoldIter, Kfold, lag, b_size, epochs, models, "JDST")
-trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, b_size, epochs, models, "Parallel")
+# trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, b_size, epochs, models, "Parallel")
 # %%
 # objects = []
 # with (open("KerasVal.pickle", "rb")) as openfile:

@@ -206,6 +206,7 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, e
     lPatient.rmseStorage[modelName] = lFinalRMSErrors
     rPatient.rmseStorage[modelName] = rFinalRMSErrors
     
+    # Calculate and store the f statistic p-value
     lPatientfStatistic = fStatistic(llRMSE, lrRMSE, nFoldIter)
     rPatientfStatistic = fStatistic(rrRMSE, rlRMSE, nFoldIter)
     
@@ -216,7 +217,7 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, e
         
         
 def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, epochs, models, modelName):
-    """Cross validation training function uses model stored in patient object
+    """Cross validation training function for parallel models
     
     Arguments:
         lPatient = left arm patient object
@@ -258,6 +259,7 @@ def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch
         [rTempTrainNorm, rTempTrainMean, rTempTrainStd] = zscoreData(rPatient.tempTrain)
         [rTempValNorm, rTempValMean, rTempValStd] = zscoreData(rPatient.tempVal)
         
+        # Set the input data to be the same size based on whichever patient has more data        
         if (len(lTempTrainNorm) < len(rTempTrainNorm)):
             normTrainInputs = np.append(lTempTrainNorm[:, outSize:], rTempTrainNorm[0:len(lTempTrainNorm), outSize:], axis=1)
             normValInputs = np.append(lTempValNorm[:, outSize:], rTempValNorm[0:len(lTempValNorm), outSize:], axis=1)
@@ -273,6 +275,7 @@ def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch
             rTempTrainNormComp = rTempTrainNorm
             rTempValNormComp = rTempValNorm
         
+        # Duplicate the datasets within one array for prediction function
         doubleLTempTrainNorm = np.append(lTempTrainNorm[:, outSize:], lTempTrainNorm[:, outSize:], axis=1)
         doubleLTempValNorm = np.append(lTempValNorm[:, outSize:], lTempValNorm[:, outSize:], axis=1)
         doubleRTempTrainNorm = np.append(rTempTrainNorm[:, outSize:], rTempTrainNorm[:, outSize:], axis=1)
@@ -375,6 +378,7 @@ def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch
     lPatient.rmseStorage[modelName] = lFinalRMSErrors
     rPatient.rmseStorage[modelName] = rFinalRMSErrors
     
+    # Calculate and store the f statistic p-value
     lPatientfStatistic = fStatistic(llRMSE, lrRMSE, nFoldIter)
     rPatientfStatistic = fStatistic(rrRMSE, rlRMSE, nFoldIter)
     

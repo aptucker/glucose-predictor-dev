@@ -175,6 +175,7 @@ def createLagData(data, lag, skip=0, dropNaN=True):
     if dropNaN:
         data.dropna(inplace=True)
         
-    for e in range(skip):
+    # for e in range(skip):
+    for e in skip:
         data.drop(columns=["Lag: {}".format(e+1)], inplace=True)
         
