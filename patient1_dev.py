@@ -23,7 +23,7 @@ import customModels as cModels
 import training as trn
 
 with open("processed_data\\patient1.pickle", "rb") as f:
-    L1, R1 = pickle.load(f)
+    lPat, rPat = pickle.load(f)
 
 # L1 = pat.createPatient("..\\raw_data\\CGM1Left.csv", 0)
 # R1 = pat.createPatient("..\\raw_data\\CGM1Right.csv", 0)
@@ -45,17 +45,17 @@ D = lag+1
 b_size = 1
 epochs = 5
 
-L1.partitionData(partNum, partSize)
-R1.partitionData(partNum, partSize)
+lPat.partitionData(partNum, partSize)
+rPat.partitionData(partNum, partSize)
 
-pat.createLagData(L1.trainData, lag, dropNaN=True)
-pat.createLagData(L1.testData, lag, dropNaN=True)
-pat.createLagData(R1.trainData, lag, dropNaN=True)
-pat.createLagData(R1.testData, lag, dropNaN=True)
+pat.createLagData(lPat.trainData, lag, dropNaN=True)
+pat.createLagData(lPat.testData, lag, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, dropNaN=True)
+pat.createLagData(rPat.testData, lag, dropNaN=True)
 
 # %% JDST Model 
 
-L1.randomizeTrainingData(Kfold, seed=1)
+lPat.randomizeTrainingData(Kfold, seed=1)
 
 np.random.seed(1)
 initializer1 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (H, 4)))
@@ -67,7 +67,7 @@ initializer2 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (H+1, K
 np.random.seed(4)
 bInit = np.random.normal(0, 0.005, (H+1, K))
 
-[mlpNorm, mean, std] = trn.zscoreData(L1.tempTrain)
+[mlpNorm, mean, std] = trn.zscoreData(lPat.tempTrain)
 
 b_size = 1
 
@@ -93,24 +93,27 @@ models["JDST"] = model
 
 # # Output Mapping -> Column 3 = 15min, Column 0 = 60min
 
-# trnErrTest = trn.MSError(YReNorm, L1.tempTrain[:,0:4])
-# # trnErrTest = trn.MSError(np.reshape(YReNorm[:,3], [4671, 1]), tf.reshape(L1.tempTrain[:,3], [4671,1]))
+# trnErrTest = trn.MSError(YReNorm, lPat.tempTrain[:,0:4])
+# # trnErrTest = trn.MSError(np.reshape(YReNorm[:,3], [4671, 1]), tf.reshape(lPat.tempTrain[:,3], [4671,1]))
 
 
 
 
 # %% Parallel Network
-L1.randomizeTrainingData(Kfold, seed=1)
-[mlpNorm, mean, std] = trn.zscoreData(L1.tempTrain)
+lPat.randomizeTrainingData(Kfold, seed=1)
+rPat.randomizeTrainingData(Kfold, seed=1)
+[lNorm, lMean, lStd] = trn.zscoreData(lPat.tempTrain)
+[rNorm, rMean, rStd] = trn.zscoreData(rPat.tempTrain)
+[lValNorm, lValMean, lValStd] = trn.zscoreData(lPat.tempVal)
+[rValNorm, rValMean, rValStd] = trn.zscoreData(rPat.tempVal)
 
-
-inputs = tf.keras.Input(shape=(H,))
+inputs = tf.keras.Input(shape=(H*2,))
 
 tower1 = cLayers.staticBiasLayer(H,
                                  activation = 'sigmoid',
                                  use_bias = True,
                                  kernel_initializer = tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
-                                 ones_size = b_size)(inputs)
+                                 ones_size = b_size)(inputs[:, 0:H])
 tower1 = cLayers.staticBiasLayer(K,
                                  activation = None,
                                  use_bias=True,
@@ -121,7 +124,7 @@ tower2 = cLayers.staticBiasLayer(H,
                                  activation = 'sigmoid',
                                  use_bias = True,
                                  kernel_initializer = tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
-                                 ones_size = b_size)(inputs)
+                                 ones_size = b_size)(inputs[:, H:])
 tower2 = cLayers.staticBiasLayer(K,
                                  activation = None,
                                  use_bias=True,
@@ -144,19 +147,22 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError())
 
-modelTest = model.fit(mlpNorm[:,4:7], mlpNorm[:,0:4], batch_size=b_size, epochs=5)
+normInputs = np.append(rNorm[:, 4:7], lNorm[0:len(rNorm), 4:7], axis = 1)
+normValInputs = np.append(rValNorm[:, 4:7], lValNorm[0:len(rValNorm), 4:7], axis = 1)
 
-YNewTest = model.predict(mlpNorm[:,4:7], batch_size=b_size)
+modelLTest = model.fit(normInputs, lNorm[0:len(rNorm),0:4], batch_size=b_size, epochs=5)
 
-YReNorm = (YNewTest*std) + mean
+YNewTest = model.predict(normValInputs, batch_size=b_size)
 
-trnErrTest = trn.MSError(YReNorm, L1.tempTrain[:,0:4])
+YReNorm = (YNewTest*lStd) + lMean
+
+trnErrTest = trn.MSError(YReNorm, lPat.tempTrain[0:len(rNorm),0:4])
 
 models["Parallel"] = model
 
 # %%
-trn.cvTraining(L1, R1, 4, nFoldIter, Kfold, lag, b_size, epochs, models, "JDST")
-trn.cvTraining(L1, R1, 4, nFoldIter, Kfold, lag, b_size, epochs, models, "Parallel")
+# trn.cvTraining(L1, R1, 4, nFoldIter, Kfold, lag, b_size, epochs, models, "JDST")
+trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, b_size, epochs, models, "Parallel")
 # %%
 # objects = []
 # with (open("KerasVal.pickle", "rb")) as openfile:
