@@ -154,7 +154,7 @@ def createPatient(file, diabType='0'):
     return newPat
 
 
-def createLagData(data, lag, skip=0, dropNaN=True):
+def createLagData(data, lag, skip=None, dropNaN=True):
     """Create a simple lagged data set.
     
     Arguments:
@@ -176,6 +176,7 @@ def createLagData(data, lag, skip=0, dropNaN=True):
         data.dropna(inplace=True)
         
     # for e in range(skip):
-    for e in skip:
-        data.drop(columns=["Lag: {}".format(e+1)], inplace=True)
+    if (skip != None):
+        for e in skip:
+            data.drop(columns=["Lag: {}".format(e+1)], inplace=True)
         

@@ -49,14 +49,25 @@ epochs = 5
 lPat.partitionData(partNum, partSize)
 rPat.partitionData(partNum, partSize)
 
-pat.createLagData(lPat.trainData, lag, dropNaN=True)
-pat.createLagData(lPat.testData, lag, dropNaN=True)
-pat.createLagData(rPat.trainData, lag, dropNaN=True)
-pat.createLagData(rPat.testData, lag, dropNaN=True)
+pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
 
 # %% JDST Model 
+lag = 6
 
-lPat.randomizeTrainingData(Kfold, seed=1)
+# lPat.randomizeTrainingData(Kfold, seed=1)
+lPat.resetData()
+rPat.resetData()
+
+lPat.partitionData(partNum, partSize)
+rPat.partitionData(partNum, partSize)
+
+pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
 
 np.random.seed(1)
 initializer1 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (H, 4)))
@@ -84,6 +95,7 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
 
 models["JDST"] = model
 
+trn.cvTraining(lPat, rPat, 4, nFoldIter, Kfold, lag, None, b_size, epochs, models, "JDST")
 
 # modelTest = model.fit(mlpNorm[:,4:7], mlpNorm[:,0:4], batch_size=b_size, epochs=5)
 
@@ -98,6 +110,19 @@ models["JDST"] = model
 
 
 # %% Parallel Network
+lag = 6
+
+lPat.resetData()
+rPat.resetData()
+
+lPat.partitionData(partNum, partSize)
+rPat.partitionData(partNum, partSize)
+
+pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
+
 lPat.randomizeTrainingData(Kfold, seed=1)
 rPat.randomizeTrainingData(Kfold, seed=1)
 [lNorm, lMean, lStd] = trn.zscoreData(lPat.tempTrain)
@@ -138,6 +163,8 @@ parallelModel.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError())
 models["Parallel"] = parallelModel
+
+trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, None, b_size, epochs, models, "Parallel")
 
 
 # normInputs = np.append(rNorm[:, 4:7], lNorm[0:len(rNorm), 4:7], axis = 1)
@@ -182,8 +209,65 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
 
 models["Circadian 1"] = model
 
-circTest = model.fit(lNorm[:, K:], lNorm[:, 0:K], batch_size = b_size, epochs = epochs)
-cirPredTest = model.predict(lValNorm[:, K:], batc_size = b_size)
+trn.cvTraining(lPat, rPat, 4, nFoldIter, Kfold, circLag, circSkip, b_size, epochs, models, "Circadian 1")
+
+# circTest = model.fit(lNorm[:, K:], lNorm[:, 0:K], batch_size = b_size, epochs = epochs)
+# cirPredTest = model.predict(lValNorm[:, K:], batc_size = b_size)
+
+# %% Sequential w/2 Hidden Layers
+partNum = 1
+partSize = [0.1]
+
+lag = 6
+
+Kfold = 2
+nFoldIter = 5
+
+H = 3
+K = 4
+D = lag+1
+skip = 0 
+
+b_size = 1
+epochs = 5
+
+initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
+                tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
+                tf.keras.initializers.RandomNormal(mean=0, stddev=0.005)]
+
+activators = ['sigmoid', 'sigmoid', None]
+
+shapes = [H, H, K]
+
+# lPat.randomizeTrainingData(Kfold, seed=1)
+lPat.resetData()
+rPat.resetData()
+
+lPat.partitionData(partNum, partSize)
+rPat.partitionData(partNum, partSize)
+
+pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
+
+model = cModels.sbSeqModelH2(shapes, True, initializers, b_size, activators)
+model(tf.keras.Input(shape=H))
+model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError())
+
+models["Sequential H=2"] = model
+
+# lPat.randomizeTrainingData(Kfold, seed=0)
+# rPat.randomizeTrainingData(Kfold, seed=0)
+# [lNorm, lMean, lStd] = trn.zscoreData(lPat.tempTrain)
+# [rNorm, rMean, rStd] = trn.zscoreData(rPat.tempTrain)
+# [lValNorm, lValMean, lValStd] = trn.zscoreData(lPat.tempVal)
+# [rValNorm, rValMean, rValStd] = trn.zscoreData(rPat.tempVal)
+
+# modelTest = model.fit(lNorm[:,4:7], lNorm[:,0:4], batch_size=b_size, epochs=20)
+trn.cvTraining(lPat, rPat, 4, nFoldIter, Kfold, lag, skip, b_size, 20, models, "Sequential H=2")
 
 
 # %%

@@ -41,12 +41,12 @@ class sbSeqModel(tf.keras.Model):
         self.activators = activators
         
         self.inLayer = tf.keras.Input(shape=(self.inShape, ))
-        self.hLayer = cLayers.staticBiasLayer(units = inShape,
+        self.hLayer = cLayers.staticBiasLayer(units = self.inShape,
                                      activation = self.activators[0],
                                      use_bias = self.use_bias,
                                      kernel_initializer = self.initializers[0],
                                      ones_size = self.bias_size)
-        self.outLayer = cLayers.staticBiasLayer(units = outShape,
+        self.outLayer = cLayers.staticBiasLayer(units = self.outShape,
                                                 activation = self.activators[1],
                                                 use_bias = self.use_bias,
                                                 kernel_initializer = self.initializers[1],
@@ -55,9 +55,59 @@ class sbSeqModel(tf.keras.Model):
     def call(self, inputs):
         x = self.hLayer(inputs)
         return self.outLayer(x)
+
+class sbSeqModelH2(tf.keras.Model):
+    
+    def __init__(self,
+                 shapes,
+                 use_bias,
+                 initializers,
+                 bias_size,
+                 activators):
+        super(sbSeqModelH2, self).__init__()
+        self.inShape = shapes[0]
+        self.midShape = shapes[1]
+        self.outShape = shapes[2]
+        self.use_bias = use_bias
+        self.initializers = initializers
+        self.activators = activators
+        self.bias_size = bias_size
+        
+        self.inLayer = tf.keras.Input(shape=(self.inShape, ))
+        self.hLayer = cLayers.staticBiasLayer(units = self.inShape,
+                                     activation = self.activators[0],
+                                     use_bias = self.use_bias,
+                                     kernel_initializer = self.initializers[0],
+                                     ones_size = self.bias_size)
+        self.hLayer2 = cLayers.staticBiasLayer(units = self.midShape,
+                                               activation = self.activators[1],
+                                               use_bias = self.use_bias,
+                                               kernel_initializer = self.initializers[1],
+                                               ones_size = self.bias_size)
+        self.outLayer = cLayers.staticBiasLayer(units = self.outShape,
+                                                activation = self.activators[2],
+                                                use_bias = self.use_bias,
+                                                kernel_initializer = self.initializers[2],
+                                                ones_size = self.bias_size)
+    
+    def call(self, inputs):
+        x = self.hLayer(inputs)
+        x = self.hLayer2(x)
+        return self.outLayer(x)
         
 
 class parallelModel(tf.keras.Model):
+    """Parallel NN which takes training from right and left arms
+    
+    Arguments:
+        inShape = input shape
+        outShape = output shape
+        use_bias = toggle bias layer (currently unused)
+        bias_size = size of bias matrix to add in layer (same as batch size)
+        
+    Returns:
+        Transpose of output layer which concatenates the two 'towers'
+    """
     
     def __init__(self,
                  inShape,

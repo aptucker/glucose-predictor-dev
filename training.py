@@ -63,7 +63,7 @@ def fStatistic(error1, error2, nFoldIter):
     fp1 = error1[0:nFoldIter, :] - error2[0:nFoldIter, :]
     fp2 = error1[nFoldIter:, :] - error2[nFoldIter:, :]
     
-    fpbar = (fp1 + fp1)/2
+    fpbar = (fp1 + fp2)/2
     fs = np.square(fp1 - fpbar) + np.square(fp2 - fpbar)
     f = np.divide(np.sum(np.square(fp1) + np.square(fp2), axis=0), 2*np.sum(fs, axis=0))
     fp = 1 - stats.f.cdf(f, 10, 5)
@@ -182,10 +182,10 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_s
     # Store the mean square error
     lFinalMSErrors = {
         "llMSE": llMSE,
-        "lrMSE": lrMSE}
+        "rlMSE": rlMSE}
     rFinalMSErrors = {
         "rrMSE": rrMSE,
-        "rlMSE": rlMSE}
+        "lrMSE": lrMSE}
     
     lPatient.mseStorage[modelName] = lFinalMSErrors
     rPatient.mseStorage[modelName] = rFinalMSErrors
@@ -198,17 +198,17 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_s
     
     lFinalRMSErrors = {
         "llRMSE": llRMSE,
-        "lrRMSE": lrRMSE}
+        "rlRMSE": rlRMSE}
     rFinalRMSErrors = {
         "rrRMSE": rrRMSE,
-        "rlRMSE": rlRMSE}
+        "lrRMSE": lrRMSE}
     
     lPatient.rmseStorage[modelName] = lFinalRMSErrors
     rPatient.rmseStorage[modelName] = rFinalRMSErrors
     
     # Calculate and store the f statistic p-value
-    lPatientfStatistic = fStatistic(llRMSE, lrRMSE, nFoldIter)
-    rPatientfStatistic = fStatistic(rrRMSE, rlRMSE, nFoldIter)
+    lPatientfStatistic = fStatistic(llRMSE, rlRMSE, nFoldIter)
+    rPatientfStatistic = fStatistic(rrRMSE, lrRMSE, nFoldIter)
     
     lPatient.fStorage[modelName] = {"pValues": lPatientfStatistic}
     rPatient.fStorage[modelName] = {"pValues": rPatientfStatistic}
@@ -351,13 +351,13 @@ def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip,
         rlMSE[i+nFoldIter, :] = MSError(rlTrnPredDeNorm, lPatient.tempTrain[:, 0:outSize])
     
     
-    # Store the mean square error
+     # Store the mean square error
     lFinalMSErrors = {
         "llMSE": llMSE,
-        "lrMSE": lrMSE}
+        "lrMSE": rlMSE}
     rFinalMSErrors = {
         "rrMSE": rrMSE,
-        "rlMSE": rlMSE}
+        "rlMSE": lrMSE}
     
     lPatient.mseStorage[modelName] = lFinalMSErrors
     rPatient.mseStorage[modelName] = rFinalMSErrors
@@ -370,17 +370,17 @@ def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip,
     
     lFinalRMSErrors = {
         "llRMSE": llRMSE,
-        "lrRMSE": lrRMSE}
+        "rlRMSE": rlRMSE}
     rFinalRMSErrors = {
         "rrRMSE": rrRMSE,
-        "rlRMSE": rlRMSE}
+        "lrRMSE": lrRMSE}
     
     lPatient.rmseStorage[modelName] = lFinalRMSErrors
     rPatient.rmseStorage[modelName] = rFinalRMSErrors
     
     # Calculate and store the f statistic p-value
-    lPatientfStatistic = fStatistic(llRMSE, lrRMSE, nFoldIter)
-    rPatientfStatistic = fStatistic(rrRMSE, rlRMSE, nFoldIter)
+    lPatientfStatistic = fStatistic(llRMSE, rlRMSE, nFoldIter)
+    rPatientfStatistic = fStatistic(rrRMSE, lrRMSE, nFoldIter)
     
     lPatient.fStorage[modelName] = {"pValues": lPatientfStatistic}
     rPatient.fStorage[modelName] = {"pValues": rPatientfStatistic}
