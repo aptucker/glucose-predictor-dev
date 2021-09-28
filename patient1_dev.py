@@ -41,6 +41,7 @@ nFoldIter = 5
 H = 3
 K = 4
 D = lag+1
+skip = 0 
 
 b_size = 1
 epochs = 5
@@ -151,10 +152,44 @@ models["Parallel"] = parallelModel
 # trnErrTest = trn.MSError(YReNorm, lPat.tempTrain[0:len(rNorm),0:4])
 
 # %% Circadian Model 1
+lPat.resetData()
+rPat.resetData()
+
+circLag = 98
+circSkip = list(range(6, 95))
+
+lPat.partitionData(partNum, partSize)
+rPat.partitionData(partNum, partSize)
+
+pat.createLagData(lPat.trainData, circLag, circSkip, dropNaN=True)
+pat.createLagData(rPat.trainData, circLag, circSkip, dropNaN=True)
+
+lPat.randomizeTrainingData(Kfold, seed=1)
+rPat.randomizeTrainingData(Kfold, seed=1)
+[lNorm, lMean, lStd] = trn.zscoreData(lPat.tempTrain)
+[rNorm, rMean, rStd] = trn.zscoreData(rPat.tempTrain)
+[lValNorm, lValMean, lValStd] = trn.zscoreData(lPat.tempVal)
+[rValNorm, rValMean, rValStd] = trn.zscoreData(rPat.tempVal)
+
+initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005), tf.keras.initializers.RandomNormal(mean=0, stddev=0.005)]
+
+model = cModels.sbSeqModel(6, K, use_bias = True, initializers = initializers, bias_size = b_size, activators = ["sigmoid", None])
+model(tf.keras.Input(shape=6))
+
+model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError())
+
+models["Circadian 1"] = model
+
+circTest = model.fit(lNorm[:, K:], lNorm[:, 0:K], batch_size = b_size, epochs = epochs)
+cirPredTest = model.predict(lValNorm[:, K:], batc_size = b_size)
+
 
 # %%
-# trn.cvTraining(L1, R1, 4, nFoldIter, Kfold, lag, b_size, epochs, models, "JDST")
-# trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, b_size, epochs, models, "Parallel")
+# trn.cvTraining(L1, R1, 4, nFoldIter, Kfold, lag, skip, b_size, epochs, models, "JDST")
+# trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, skip, b_size, epochs, models, "Parallel")
+# trn.cvTraining(lPat, rPat, 4, nFoldIter, Kfold, circLag, circSkip, b_size, epochs, models, "Circadian 1")
 # %%
 # objects = []
 # with (open("KerasVal.pickle", "rb")) as openfile:

@@ -70,7 +70,7 @@ def fStatistic(error1, error2, nFoldIter):
     return fp
     
 
-def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, epochs, models, modelName):
+def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_size, epochs, models, modelName):
     """Cross validation training function uses model stored in patient object
     
     Arguments:
@@ -97,8 +97,8 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, e
     
     # Lag data if not already lagged
     if (len(lPatient.trainData.columns) < 2):
-        pat.createLagData(lPatient.trainData, lag = lag, skip=0, dropNaN=True)
-        pat.createLagData(rPatient.trainData, lag = lag, skip=0, dropNaN=True)
+        pat.createLagData(lPatient.trainData, lag = lag, skip=skip, dropNaN=True)
+        pat.createLagData(rPatient.trainData, lag = lag, skip=skip, dropNaN=True)
     
     for i in range(nFoldIter):
         
@@ -216,7 +216,7 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, e
         
         
         
-def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch_size, epochs, models, modelName):
+def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_size, epochs, models, modelName):
     """Cross validation training function for parallel models
     
     Arguments:
@@ -243,8 +243,8 @@ def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, batch
     
     # Lag data if not already lagged
     if (len(lPatient.trainData.columns) < 2):
-        pat.createLagData(lPatient.trainData, lag = lag, skip=0, dropNaN=True)
-        pat.createLagData(rPatient.trainData, lag = lag, skip=0, dropNaN=True)
+        pat.createLagData(lPatient.trainData, lag = lag, skip=skip, dropNaN=True)
+        pat.createLagData(rPatient.trainData, lag = lag, skip=skip, dropNaN=True)
     
     for i in range(nFoldIter):
         
