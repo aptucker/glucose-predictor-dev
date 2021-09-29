@@ -49,3 +49,47 @@ class staticBiasLayer(tf.keras.layers.Layer):
         
     def call(self, inputs):
         return self.activation(tf.transpose(tf.matmul(self.w, tf.transpose(tf.concat([self.b, inputs], 1)))))
+    
+
+class staticBiasTowerH2(tf.keras.layers.Layer):
+    
+    def __init__(self,
+                 shapes,
+                 activators,
+                 ones_size):
+        super(staticBiasTowerH2, self).__init__()
+        self.hLayer1Units = shapes[0]
+        self.hLayer2Units = shapes[1]
+        self.outLayerUnits = shapes[2]
+        self.hLayer1Activator = activators[0]
+        self.hLayer2Activator = activators[1]
+        self.outLayerActivator = activators[2]
+        self.ones_size = ones_size
+        
+        initializer = tf.keras.initializers.RandomNormal(mean=0, stddev=0.005)
+        
+        self.hLayer1 = staticBiasLayer(self.hLayer1Units,
+                                       self.hLayer1Activator,
+                                       True,
+                                       initializer,
+                                       ones_size)
+        self.hLayer2 = staticBiasLayer(self.hLayer2Units,
+                                       self.hLayer2Activator,
+                                       True,
+                                       initializer,
+                                       ones_size)
+        self.outLayer = staticBiasLayer(self.outLayerUnits,
+                                        self.outLayerActivator,
+                                        True,
+                                        initializer,
+                                        ones_size)
+        
+    def call(self, inputs):
+        x = self.hLayer1(inputs)
+        x = self.hLayer2(x)
+        x = self.outLayer(x)
+        return x
+        
+        
+        
+        

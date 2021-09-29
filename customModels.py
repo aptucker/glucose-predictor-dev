@@ -158,7 +158,36 @@ class parallelModel(tf.keras.Model):
         return tf.transpose(outputs)
                  
                  
-                 
+class parallelModelH2(tf.keras.Model):
+    
+    def __init__(self,
+                 tower1Shapes,
+                 tower2Shapes,
+                 tower1Activators,
+                 tower2Activators,
+                 bias_size):
+        super(parallelModelH2, self).__init__()
+        self.tower1Shapes = tower1Shapes
+        self.tower2Shapes = tower2Shapes
+        self.tower1Activators = tower1Activators
+        self.tower2Activators = tower2Activators
+        self.bias_size = bias_size
+                
+        self.tower1 = cLayers.staticBiasTowerH2(self.tower1Shapes,
+                                                self.tower1Activators,
+                                                self.bias_size)
+        self.tower2 = cLayers.staticBiasTowerH2(self.tower2Shapes,
+                                                self.tower2Activators,
+                                                self.bias_size)
+        self.denseLayer = tf.keras.layers.Dense(1, activation = None)
+        
+    def call(self, inputs):
+        x1 = self.tower1(inputs[:, 0:self.tower1Shapes[0]])
+        x2 = self.tower2(inputs[:, self.tower2Shapes[0]:])
+        
+        merged = tf.keras.layers.concatenate([x1, x2], axis=0)
+        outputs = self.denseLayer(tf.transpose(merged))
+        return tf.transpose(outputs)
                  
                  
                  

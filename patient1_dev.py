@@ -110,7 +110,24 @@ trn.cvTraining(lPat, rPat, 4, nFoldIter, Kfold, lag, None, b_size, epochs, model
 
 
 # %% Parallel Network
+partNum = 1
+partSize = [0.1]
+
 lag = 6
+skip = None 
+# lag = 98
+# skip = list(range(6, 95))
+
+Kfold = 2
+nFoldIter = 5
+
+H = 3
+K = 4
+D = lag+1
+
+
+b_size = 1
+epochs = 5
 
 lPat.resetData()
 rPat.resetData()
@@ -118,10 +135,10 @@ rPat.resetData()
 lPat.partitionData(partNum, partSize)
 rPat.partitionData(partNum, partSize)
 
-pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
-pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
-pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
-pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.trainData, lag, skip, dropNaN=True)
+pat.createLagData(lPat.testData, lag, skip, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, skip, dropNaN=True)
+pat.createLagData(rPat.testData, lag, skip, dropNaN=True)
 
 lPat.randomizeTrainingData(Kfold, seed=1)
 rPat.randomizeTrainingData(Kfold, seed=1)
@@ -163,6 +180,7 @@ parallelModel.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError())
 models["Parallel"] = parallelModel
+# parallelModel(tf.keras.Input(shape=6))
 
 trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, None, b_size, epochs, models, "Parallel")
 
@@ -177,6 +195,71 @@ trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, None, b_size, epoch
 # YReNorm = (YNewTest*lStd) + lMean
 
 # trnErrTest = trn.MSError(YReNorm, lPat.tempTrain[0:len(rNorm),0:4])
+
+# %% Parallel with 2 Hidden Layers
+partNum = 1
+partSize = [0.1]
+
+lag = 6
+
+Kfold = 2
+nFoldIter = 5
+
+H = 3
+K = 4
+skip = 0 
+
+b_size = 1
+epochs = 5
+
+tower1Shapes = tower2Shapes = [H, H, K]
+tower1Activators = tower2Activators = ['sigmoid', 'sigmoid', None]
+
+
+
+lPat.resetData()
+rPat.resetData()
+
+lPat.partitionData(partNum, partSize)
+rPat.partitionData(partNum, partSize)
+
+pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
+
+lPat.randomizeTrainingData(Kfold, seed=1)
+rPat.randomizeTrainingData(Kfold, seed=1)
+[lNorm, lMean, lStd] = trn.zscoreData(lPat.tempTrain)
+[rNorm, rMean, rStd] = trn.zscoreData(rPat.tempTrain)
+[lValNorm, lValMean, lValStd] = trn.zscoreData(lPat.tempVal)
+[rValNorm, rValMean, rValStd] = trn.zscoreData(rPat.tempVal)
+
+parallelModelH2 = cModels.parallelModelH2(tower1Shapes,
+                                          tower2Shapes,
+                                          tower1Activators,
+                                          tower2Activators,
+                                          b_size)
+parallelModelH2.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError())
+# parallelModelH2(tf.keras.Input(shape=6))
+models["Parallel H2"] = parallelModelH2
+
+trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, None, b_size, epochs, models, "Parallel")
+
+# normInputs = np.append(rNorm[:, 4:7], lNorm[0:len(rNorm), 4:7], axis = 1)
+# normValInputs = np.append(rValNorm[:, 4:7], lValNorm[0:len(rValNorm), 4:7], axis = 1)
+
+# modelLTest = parallelModelH2.fit(normInputs, lNorm[0:len(rNorm),0:4], batch_size=b_size, epochs=30)
+
+# YNewTest = parallelModelH2.predict(normValInputs, batch_size=b_size)
+
+# YReNorm = (YNewTest*lStd) + lMean
+
+# trnErrTest = trn.MSError(YReNorm, lPat.tempTrain[0:len(rNorm),0:4])
+
+
 
 # %% Circadian Model 1
 lPat.resetData()
