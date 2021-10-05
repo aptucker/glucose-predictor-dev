@@ -70,7 +70,18 @@ def fStatistic(error1, error2, nFoldIter):
     return fp
     
 
-def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_size, epochs, models, modelName):
+def cvTraining(lPatient,
+               rPatient,
+               outSize,
+               nFoldIter,
+               kFold,
+               lag,
+               skip,
+               batch_size,
+               epochs,
+               models,
+               modelName,
+               callbacks):
     """Cross validation training function uses model stored in patient object
     
     Arguments:
@@ -117,7 +128,8 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_s
         llTrnTrain = models[modelName].fit(lTempTrainNorm[:, outSize:], 
                                                     lTempTrainNorm[:, 0:outSize], 
                                                     batch_size = batch_size, 
-                                                    epochs = epochs)
+                                                    epochs = epochs,
+                                                    callbacks = callbacks)
         llValPred = models[modelName].predict(lTempValNorm[:, outSize:], 
                                                       batch_size = batch_size)
         # LEFT-RIGHT Validation
@@ -128,7 +140,8 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_s
         llValTrain = models[modelName].fit(lTempValNorm[:, outSize:],
                                                    lTempValNorm[:, 0:outSize],
                                                    batch_size = batch_size,
-                                                   epochs = epochs)
+                                                   epochs = epochs,
+                                                   callbacks = callbacks)
         llTrnPred = models[modelName].predict(lTempTrainNorm[:, outSize:],
                                                       batch_size = batch_size)
         # LEFT-RIGHT Training
@@ -139,7 +152,8 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_s
         rrTrnTrain = models[modelName].fit(rTempTrainNorm[:, outSize:], 
                                                    rTempTrainNorm[:, 0:outSize], 
                                                    batch_size = batch_size, 
-                                                   epochs = epochs)
+                                                   epochs = epochs,
+                                                   callbacks = callbacks)
         rrValPred = models[modelName].predict(rTempValNorm[:, outSize:], 
                                                       batch_size = batch_size)
         # RIGHT-LEFT Validation
@@ -150,7 +164,8 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_s
         rrValTrain = models[modelName].fit(rTempValNorm[:, outSize:],
                                                    rTempValNorm[:, 0:outSize],
                                                    batch_size = batch_size,
-                                                   epochs = epochs)
+                                                   epochs = epochs,
+                                                   callbacks = callbacks)
         rrTrnPred = models[modelName].predict(rTempTrainNorm[:, outSize:],
                                                       batch_size = batch_size)
         # RIGHT-LEFT Training
@@ -216,7 +231,18 @@ def cvTraining(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_s
         
         
         
-def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip, batch_size, epochs, models, modelName):
+def cvTrainingParallel(lPatient,
+                       rPatient,
+                       outSize,
+                       nFoldIter,
+                       kFold,
+                       lag,
+                       skip,
+                       batch_size,
+                       epochs,
+                       models,
+                       modelName,
+                       callbacks):
     """Cross validation training function for parallel models
     
     Arguments:
@@ -289,7 +315,8 @@ def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip,
         llTrnTrain = models[modelName].fit(normTrainInputs, 
                                                     lTempTrainNormComp[:, 0:outSize], 
                                                     batch_size = batch_size, 
-                                                    epochs = epochs)
+                                                    epochs = epochs,
+                                                    callbacks = callbacks)
         llValPred = models[modelName].predict(doubleLTempValNorm, 
                                                       batch_size = batch_size)
         # LEFT-RIGHT Validation
@@ -300,7 +327,8 @@ def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip,
         llValTrain = models[modelName].fit(normValInputs,
                                                    lTempValNormComp[:, 0:outSize],
                                                    batch_size = batch_size,
-                                                   epochs = epochs)
+                                                   epochs = epochs,
+                                                   callbacks = callbacks)
         llTrnPred = models[modelName].predict(doubleLTempTrainNorm,
                                                       batch_size = batch_size)
         # LEFT-RIGHT Training
@@ -311,7 +339,8 @@ def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip,
         rrTrnTrain = models[modelName].fit(normTrainInputs, 
                                                    rTempTrainNormComp[:, 0:outSize], 
                                                    batch_size = batch_size, 
-                                                   epochs = epochs)
+                                                   epochs = epochs,
+                                                   callbacks = callbacks)
         rrValPred = models[modelName].predict(doubleRTempValNorm, 
                                                       batch_size = batch_size)
         # RIGHT-LEFT Validation
@@ -322,7 +351,8 @@ def cvTrainingParallel(lPatient, rPatient, outSize, nFoldIter, kFold, lag, skip,
         rrValTrain = models[modelName].fit(normValInputs,
                                                    rTempValNormComp[:, 0:outSize],
                                                    batch_size = batch_size,
-                                                   epochs = epochs)
+                                                   epochs = epochs,
+                                                   callbacks = callbacks)
         rrTrnPred = models[modelName].predict(doubleRTempTrainNorm,
                                                       batch_size = batch_size)
         # RIGHT-LEFT Training

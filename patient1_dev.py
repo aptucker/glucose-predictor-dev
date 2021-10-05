@@ -32,7 +32,6 @@ models = {}
 
 partNum = 1
 partSize = [0.1]
-
 lag = 6
 
 Kfold = 2
@@ -46,16 +45,29 @@ skip = 0
 b_size = 1
 epochs = 5
 
-lPat.partitionData(partNum, partSize)
-rPat.partitionData(partNum, partSize)
+# lPat.partitionData(partNum, partSize)
+# rPat.partitionData(partNum, partSize)
 
-pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
-pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
-pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
-pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
+# pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
+# pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
+# pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
+# pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
 
 # %% JDST Model 
+partNum = 1
+partSize = [0.1]
 lag = 6
+
+Kfold = 2
+nFoldIter = 5
+
+H = 3
+K = 4
+D = lag+1
+skip = 0 
+
+b_size = 1
+epochs = 10
 
 # lPat.randomizeTrainingData(Kfold, seed=1)
 lPat.resetData()
@@ -83,10 +95,22 @@ bInit = np.random.normal(0, 0.005, (H+1, K))
 
 b_size = 1
 
-# initializers = [initializer1, initializer2]
-initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005), tf.keras.initializers.RandomNormal(mean=0, stddev=0.005)]
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 2,
+                                             mode = "min",
+                                             restore_best_weights = True)]
 
-model = cModels.sbSeqModel(H, K, use_bias = True, initializers = initializers, bias_size = b_size, activators = ["sigmoid", None])
+# initializers = [initializer1, initializer2]
+initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
+                tf.keras.initializers.RandomNormal(mean=0, stddev=0.005)]
+
+model = cModels.sbSeqModel(H,
+                           K,
+                           use_bias = True,
+                           initializers = initializers,
+                           bias_size = b_size,
+                           activators = ["sigmoid", None])
 model(tf.keras.Input(shape=H))
 
 model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
@@ -95,7 +119,18 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
 
 models["JDST"] = model
 
-trn.cvTraining(lPat, rPat, 4, nFoldIter, Kfold, lag, None, b_size, epochs, models, "JDST")
+trn.cvTraining(lPat,
+               rPat,
+               4,
+               nFoldIter,
+               Kfold,
+               lag,
+               None,
+               b_size,
+               epochs,
+               models,
+               "JDST",
+               callbacks)
 
 # modelTest = model.fit(mlpNorm[:,4:7], mlpNorm[:,0:4], batch_size=b_size, epochs=5)
 
@@ -175,6 +210,12 @@ merged = tf.keras.layers.concatenate([tower1, tower2], axis=0)
 
 outputs = tf.keras.layers.Dense(1, activation=None)(tf.transpose(merged))
 
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 4,
+                                             mode = "min",
+                                             restore_best_weights = True)]
+
 parallelModel = cModels.parallelModel(H, K, use_bias=True, bias_size = b_size)
 parallelModel.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
               loss=tf.keras.losses.MeanSquaredError(), 
@@ -182,7 +223,18 @@ parallelModel.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0
 models["Parallel"] = parallelModel
 # parallelModel(tf.keras.Input(shape=6))
 
-trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, None, b_size, epochs, models, "Parallel")
+trn.cvTrainingParallel(lPat,
+                       rPat,
+                       4,
+                       nFoldIter,
+                       Kfold,
+                       lag,
+                       None,
+                       b_size,
+                       epochs,
+                       models,
+                       "Parallel",
+                       callbacks)
 
 
 # normInputs = np.append(rNorm[:, 4:7], lNorm[0:len(rNorm), 4:7], axis = 1)
@@ -246,7 +298,24 @@ parallelModelH2.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate
 # parallelModelH2(tf.keras.Input(shape=6))
 models["Parallel H2"] = parallelModelH2
 
-trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, None, b_size, epochs, models, "Parallel")
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 5,
+                                             mode = "min",
+                                             restore_best_weights = True)]
+
+trn.cvTrainingParallel(lPat,
+                       rPat,
+                       4,
+                       nFoldIter,
+                       Kfold,
+                       lag,
+                       None,
+                       b_size,
+                       epochs,
+                       models,
+                       "Parallel",
+                       callbacks)
 
 # normInputs = np.append(rNorm[:, 4:7], lNorm[0:len(rNorm), 4:7], axis = 1)
 # normValInputs = np.append(rValNorm[:, 4:7], lValNorm[0:len(rValNorm), 4:7], axis = 1)
@@ -291,8 +360,24 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
               metrics=tf.keras.metrics.RootMeanSquaredError())
 
 models["Circadian 1"] = model
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 5,
+                                             mode = "min",
+                                             restore_best_weights = True)]
 
-trn.cvTraining(lPat, rPat, 4, nFoldIter, Kfold, circLag, circSkip, b_size, epochs, models, "Circadian 1")
+trn.cvTraining(lPat,
+               rPat,
+               4,
+               nFoldIter,
+               Kfold,
+               circLag,
+               circSkip,
+               b_size,
+               epochs,
+               models,
+               "Circadian 1",
+               callbacks)
 
 # circTest = model.fit(lNorm[:, K:], lNorm[:, 0:K], batch_size = b_size, epochs = epochs)
 # cirPredTest = model.predict(lValNorm[:, K:], batc_size = b_size)
@@ -342,6 +427,12 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
 
 models["Sequential H=2"] = model
 
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 10,
+                                             mode = "min",
+                                             restore_best_weights = True)]
+
 # lPat.randomizeTrainingData(Kfold, seed=0)
 # rPat.randomizeTrainingData(Kfold, seed=0)
 # [lNorm, lMean, lStd] = trn.zscoreData(lPat.tempTrain)
@@ -350,7 +441,18 @@ models["Sequential H=2"] = model
 # [rValNorm, rValMean, rValStd] = trn.zscoreData(rPat.tempVal)
 
 # modelTest = model.fit(lNorm[:,4:7], lNorm[:,0:4], batch_size=b_size, epochs=20)
-trn.cvTraining(lPat, rPat, 4, nFoldIter, Kfold, lag, skip, b_size, 20, models, "Sequential H=2")
+trn.cvTraining(lPat,
+               rPat,
+               4,
+               nFoldIter,
+               Kfold,
+               lag,
+               skip,
+               b_size,
+               20,
+               models,
+               "Sequential H=2",
+               callbacks)
 
 
 # %%

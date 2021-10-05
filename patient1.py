@@ -58,6 +58,12 @@ initializer2 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (H+1, K
 np.random.seed(4)
 bInit = np.random.normal(0, 0.005, (H+1, K))
 
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 2,
+                                             mode = "min",
+                                             restore_best_weights = True)]
+
 initializers = [initializer1, initializer2]
 # initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
 #                 tf.keras.initializers.RandomNormal(mean=0, stddev=0.005)]
@@ -86,7 +92,8 @@ trn.cvTraining(lPat,
                b_size,
                epochs,
                models,
-               "JDST")
+               "JDST",
+               callbacks)
 
 print("JDST Done")
 # %% Sequential w/2 Hidden Layers
@@ -112,6 +119,12 @@ initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
 activators = ['sigmoid', 'sigmoid', None]
 
 shapes = [H, H, K]
+
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 10,
+                                             mode = "min",
+                                             restore_best_weights = True)]
 
 lPat.resetData()
 rPat.resetData()
@@ -146,7 +159,8 @@ trn.cvTraining(lPat,
                b_size,
                epochs,
                models,
-               "Sequential H=2")
+               "Sequential H=2",
+               callbacks)
 
 print("Sequential H=2 Done")
 
@@ -162,6 +176,12 @@ K = 4
 
 b_size = 1
 epochs = 5
+
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 5,
+                                             mode = "min",
+                                             restore_best_weights = True)]
 
 lPat.resetData()
 rPat.resetData()
@@ -199,7 +219,8 @@ trn.cvTraining(lPat,
                b_size,
                epochs,
                models,
-               "Circadian 1")
+               "Circadian 1",
+               callbacks)
 
 print("Circadian 1 Done")
 
@@ -220,6 +241,12 @@ D = lag+1
 
 b_size = 1
 epochs = 5
+
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 4,
+                                             mode = "min",
+                                             restore_best_weights = True)]
 
 lPat.resetData()
 rPat.resetData()
@@ -252,7 +279,8 @@ trn.cvTrainingParallel(lPat,
                        b_size,
                        epochs,
                        models,
-                       "Parallel")
+                       "Parallel",
+                       callbacks)
 
 print("Parallel Done")
 
@@ -275,7 +303,11 @@ epochs = 20
 tower1Shapes = tower2Shapes = [H, H, K]
 tower1Activators = tower2Activators = ['sigmoid', 'sigmoid', None]
 
-
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 10,
+                                             mode = "min",
+                                             restore_best_weights = True)]
 
 lPat.resetData()
 rPat.resetData()
@@ -309,7 +341,8 @@ trn.cvTrainingParallel(lPat,
                        b_size,
                        epochs,
                        models,
-                       "Parallel H2")
+                       "Parallel H2",
+                       callbacks)
 
 print("Parallel H2 Done")
 
@@ -330,6 +363,12 @@ D = lag+1
 
 b_size = 1
 epochs = 20
+
+callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                             min_delta = 0.05,
+                                             patience = 10,
+                                             mode = "min",
+                                             restore_best_weights = True)]
 
 lPat.resetData()
 rPat.resetData()
@@ -362,7 +401,8 @@ trn.cvTrainingParallel(lPat,
                        b_size,
                        epochs,
                        models,
-                       "Parallel Circadian")
+                       "Parallel Circadian",
+                       callbacks)
 
 print("Parallel Circadian Done")
 
