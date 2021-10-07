@@ -9,6 +9,7 @@ Comparison analysis file pulls results from patient trainings; includes plotting
 
 import tensorflow as tf
 import numpy as np
+import pandas as pd
 import pickle
 from scipy import stats
 import matplotlib.pyplot as plt
@@ -35,6 +36,8 @@ with open('results\\patient1_analysis.pickle', 'rb') as f:
 # Parallel H2
 # Parallel Circadian
 
+modelNames = ['JDST', 'Sequential H=2', 'Circadian 1', 'Parallel', 'Parallel H2', 'Parallel Circadian']
+index = [1,2,3,4]
 labels = ['Left-Left', 'Right-Left', 'Right-Right', 'Left-Right']
 llMeans = []
 rlMeans = []
@@ -51,8 +54,36 @@ rlMeans = np.array(rlMeans)
 rrMeans = np.array(rrMeans)
 lrMeans = np.array(lrMeans)
 
-# fig, ax = plt.subplots()
-# jdstVals = ax.bar()
+llMeansDF = pd.DataFrame(np.flip(np.transpose(llMeans), axis=0), index = index, columns = modelNames)
+rlMeansDF = pd.DataFrame(np.flip(np.transpose(rlMeans), axis=0), index = index, columns = modelNames)
+rrMeansDF = pd.DataFrame(np.flip(np.transpose(rrMeans), axis=0), index = index, columns = modelNames)
+lrMeansDF = pd.DataFrame(np.flip(np.transpose(lrMeans), axis=0), index = index, columns = modelNames)
+
+errDF15 = pd.DataFrame([llMeansDF.iloc[0,:], rlMeansDF.iloc[0,:], rrMeansDF.iloc[0,:], lrMeansDF.iloc[0,:]], index = labels)
+errDF30 = pd.DataFrame([llMeansDF.iloc[1,:], rlMeansDF.iloc[1,:], rrMeansDF.iloc[1,:], lrMeansDF.iloc[1,:]], index = labels)
+errDF45 = pd.DataFrame([llMeansDF.iloc[2,:], rlMeansDF.iloc[2,:], rrMeansDF.iloc[2,:], lrMeansDF.iloc[2,:]], index = labels)
+errDF60 = pd.DataFrame([llMeansDF.iloc[3,:], rlMeansDF.iloc[3,:], rrMeansDF.iloc[3,:], lrMeansDF.iloc[3,:]], index = labels)
+
+errDF15.drop('Parallel H2', axis=1, inplace=True)
+errDF30.drop('Parallel H2', axis=1, inplace=True)
+errDF45.drop('Parallel H2', axis=1, inplace=True)
+errDF60.drop('Parallel H2', axis=1, inplace=True)
+
+fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(9,5))
+errDF15.plot(kind='bar', ax=ax1, legend=None)
+ax1.get_xaxis().set_visible(False)
+
+errDF30.plot(kind='bar', ax=ax2, legend=None)
+ax2.get_xaxis().set_visible(False)
+
+errDF45.plot(kind='bar', ax=ax3, legend=None)
+ax3.set_xticklabels(ax3.get_xticklabels(), rotation = 0)
+
+errDF60.plot(kind='bar', ax=ax4, legend=None)
+ax4.set_xticklabels(ax4.get_xticklabels(), rotation = 0)
+
+fig.legend(errDF15.columns, loc='upper center', ncol=6)
+
 
 # %% JDST Dot Chart
 
