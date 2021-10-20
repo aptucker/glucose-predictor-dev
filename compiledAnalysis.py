@@ -22,6 +22,7 @@ import patient as pat
 import customLayers as cLayers
 import customModels as cModels
 import training as trn
+import customPlots as cPlots
 
 with open('results\\patient1_analysis.pickle', 'rb') as f:
     l1, r1 = pickle.load(f)
@@ -39,6 +40,15 @@ with open('results\\patient1_analysis.pickle', 'rb') as f:
 modelNames = ['JDST', 'Sequential H=2', 'Circadian 1', 'Parallel', 'Parallel H2', 'Parallel Circadian']
 index = [1,2,3,4]
 labels = ['Left-Left', 'Right-Left', 'Right-Right', 'Left-Right']
+modelDrops = ['Parallel H2']
+# modelDrops = []
+
+cPlots.singlePatientError(l1, r1, modelNames, labels, index, modelDrops)
+
+
+
+
+# %% Plot Testing
 llMeans = []
 rlMeans = []
 rrMeans = []
@@ -84,7 +94,34 @@ ax4.set_xticklabels(ax4.get_xticklabels(), rotation = 0)
 
 fig.legend(errDF15.columns, loc='upper center', ncol=6)
 
+rects = ax1.patches
+# datLabels = [f"label{i}" for i in range(len(rects))]
+datLabels = ["" for i in range(len(rects))]
+# datLabels = []
+for i in range(len(rects)):
+    if (i>=0) and (i<4) and (i%4==0): # and (i+1)%2==0:
+        if (l1.fStorage['JDST']['pValues'][-1] < 0.049):
+            datLabels[i+1] = "*"
+    if (i>=0) and (i<4) and (i%2==0) and (i%4!=0):
+        if (r1.fStorage['JDST']['pValues'][-1] < 0.049):
+            datLabels[i+1] = "*"
+    # if (i>=4) and (i<8) and (i%4==0):
+    #     datLabels[i+1] = "*"
+    # if (i>=4) and (i<8) and (i%2==0) and (i%4!=0):
+    #     datLabels[i+1] = "*"
+    # if (((i-1)%(len(modelNames) - len(modelDrops)) == 0)):
+    #     datLabels.append("*")
+    # else:
+    #     datLabels.append(" ")
 
+print(datLabels)
+testy = ['', '', '*', '', '', '', '', '', '', '', '', '', '', '', '', '', '','','','']
+
+for rect, datLabel in zip(rects, datLabels):
+    height = rect.get_height()
+    ax1.text(
+        rect.get_x() + rect.get_width() / 2, height + 0.1, datLabel, ha="center", va="bottom"
+        )
 # %% JDST Dot Chart
 
 #
