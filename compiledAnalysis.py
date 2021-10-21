@@ -27,7 +27,12 @@ import customPlots as cPlots
 with open('results\\patient1_analysis.pickle', 'rb') as f:
     l1, r1 = pickle.load(f)
 
-
+with open('results\\patient2_analysis.pickle', 'rb') as f:
+    l2, r2 = pickle.load(f)
+    
+with open('results\\patient3_analysis.pickle', 'rb') as f:
+    l3, r3 = pickle.load(f)
+    
 # %% Single patient error analysis
 # Model Names
 # JDST
@@ -43,85 +48,85 @@ labels = ['Left-Left', 'Right-Left', 'Right-Right', 'Left-Right']
 modelDrops = ['Parallel H2']
 # modelDrops = []
 
-cPlots.singlePatientError(l1, r1, modelNames, labels, index, modelDrops)
-
-
+cPlots.singlePatientError(l1, r1, modelNames, labels, index, modelDrops, 1)
+cPlots.singlePatientError(l2, r2, modelNames, labels, index, modelDrops, 2)
+cPlots.singlePatientError(l3, r3, modelNames, labels, index, modelDrops, 3)
 
 
 # %% Plot Testing
-llMeans = []
-rlMeans = []
-rrMeans = []
-lrMeans = []
-for i in l1.rmseStorage:
-    llMeans.append(np.mean(l1.rmseStorage[i]['llRMSE'], axis=0))
-    rlMeans.append(np.mean(l1.rmseStorage[i]['rlRMSE'], axis=0))
-    rrMeans.append(np.mean(r1.rmseStorage[i]['rrRMSE'], axis=0))
-    lrMeans.append(np.mean(r1.rmseStorage[i]['lrRMSE'], axis=0))
+# llMeans = []
+# rlMeans = []
+# rrMeans = []
+# lrMeans = []
+# for i in l1.rmseStorage:
+#     llMeans.append(np.mean(l1.rmseStorage[i]['llRMSE'], axis=0))
+#     rlMeans.append(np.mean(l1.rmseStorage[i]['rlRMSE'], axis=0))
+#     rrMeans.append(np.mean(r1.rmseStorage[i]['rrRMSE'], axis=0))
+#     lrMeans.append(np.mean(r1.rmseStorage[i]['lrRMSE'], axis=0))
     
-llMeans = np.array(llMeans)
-rlMeans = np.array(rlMeans)
-rrMeans = np.array(rrMeans)
-lrMeans = np.array(lrMeans)
+# llMeans = np.array(llMeans)
+# rlMeans = np.array(rlMeans)
+# rrMeans = np.array(rrMeans)
+# lrMeans = np.array(lrMeans)
 
-llMeansDF = pd.DataFrame(np.flip(np.transpose(llMeans), axis=0), index = index, columns = modelNames)
-rlMeansDF = pd.DataFrame(np.flip(np.transpose(rlMeans), axis=0), index = index, columns = modelNames)
-rrMeansDF = pd.DataFrame(np.flip(np.transpose(rrMeans), axis=0), index = index, columns = modelNames)
-lrMeansDF = pd.DataFrame(np.flip(np.transpose(lrMeans), axis=0), index = index, columns = modelNames)
+# llMeansDF = pd.DataFrame(np.flip(np.transpose(llMeans), axis=0), index = index, columns = modelNames)
+# rlMeansDF = pd.DataFrame(np.flip(np.transpose(rlMeans), axis=0), index = index, columns = modelNames)
+# rrMeansDF = pd.DataFrame(np.flip(np.transpose(rrMeans), axis=0), index = index, columns = modelNames)
+# lrMeansDF = pd.DataFrame(np.flip(np.transpose(lrMeans), axis=0), index = index, columns = modelNames)
 
-errDF15 = pd.DataFrame([llMeansDF.iloc[0,:], rlMeansDF.iloc[0,:], rrMeansDF.iloc[0,:], lrMeansDF.iloc[0,:]], index = labels)
-errDF30 = pd.DataFrame([llMeansDF.iloc[1,:], rlMeansDF.iloc[1,:], rrMeansDF.iloc[1,:], lrMeansDF.iloc[1,:]], index = labels)
-errDF45 = pd.DataFrame([llMeansDF.iloc[2,:], rlMeansDF.iloc[2,:], rrMeansDF.iloc[2,:], lrMeansDF.iloc[2,:]], index = labels)
-errDF60 = pd.DataFrame([llMeansDF.iloc[3,:], rlMeansDF.iloc[3,:], rrMeansDF.iloc[3,:], lrMeansDF.iloc[3,:]], index = labels)
+# errDF15 = pd.DataFrame([llMeansDF.iloc[0,:], rlMeansDF.iloc[0,:], rrMeansDF.iloc[0,:], lrMeansDF.iloc[0,:]], index = labels)
+# errDF30 = pd.DataFrame([llMeansDF.iloc[1,:], rlMeansDF.iloc[1,:], rrMeansDF.iloc[1,:], lrMeansDF.iloc[1,:]], index = labels)
+# errDF45 = pd.DataFrame([llMeansDF.iloc[2,:], rlMeansDF.iloc[2,:], rrMeansDF.iloc[2,:], lrMeansDF.iloc[2,:]], index = labels)
+# errDF60 = pd.DataFrame([llMeansDF.iloc[3,:], rlMeansDF.iloc[3,:], rrMeansDF.iloc[3,:], lrMeansDF.iloc[3,:]], index = labels)
 
-errDF15.drop('Parallel H2', axis=1, inplace=True)
-errDF30.drop('Parallel H2', axis=1, inplace=True)
-errDF45.drop('Parallel H2', axis=1, inplace=True)
-errDF60.drop('Parallel H2', axis=1, inplace=True)
+# errDF15.drop('Parallel H2', axis=1, inplace=True)
+# errDF30.drop('Parallel H2', axis=1, inplace=True)
+# errDF45.drop('Parallel H2', axis=1, inplace=True)
+# errDF60.drop('Parallel H2', axis=1, inplace=True)
 
-fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(9,5))
-errDF15.plot(kind='bar', ax=ax1, legend=None)
-ax1.get_xaxis().set_visible(False)
+# fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(9,5))
+# errDF15.plot(kind='bar', ax=ax1, legend=None)
+# ax1.get_xaxis().set_visible(False)
 
-errDF30.plot(kind='bar', ax=ax2, legend=None)
-ax2.get_xaxis().set_visible(False)
+# errDF30.plot(kind='bar', ax=ax2, legend=None)
+# ax2.get_xaxis().set_visible(False)
 
-errDF45.plot(kind='bar', ax=ax3, legend=None)
-ax3.set_xticklabels(ax3.get_xticklabels(), rotation = 0)
+# errDF45.plot(kind='bar', ax=ax3, legend=None)
+# ax3.set_xticklabels(ax3.get_xticklabels(), rotation = 0)
 
-errDF60.plot(kind='bar', ax=ax4, legend=None)
-ax4.set_xticklabels(ax4.get_xticklabels(), rotation = 0)
+# errDF60.plot(kind='bar', ax=ax4, legend=None)
+# ax4.set_xticklabels(ax4.get_xticklabels(), rotation = 0)
 
-fig.legend(errDF15.columns, loc='upper center', ncol=6)
+# fig.legend(errDF15.columns, loc='upper center', ncol=6)
 
-rects = ax1.patches
-# datLabels = [f"label{i}" for i in range(len(rects))]
-datLabels = ["" for i in range(len(rects))]
-# datLabels = []
-for i in range(len(rects)):
-    if (i>=0) and (i<4) and (i%4==0): # and (i+1)%2==0:
-        if (l1.fStorage['JDST']['pValues'][-1] < 0.049):
-            datLabels[i+1] = "*"
-    if (i>=0) and (i<4) and (i%2==0) and (i%4!=0):
-        if (r1.fStorage['JDST']['pValues'][-1] < 0.049):
-            datLabels[i+1] = "*"
-    # if (i>=4) and (i<8) and (i%4==0):
-    #     datLabels[i+1] = "*"
-    # if (i>=4) and (i<8) and (i%2==0) and (i%4!=0):
-    #     datLabels[i+1] = "*"
-    # if (((i-1)%(len(modelNames) - len(modelDrops)) == 0)):
-    #     datLabels.append("*")
-    # else:
-    #     datLabels.append(" ")
+# rects = ax1.patches
+# # datLabels = [f"label{i}" for i in range(len(rects))]
+# datLabels = ["" for i in range(len(rects))]
+# # datLabels = []
+# for i in range(len(rects)):
+#     if (i>=0) and (i<4) and (i%4==0): # and (i+1)%2==0:
+#         if (l1.fStorage['JDST']['pValues'][-1] < 0.049):
+#             datLabels[i+1] = "*"
+#     if (i>=0) and (i<4) and (i%2==0) and (i%4!=0):
+#         if (r1.fStorage['JDST']['pValues'][-1] < 0.049):
+#             datLabels[i+1] = "*"
+#     # if (i>=4) and (i<8) and (i%4==0):
+#     #     datLabels[i+1] = "*"
+#     # if (i>=4) and (i<8) and (i%2==0) and (i%4!=0):
+#     #     datLabels[i+1] = "*"
+#     # if (((i-1)%(len(modelNames) - len(modelDrops)) == 0)):
+#     #     datLabels.append("*")
+#     # else:
+#     #     datLabels.append(" ")
 
-print(datLabels)
-testy = ['', '', '*', '', '', '', '', '', '', '', '', '', '', '', '', '', '','','','']
+# print(datLabels)
+# testy = ['', '', '*', '', '', '', '', '', '', '', '', '', '', '', '', '', '','','','']
 
-for rect, datLabel in zip(rects, datLabels):
-    height = rect.get_height()
-    ax1.text(
-        rect.get_x() + rect.get_width() / 2, height + 0.1, datLabel, ha="center", va="bottom"
-        )
+# for rect, datLabel in zip(rects, datLabels):
+#     height = rect.get_height()
+#     ax1.text(
+#         rect.get_x() + rect.get_width() / 2, height + 0.1, datLabel, ha="center", va="bottom"
+#         )
 # %% JDST Dot Chart
 
 #

@@ -30,7 +30,8 @@ def singlePatientError(lPat,
                        modelNames,
                        labels,
                        index,
-                       modelDrops):
+                       modelDrops,
+                       patNumber):
     
     llMeans = []
     rlMeans = []
@@ -66,23 +67,30 @@ def singlePatientError(lPat,
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(9,5))
     errDF15.plot(kind='bar', ax=ax1, legend=None)
     ax1.get_xaxis().set_visible(False)
+    ax1.set_title('15-minute PH')
+    ax1.set_ylabel('RMSE (mg/dL')
     
     errDF30.plot(kind='bar', ax=ax2, legend=None)
     ax2.get_xaxis().set_visible(False)
+    ax2.set_title('30-minute PH')
     
     errDF45.plot(kind='bar', ax=ax3, legend=None)
     ax3.set_xticklabels(ax3.get_xticklabels(), rotation = 0)
+    ax3.set_title('45-minute PH')
+    ax3.set_ylabel('RMSE (mg/dL')
     
     errDF60.plot(kind='bar', ax=ax4, legend=None)
     ax4.set_xticklabels(ax4.get_xticklabels(), rotation = 0)
+    ax4.set_title('60-minute PH')
     
-    fig.legend(errDF15.columns, loc='upper center', ncol=6)
+    fig.legend(errDF15.columns, loc='lower center', ncol=6)
+    fig.suptitle('Patient' f' {patNumber}')
     
     rects1 = ax1.patches
     rects2 = ax2.patches
     rects3 = ax3.patches
     rects4 = ax4.patches
-    tempModelNames = modelNames
+    tempModelNames = modelNames.copy()
     for modelDrop in modelDrops:
         tempModelNames.remove(modelDrop)
         
@@ -155,15 +163,6 @@ def singlePatientError(lPat,
 
 
 
-# def significantLabels(lFStorage, 
-#                       rFStorage,
-#                       modelDrops):
-    
-#     for modelDrop in modelDrops:
-#         del lFStorage[modelDrop]
-#         del rFStorage[modelDrop]
-            
-#     labs = 
 
 
 

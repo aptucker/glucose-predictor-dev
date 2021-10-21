@@ -291,13 +291,17 @@ def cvTrainingParallel(lPatient,
             normValInputs = np.append(lTempValNorm[:, outSize:], rTempValNorm[0:len(lTempValNorm), outSize:], axis=1)
             lTempTrainNormComp = lTempTrainNorm
             lTempValNormComp = lTempValNorm
-            rTempTrainNormComp = rTempTrainNorm[0:len(lTempTrainNorm), :]
-            rTempValNormComp = rTempValNorm[0:len(lTempTrainNorm), :]
+            # rTempTrainNormComp = rTempTrainNorm[0:len(lTempTrainNorm), :]
+            rTempTrainNormComp = rTempTrainNorm[0:len(normTrainInputs), :]
+            # rTempValNormComp = rTempValNorm[0:len(lTempTrainNorm), :]
+            rTempValNormComp = rTempValNorm[0:len(normValInputs), :]
         elif (len(rTempTrainNorm) < len(lTempTrainNorm)):
             normTrainInputs = np.append(rTempTrainNorm[:, outSize:], lTempTrainNorm[0:len(rTempTrainNorm), outSize:], axis=1)
             normValInputs = np.append(rTempValNorm[:, outSize:], lTempValNorm[0:len(rTempValNorm), outSize:], axis=1)
-            lTempTrainNormComp = lTempTrainNorm[0:len(rTempTrainNorm), :]
-            lTempValNormComp = lTempValNorm[0:len(rTempTrainNorm), :]
+            # lTempTrainNormComp = lTempTrainNorm[0:len(rTempTrainNorm), :]
+            lTempTrainNormComp = lTempTrainNorm[0:len(normTrainInputs), :]
+            # lTempValNormComp = lTempValNorm[0:len(rTempTrainNorm), :]
+            lTempValNormComp = lTempValNorm[0:len(normValInputs), :]
             rTempTrainNormComp = rTempTrainNorm
             rTempValNormComp = rTempValNorm
         
