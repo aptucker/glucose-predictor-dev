@@ -286,7 +286,7 @@ def cvTrainingParallel(lPatient,
         [rTempValNorm, rTempValMean, rTempValStd] = zscoreData(rPatient.tempVal)
         
         # Set the input data to be the same size based on whichever patient has more data        
-        if (len(lTempTrainNorm) < len(rTempTrainNorm)):
+        if (len(lTempTrainNorm) <= len(rTempTrainNorm)):
             normTrainInputs = np.append(lTempTrainNorm[:, outSize:], rTempTrainNorm[0:len(lTempTrainNorm), outSize:], axis=1)
             normValInputs = np.append(lTempValNorm[:, outSize:], rTempValNorm[0:len(lTempValNorm), outSize:], axis=1)
             lTempTrainNormComp = lTempTrainNorm
@@ -295,7 +295,7 @@ def cvTrainingParallel(lPatient,
             rTempTrainNormComp = rTempTrainNorm[0:len(normTrainInputs), :]
             # rTempValNormComp = rTempValNorm[0:len(lTempTrainNorm), :]
             rTempValNormComp = rTempValNorm[0:len(normValInputs), :]
-        elif (len(rTempTrainNorm) < len(lTempTrainNorm)):
+        elif (len(rTempTrainNorm) <= len(lTempTrainNorm)):
             normTrainInputs = np.append(rTempTrainNorm[:, outSize:], lTempTrainNorm[0:len(rTempTrainNorm), outSize:], axis=1)
             normValInputs = np.append(rTempValNorm[:, outSize:], lTempValNorm[0:len(rTempValNorm), outSize:], axis=1)
             # lTempTrainNormComp = lTempTrainNorm[0:len(rTempTrainNorm), :]

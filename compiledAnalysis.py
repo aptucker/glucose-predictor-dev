@@ -33,6 +33,12 @@ with open('results\\patient2_analysis.pickle', 'rb') as f:
 with open('results\\patient3_analysis.pickle', 'rb') as f:
     l3, r3 = pickle.load(f)
     
+with open('results\\patient4_analysis.pickle', 'rb') as f:
+    l4, r4 = pickle.load(f)
+
+with open('results\\patient5_analysis.pickle', 'rb') as f:
+    l5, r5 = pickle.load(f)
+    
 # %% Single patient error analysis
 # Model Names
 # JDST
@@ -51,6 +57,8 @@ modelDrops = ['Parallel H2']
 cPlots.singlePatientError(l1, r1, modelNames, labels, index, modelDrops, 1)
 cPlots.singlePatientError(l2, r2, modelNames, labels, index, modelDrops, 2)
 cPlots.singlePatientError(l3, r3, modelNames, labels, index, modelDrops, 3)
+cPlots.singlePatientError(l4, r4, modelNames, labels, index, modelDrops, 4)
+cPlots.singlePatientError(l5, r5, modelNames, labels, index, modelDrops, 5)
 
 
 # %% Plot Testing

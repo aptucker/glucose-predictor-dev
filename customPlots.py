@@ -104,37 +104,37 @@ def singlePatientError(lPat,
     for i in range(len(rects1)):
         for e in range(len(tempModelNames)):
             if (i >= (e*4)) and (i < ((e*4)+4)) and (i%4==0): # and (i+1)%2==0:
-                if (lPat.fStorage[tempModelNames[e]]['pValues'][-1] < 0.049):
+                if (lPat.fStorage[tempModelNames[e]]['pValues'][-1] < 0.054):
                     datLabels15[i+1] = "*"
             if (i >= (e*4)) and (i < ((e*4)+4)) and (i%2==0) and (i%4!=0):
-                if (rPat.fStorage[tempModelNames[e]]['pValues'][-1] < 0.049):
+                if (rPat.fStorage[tempModelNames[e]]['pValues'][-1] < 0.054):
                     datLabels15[i+1] = "*"
     
     for i in range(len(rects2)):
        for e in range(len(tempModelNames)):
            if (i >= (e*4)) and (i < ((e*4)+4)) and (i%4==0): # and (i+1)%2==0:
-               if (lPat.fStorage[tempModelNames[e]]['pValues'][-2] < 0.049):
+               if (lPat.fStorage[tempModelNames[e]]['pValues'][-2] < 0.054):
                    datLabels30[i+1] = "*"
            if (i >= (e*4)) and (i < ((e*4)+4)) and (i%2==0) and (i%4!=0):
-               if (rPat.fStorage[tempModelNames[e]]['pValues'][-2] < 0.049):
+               if (rPat.fStorage[tempModelNames[e]]['pValues'][-2] < 0.054):
                    datLabels30[i+1] = "*"
     
     for i in range(len(rects3)):
        for e in range(len(tempModelNames)):
            if (i >= (e*4)) and (i < ((e*4)+4)) and (i%4==0): # and (i+1)%2==0:
-               if (lPat.fStorage[tempModelNames[e]]['pValues'][-3] < 0.049):
+               if (lPat.fStorage[tempModelNames[e]]['pValues'][-3] < 0.054):
                    datLabels45[i+1] = "*"
            if (i >= (e*4)) and (i < ((e*4)+4)) and (i%2==0) and (i%4!=0):
-               if (rPat.fStorage[tempModelNames[e]]['pValues'][-3] < 0.049):
+               if (rPat.fStorage[tempModelNames[e]]['pValues'][-3] < 0.054):
                    datLabels45[i+1] = "*"
 
     for i in range(len(rects4)):
        for e in range(len(tempModelNames)):
            if (i >= (e*4)) and (i < ((e*4)+4)) and (i%4==0): # and (i+1)%2==0:
-               if (lPat.fStorage[tempModelNames[e]]['pValues'][-4] < 0.049):
+               if (lPat.fStorage[tempModelNames[e]]['pValues'][-4] < 0.054):
                    datLabels60[i+1] = "*"
            if (i >= (e*4)) and (i < ((e*4)+4)) and (i%2==0) and (i%4!=0):
-               if (rPat.fStorage[tempModelNames[e]]['pValues'][-4] < 0.049):
+               if (rPat.fStorage[tempModelNames[e]]['pValues'][-4] < 0.054):
                    datLabels60[i+1] = "*"
     
     for rect, datLabel in zip(rects1, datLabels15):
