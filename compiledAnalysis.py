@@ -38,7 +38,34 @@ with open('results\\patient4_analysis.pickle', 'rb') as f:
 
 with open('results\\patient5_analysis.pickle', 'rb') as f:
     l5, r5 = pickle.load(f)
+
+with open('results\\patient6_analysis.pickle', 'rb') as f:
+    l6, r6 = pickle.load(f)
+
+with open('results\\patient7_analysis.pickle', 'rb') as f:
+    l7, r7 = pickle.load(f)
     
+with open('results\\patient8_analysis.pickle', 'rb') as f:
+    l8, r8 = pickle.load(f)
+    
+with open('results\\patient9_analysis.pickle', 'rb') as f:
+    l9, r9 = pickle.load(f)
+    
+with open('results\\patient10_analysis.pickle', 'rb') as f:
+    l10, r10 = pickle.load(f)
+    
+with open('results\\patient11_analysis.pickle', 'rb') as f:
+    l11, r11 = pickle.load(f)
+    
+with open('results\\patient12_analysis.pickle', 'rb') as f:
+    l12, r12 = pickle.load(f)
+
+with open('results\\patient13_analysis.pickle', 'rb') as f:
+    l13, r13 = pickle.load(f)
+    
+# %% Time Series Analysis
+
+
 # %% Single patient error analysis
 # Model Names
 # JDST
@@ -59,7 +86,27 @@ cPlots.singlePatientError(l2, r2, modelNames, labels, index, modelDrops, 2)
 cPlots.singlePatientError(l3, r3, modelNames, labels, index, modelDrops, 3)
 cPlots.singlePatientError(l4, r4, modelNames, labels, index, modelDrops, 4)
 cPlots.singlePatientError(l5, r5, modelNames, labels, index, modelDrops, 5)
+cPlots.singlePatientError(l6, r6, modelNames, labels, index, modelDrops, 6)
+cPlots.singlePatientError(l7, r7, modelNames, labels, index, modelDrops, 7)
+cPlots.singlePatientError(l8, r8, modelNames, labels, index, modelDrops, 8)
+cPlots.singlePatientError(l9, r9, modelNames, labels, index, modelDrops, 9)
+cPlots.singlePatientError(l10, r10, modelNames, labels, index, modelDrops, 10)
+cPlots.singlePatientError(l11, r11, modelNames, labels, index, modelDrops, 11)
+cPlots.singlePatientError(l12, r12, modelNames, labels, index, modelDrops, 12)
+cPlots.singlePatientError(l13, r13, modelNames, labels, index, modelDrops, 13)
 
+# %% Single Model Plots
+lPats = [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13]
+rPats = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13]
+# patNames = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+patNames = ['Patient' f' {i}' for i in range(1, 14)]
+
+# [e15, e30, e45, e60] = 
+cPlots.modelEvalPlot(lPats, rPats, 'JDST', labels, index, patNames)
+cPlots.modelEvalPlot(lPats, rPats, 'Sequential H=2', labels, index, patNames)
+cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames)
+cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames)
+cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames)
 
 # %% Plot Testing
 # llMeans = []
