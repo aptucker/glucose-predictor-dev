@@ -12,6 +12,7 @@ import numpy as np
 import pandas as pd
 import pickle
 from scipy import stats
+import statsmodels as sm
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.dates as mdates
@@ -63,8 +64,47 @@ with open('results\\patient12_analysis.pickle', 'rb') as f:
 with open('results\\patient13_analysis.pickle', 'rb') as f:
     l13, r13 = pickle.load(f)
     
+lPats = [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13]
+rPats = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13]
+# patNames = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
+patNames = ['Patient' f' {i}' for i in range(1, 14)]
+    
 # %% Time Series Analysis
 
+from statsmodels.tsa.stattools import adfuller
+
+def adf_test(timeseries):
+    print("Results of Dickey-Fuller Test:")
+    dftest = adfuller(timeseries, autolag="AIC")
+    dfoutput = pd.Series(
+        dftest[0:4],
+        index=[
+            "Test Statistic",
+            "p-value",
+            "#Lags Used",
+            "Number of Observations Used",
+        ],
+    )
+    for key, value in dftest[4].items():
+        dfoutput["Critical Value (%s)" % key] = value
+    print(dfoutput)
+
+from statsmodels.tsa.stattools import kpss
+
+
+def kpss_test(timeseries):
+    print("Results of KPSS Test:")
+    kpsstest = kpss(timeseries, regression="c", nlags="auto")
+    kpss_output = pd.Series(
+        kpsstest[0:3], index=["Test Statistic", "p-value", "Lags Used"]
+    )
+    for key, value in kpsstest[3].items():
+        kpss_output["Critical Value (%s)" % key] = value
+    print(kpss_output)
+    
+for lPat in lPats:
+    sm.graphics.tsaplots.plot_acf(lPat.DayData[1])
+    sm.graphics.tsaplots.plot_pacf(lPat.DayData[1], method = "ols")
 
 # %% Single patient error analysis
 # Model Names
@@ -96,10 +136,7 @@ cPlots.singlePatientError(l12, r12, modelNames, labels, index, modelDrops, 12)
 cPlots.singlePatientError(l13, r13, modelNames, labels, index, modelDrops, 13)
 
 # %% Single Model Plots
-lPats = [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13]
-rPats = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13]
-# patNames = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
-patNames = ['Patient' f' {i}' for i in range(1, 14)]
+
 
 # [e15, e30, e45, e60] = 
 cPlots.modelEvalPlot(lPats, rPats, 'JDST', labels, index, patNames)
