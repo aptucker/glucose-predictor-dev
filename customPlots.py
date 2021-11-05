@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import pickle
 from scipy import stats
+import statsmodels as sm
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.dates as mdates
@@ -23,6 +24,7 @@ import patient as pat
 import customLayers as cLayers
 import customModels as cModels
 import training as trn
+import customStats as cStats
 
 
 def singlePatientError(lPat, 
@@ -32,6 +34,20 @@ def singlePatientError(lPat,
                        index,
                        modelDrops,
                        patNumber):
+    
+    """Bar chart of all model errors for a single patient, automatically 
+    updates regardless of how many models are stored.
+    
+    Inputs:
+        lPat - left arm patient instance to plot
+        rPat - right arm patient instance to plot
+        modelNames - names of the models to be plotted for labelling
+        labels - arm comparison lables (e.g., Left-Left)
+        index - list 1-4
+        modelDrops - remove a model from plotting (but not from patient instance)
+        patNames - patient names for labels on plot
+        
+    """
     
     llMeans = []
     rlMeans = []
@@ -168,6 +184,20 @@ def modelEvalPlot(lPats,
                   labels,
                   index,
                   patNames):
+    """Dot chart to evaluate individual model performances.
+    
+    Inputs:
+        lPats - list of left arm patient instances 
+        rPats - list of right arm patient instances
+        modelName - the name of the model to plot
+        labels - arm comparison lables (e.g., Left-Left)
+        index - list 1-4
+        patNames - patient names for labels on plot
+    
+    Returns:
+        Dot chart with automatic statistical significance labels
+        
+    """
     
     llMeans = []
     rlMeans = []
@@ -325,9 +355,44 @@ def modelEvalPlot(lPats,
               loc='center left',
               bbox_to_anchor=(0.07,1.03))
     
-
-
-
+def statisticalEvalPlot(lPatData,
+                        rPatData,
+                        patNumber):
+    """Plot the autocorrelation and partial autocorrelation; report the ADF
+    and KPSS test results for left and right arm data
+    
+    Inputs:
+        lPatData - left arm dataset to be analyzed (not patient instance)
+        rPatData - right arm dataset to be analyzed (not patient instance)
+        patNumber - patient number for plot title
+        
+    Returns:
+        4 tile subplot with automatic labels
+        
+    """
+    
+    ladfTest = cStats.adf_test(lPatData)
+    radfTest = cStats.adf_test(rPatData)
+    lkpssTest = cStats.kpss_test(lPatData)
+    rkpssTest = cStats.kpss_test(rPatData)
+    
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(9,5))
+    sm.graphics.tsaplots.plot_acf(lPatData, ax1)
+    sm.graphics.tsaplots.plot_pacf(lPatData, ax2, method='ols')
+    sm.graphics.tsaplots.plot_acf(rPatData, ax3)
+    sm.graphics.tsaplots.plot_pacf(rPatData, ax4, method='ols')
+    
+    ax1.set_ylabel("Left Arm")
+    ax3.set_ylabel("Right Arm")
+    ax3.set_title(None)
+    ax4.set_title(None)
+    
+    fig.suptitle("Patient" f" {patNumber}")
+    fig.text(0.5,0, "P-values for: L_ADF = " f"{ladfTest['p-value']:.3f}; "\
+             "L_KPSS = " f"{lkpssTest['p-value']:.3f}; "\
+                 "R_ADF = " f"{radfTest['p-value']:.3f}; "\
+                     "R_KPSS = " f"{rkpssTest['p-value']:.3f}", ha='center')
+    
 
 
 

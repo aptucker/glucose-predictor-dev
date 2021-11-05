@@ -24,6 +24,7 @@ import customLayers as cLayers
 import customModels as cModels
 import training as trn
 import customPlots as cPlots
+import customStats as cStats
 
 with open('results\\patient1_analysis.pickle', 'rb') as f:
     l1, r1 = pickle.load(f)
@@ -71,41 +72,10 @@ patNames = ['Patient' f' {i}' for i in range(1, 14)]
     
 # %% Time Series Analysis
 
-from statsmodels.tsa.stattools import adfuller
+# cPlots.statisticalEvalPlot(l1.DayData[1], r1.DayData[1], 1)
 
-def adf_test(timeseries):
-    print("Results of Dickey-Fuller Test:")
-    dftest = adfuller(timeseries, autolag="AIC")
-    dfoutput = pd.Series(
-        dftest[0:4],
-        index=[
-            "Test Statistic",
-            "p-value",
-            "#Lags Used",
-            "Number of Observations Used",
-        ],
-    )
-    for key, value in dftest[4].items():
-        dfoutput["Critical Value (%s)" % key] = value
-    print(dfoutput)
-
-from statsmodels.tsa.stattools import kpss
-
-
-def kpss_test(timeseries):
-    print("Results of KPSS Test:")
-    kpsstest = kpss(timeseries, regression="c", nlags="auto")
-    kpss_output = pd.Series(
-        kpsstest[0:3], index=["Test Statistic", "p-value", "Lags Used"]
-    )
-    for key, value in kpsstest[3].items():
-        kpss_output["Critical Value (%s)" % key] = value
-    print(kpss_output)
-    
-for lPat in lPats:
-    sm.graphics.tsaplots.plot_acf(lPat.DayData[1])
-    sm.graphics.tsaplots.plot_pacf(lPat.DayData[1], method = "ols")
-
+for i in range(len(lPats)):
+    cPlots.statisticalEvalPlot(lPats[i].DayData[1].diff().iloc[1:], rPats[i].DayData[1].diff().iloc[1:], i+1)
 # %% Single patient error analysis
 # Model Names
 # JDST
