@@ -58,11 +58,12 @@ initializer2 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (H+1, K
 np.random.seed(4)
 bInit = np.random.normal(0, 0.005, (H+1, K))
 
+# callbacks = []
 callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-                                             min_delta = 0.05,
-                                             patience = 2,
-                                             mode = "min",
-                                             restore_best_weights = True)]
+                                              min_delta = 0.05,
+                                              patience = 2,
+                                              mode = "min",
+                                              restore_best_weights = False)]
 
 initializers = [initializer1, initializer2]
 # initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
@@ -298,16 +299,28 @@ K = 4
 skip = 0 
 
 b_size = 1
-epochs = 20
+epochs = 50
 
 tower1Shapes = tower2Shapes = [H, H, K]
 tower1Activators = tower2Activators = ['sigmoid', 'sigmoid', None]
 
 callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-                                             min_delta = 0.05,
-                                             patience = 10,
-                                             mode = "min",
-                                             restore_best_weights = True)]
+                                              min_delta = 0.05,
+                                              patience = 50,
+                                              mode = "min",
+                                              restore_best_weights = True)]
+def scheduler(epoch, lr):
+    if epoch < 10:
+        return lr
+    else:
+        return lr * tf.math.exp(-0.1)
+
+# callbacks = [tf.keras.callbacks.LearningRateScheduler(scheduler),
+#              tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+#                                               min_delta = 0.05,
+#                                               patience = 20,
+#                                               mode = "min",
+#                                               restore_best_weights = True)]
 
 lPat.resetData()
 rPat.resetData()
@@ -325,7 +338,7 @@ parallelModelH2 = cModels.parallelModelH2(tower1Shapes,
                                           tower1Activators,
                                           tower2Activators,
                                           b_size)
-parallelModelH2.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+parallelModelH2.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.001),
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError())
 # parallelModelH2(tf.keras.Input(shape=6))

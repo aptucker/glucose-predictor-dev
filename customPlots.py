@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import pickle
 from scipy import stats
-import statsmodels as sm
+import statsmodels
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.dates as mdates
@@ -377,10 +377,10 @@ def statisticalEvalPlot(lPatData,
     rkpssTest = cStats.kpss_test(rPatData)
     
     fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(9,5))
-    sm.graphics.tsaplots.plot_acf(lPatData, ax1)
-    sm.graphics.tsaplots.plot_pacf(lPatData, ax2, method='ols')
-    sm.graphics.tsaplots.plot_acf(rPatData, ax3)
-    sm.graphics.tsaplots.plot_pacf(rPatData, ax4, method='ols')
+    statsmodels.graphics.tsaplots.plot_acf(lPatData, ax1)
+    statsmodels.graphics.tsaplots.plot_pacf(lPatData, ax2, method='ols')
+    statsmodels.graphics.tsaplots.plot_acf(rPatData, ax3)
+    statsmodels.graphics.tsaplots.plot_pacf(rPatData, ax4, method='ols')
     
     ax1.set_ylabel("Left Arm")
     ax3.set_ylabel("Right Arm")

@@ -456,6 +456,8 @@ trn.cvTraining(lPat,
 
 
 # %%
+
+# %%
 # trn.cvTraining(L1, R1, 4, nFoldIter, Kfold, lag, skip, b_size, epochs, models, "JDST")
 # trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, skip, b_size, epochs, models, "Parallel")
 # trn.cvTraining(lPat, rPat, 4, nFoldIter, Kfold, circLag, circSkip, b_size, epochs, models, "Circadian 1")

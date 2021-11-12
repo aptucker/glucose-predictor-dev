@@ -72,10 +72,10 @@ patNames = ['Patient' f' {i}' for i in range(1, 14)]
     
 # %% Time Series Analysis
 
-# cPlots.statisticalEvalPlot(l1.DayData[1], r1.DayData[1], 1)
+cPlots.statisticalEvalPlot(l1.DayData[1], r1.DayData[1], 1)
 
-for i in range(len(lPats)):
-    cPlots.statisticalEvalPlot(lPats[i].DayData[1].diff().iloc[1:], rPats[i].DayData[1].diff().iloc[1:], i+1)
+# for i in range(len(lPats)):
+#     cPlots.statisticalEvalPlot(lPats[i].DayData[1].diff().iloc[1:], rPats[i].DayData[1].diff().iloc[1:], i+1)
 # %% Single patient error analysis
 # Model Names
 # JDST
