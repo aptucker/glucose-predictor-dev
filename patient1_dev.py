@@ -455,8 +455,87 @@ trn.cvTraining(lPat,
                callbacks)
 
 
-# %%
+# %% Standard GRU Network
+partNum = 1
+partSize = [0.1]
+lag = 6
 
+Kfold = 2
+nFoldIter = 5
+
+H = 3
+K = 4
+D = lag+1
+skip = 0 
+
+shapes = [H, H, K]
+activators = ['tanh', 'sigmoid', None]
+
+b_size = 1
+epochs = 20
+
+# lPat.randomizeTrainingData(Kfold, seed=1)
+lPat.resetData()
+rPat.resetData()
+
+lPat.partitionData(partNum, partSize)
+rPat.partitionData(partNum, partSize)
+
+pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
+
+
+[mlpNorm, mean, std] = trn.zscoreData(lPat.trainData.to_numpy())
+
+callbacks = []
+# callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+#                                              min_delta = 0.001,
+#                                              patience = 2,
+#                                              mode = "min",
+#                                              restore_best_weights = True)]
+
+inputs = tf.keras.Input(shape=(3,1))
+
+
+gruTest = tf.keras.layers.GRU(3, activation='tanh', recurrent_activation='sigmoid', use_bias=True, bias_initializer='ones')
+
+x = gruTest(inputs)
+
+output = tf.keras.layers.Dense(4, activation=None, use_bias=True, bias_initializer='ones')(x)
+
+model = tf.keras.Model(inputs=inputs, outputs=output)
+
+# model = cModels.gruH1(shapes,
+#                       True,
+#                       b_size,
+#                       activators)
+# model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+#               loss=tf.keras.losses.MeanSquaredError(), 
+#               metrics=tf.keras.metrics.RootMeanSquaredError())
+# model(tf.keras.Input(shape=(H,1)))
+
+model.summary()
+models["GRU H=1"] = model
+
+# trn.cvTraining(lPat,
+#                 rPat,
+#                 4,
+#                 nFoldIter,
+#                 Kfold,
+#                 lag,
+#                 skip,
+#                 b_size,
+#                 20,
+#                 models,
+#                 "GRU H=1",
+#                 callbacks)
+
+
+
+# modelTest = model.fit(mlpNorm[:,4:7], mlpNorm[:,0:4], batch_size=b_size, epochs=20)
+# modelTest = model.fit([mlpNorm[:,3], mlpNorm[:,4], mlpNorm[:,5], mlpNorm[:,6]], [mlpNorm[:,0], mlpNorm[:,1], mlpNorm[:,2]], batch_size=b_size, epochs=20)
 # %%
 # trn.cvTraining(L1, R1, 4, nFoldIter, Kfold, lag, skip, b_size, epochs, models, "JDST")
 # trn.cvTrainingParallel(lPat, rPat, 4, nFoldIter, Kfold, lag, skip, b_size, epochs, models, "Parallel")

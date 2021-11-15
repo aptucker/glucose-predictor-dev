@@ -191,6 +191,39 @@ class parallelModelH2(tf.keras.Model):
                  
                  
                  
-                 
-                 
-                 
+class gruH1(tf.keras.Model):
+    
+    def __init__(self,
+                 shapes,
+                 use_bias,
+                 bias_size,
+                 activators):
+        super(gruH1, self).__init__()
+        self.inShape = shapes[0]
+        self.gruShape = shapes[1]
+        self.outShape = shapes[2]
+        self.use_bias = use_bias
+        self.bias_size = bias_size
+        self.gruActivator = activators[0]
+        self.recActivator = activators[1]
+        self.outActivator = activators[2]
+        
+        self.inLayer = tf.keras.Input(shape=(None, self.inShape, 1))
+        
+        self.gruLayer = tf.keras.layers.GRU(self.gruShape,
+                                            activation = self.gruActivator,
+                                            recurrent_activation = self.recActivator,
+                                            use_bias = self.use_bias,
+                                            bias_initializer = 'ones')
+        
+        self.outLayer = tf.keras.layers.Dense(self.outShape,
+                                              activation = self.outActivator,
+                                              use_bias = self.use_bias,
+                                              bias_initializer = 'ones')
+        
+    def call(self, inputs):
+        x = self.gruLayer(inputs)
+        outputs = self.outLayer(x)
+        return outputs
+    
+    
