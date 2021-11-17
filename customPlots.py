@@ -183,7 +183,9 @@ def modelEvalPlot(lPats,
                   modelName,
                   labels,
                   index,
-                  patNames):
+                  patNames,
+                  savePlot,
+                  plotName):
     """Dot chart to evaluate individual model performances.
     
     Inputs:
@@ -354,6 +356,9 @@ def modelEvalPlot(lPats,
               ncol=4,
               loc='center left',
               bbox_to_anchor=(0.07,1.03))
+    
+    if savePlot==True:
+        plt.savefig(plotName, bbox_inches='tight')
     
 def statisticalEvalPlot(lPatData,
                         rPatData,

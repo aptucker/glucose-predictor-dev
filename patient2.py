@@ -16,10 +16,14 @@ import customLayers as cLayers
 import customModels as cModels
 import training as trn
 
-with open("processed_data\\patient2.pickle", "rb") as f:
+models = {}
+# %% Load w/Previous Results
+with open("results\\patient6_analysis.pickle", "rb") as f:
     lPat, rPat = pickle.load(f)
 
-models = {}    
+# %% Load w/o Previous Results
+with open("processed_data\\patient6.pickle", "rb") as f:
+    lPat, rPat = pickle.load(f)  
 
 # %% JDST Model Definition
 partNum = 1
@@ -437,7 +441,7 @@ shapes = [H, H, K]
 activators = ['tanh', 'sigmoid', None]
 
 b_size = 1
-epochs = 20
+epochs = 100
 
 # lPat.randomizeTrainingData(Kfold, seed=1)
 lPat.resetData()
@@ -479,7 +483,7 @@ trn.cvTraining(lPat,
                 lag,
                 skip,
                 b_size,
-                20,
+                epochs,
                 models,
                 "GRU H=1",
                 callbacks)
