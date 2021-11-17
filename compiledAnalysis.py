@@ -111,11 +111,11 @@ cPlots.singlePatientError(l13, r13, modelNames, labels, index, modelDrops, 13)
 
 
 # [e15, e30, e45, e60] = 
-cPlots.modelEvalPlot(lPats, rPats, 'JDST', labels, index, patNames)
-cPlots.modelEvalPlot(lPats, rPats, 'Sequential H=2', labels, index, patNames)
-cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames)
-cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames)
-cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames)
+cPlots.modelEvalPlot(lPats, rPats, 'JDST', labels, index, patNames, False, "")
+cPlots.modelEvalPlot(lPats, rPats, 'Sequential H=2', labels, index, patNames, False, "")
+cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames, False, "")
+cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames, False, "")
+cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames, False, "")
 cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\GRUError.pdf')
 
 # %% Plot Testing
