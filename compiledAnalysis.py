@@ -72,10 +72,12 @@ patNames = ['Patient' f' {i}' for i in range(1, 14)]
     
 # %% Time Series Analysis
 
-cPlots.statisticalEvalPlot(l1.DayData[1], r1.DayData[1], 1)
+# cPlots.statisticalEvalPlot(l1.DayData[1], r1.DayData[1], 1)
 
 # for i in range(len(lPats)):
 #     cPlots.statisticalEvalPlot(lPats[i].DayData[1].diff().iloc[1:], rPats[i].DayData[1].diff().iloc[1:], i+1)
+for i in range(len(lPats)):
+    cPlots.statisticalEvalPlot(lPats[i].DayData[1].iloc[1:], rPats[i].DayData[1].iloc[1:], i+1)
 # %% Single patient error analysis
 # Model Names
 # JDST
@@ -85,7 +87,7 @@ cPlots.statisticalEvalPlot(l1.DayData[1], r1.DayData[1], 1)
 # Parallel H2
 # Parallel Circadian
 
-modelNames = ['JDST', 'Sequential H=2', 'Circadian 1', 'Parallel', 'Parallel H2', 'Parallel Circadian']
+modelNames = ['JDST', 'Sequential H=2', 'Circadian 1', 'Parallel', 'Parallel H2', 'Parallel Circadian', 'GRU H=1']
 index = [1,2,3,4]
 labels = ['Left-Left', 'Right-Left', 'Right-Right', 'Left-Right']
 modelDrops = ['Parallel H2']
@@ -114,5 +116,6 @@ cPlots.modelEvalPlot(lPats, rPats, 'Sequential H=2', labels, index, patNames)
 cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames)
 cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames)
 cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames)
+cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames)
 
 # %% Plot Testing

@@ -497,15 +497,11 @@ callbacks = []
 #                                              restore_best_weights = True)]
 
 inputs = tf.keras.Input(shape=(3,1))
-
-
 gruTest = tf.keras.layers.GRU(3, activation='tanh', recurrent_activation='sigmoid', use_bias=True, bias_initializer='ones')
-
 x = gruTest(inputs)
-
 output = tf.keras.layers.Dense(4, activation=None, use_bias=True, bias_initializer='ones')(x)
-
 model = tf.keras.Model(inputs=inputs, outputs=output)
+models["GRU H=1"] = model
 
 # model = cModels.gruH1(shapes,
 #                       True,
@@ -515,9 +511,7 @@ model = tf.keras.Model(inputs=inputs, outputs=output)
 #               loss=tf.keras.losses.MeanSquaredError(), 
 #               metrics=tf.keras.metrics.RootMeanSquaredError())
 # model(tf.keras.Input(shape=(H,1)))
-
 model.summary()
-models["GRU H=1"] = model
 
 # trn.cvTraining(lPat,
 #                 rPat,

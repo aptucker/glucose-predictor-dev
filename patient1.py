@@ -299,14 +299,14 @@ K = 4
 skip = 0 
 
 b_size = 1
-epochs = 50
+epochs = 20
 
 tower1Shapes = tower2Shapes = [H, H, K]
 tower1Activators = tower2Activators = ['sigmoid', 'sigmoid', None]
 
 callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                               min_delta = 0.05,
-                                              patience = 50,
+                                              patience = 10,
                                               mode = "min",
                                               restore_best_weights = True)]
 def scheduler(epoch, lr):
@@ -418,6 +418,73 @@ trn.cvTrainingParallel(lPat,
                        callbacks)
 
 print("Parallel Circadian Done")
+
+# %% GRU H=1 Model
+
+partNum = 1
+partSize = [0.1]
+lag = 6
+
+Kfold = 2
+nFoldIter = 5
+
+H = 3
+K = 4
+D = lag+1
+skip = 0 
+
+shapes = [H, H, K]
+activators = ['tanh', 'sigmoid', None]
+
+b_size = 1
+epochs = 20
+
+# lPat.randomizeTrainingData(Kfold, seed=1)
+lPat.resetData()
+rPat.resetData()
+
+lPat.partitionData(partNum, partSize)
+rPat.partitionData(partNum, partSize)
+
+pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
+
+
+[mlpNorm, mean, std] = trn.zscoreData(lPat.trainData.to_numpy())
+
+callbacks = []
+# callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+#                                              min_delta = 0.001,
+#                                              patience = 2,
+#                                              mode = "min",
+#                                              restore_best_weights = True)]
+
+inputs = tf.keras.Input(shape=(H,1))
+gruLayer = tf.keras.layers.GRU(H, activation='tanh', recurrent_activation='sigmoid', use_bias=True, bias_initializer='ones')
+x = gruLayer(inputs)
+output = tf.keras.layers.Dense(K, activation=None, use_bias=True, bias_initializer='ones')(x)
+model = tf.keras.Model(inputs=inputs, outputs=output)
+model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError())
+models["GRU H=1"] = model
+
+trn.cvTraining(lPat,
+                rPat,
+                4,
+                nFoldIter,
+                Kfold,
+                lag,
+                skip,
+                b_size,
+                20,
+                models,
+                "GRU H=1",
+                callbacks)
+
+print("GRU H=1 Done")
 
 # %% Save Results
 
