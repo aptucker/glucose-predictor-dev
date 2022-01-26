@@ -10,6 +10,7 @@ Patient 11 analysis file
 import tensorflow as tf
 import numpy as np
 import pickle
+import time
 
 import patient as pat
 import customLayers as cLayers
@@ -18,11 +19,11 @@ import training as trn
 
 models = {}
 # %% Load w/Previous Results
-with open("results\\patient6_analysis.pickle", "rb") as f:
+with open("results\\patient11_analysis.pickle", "rb") as f:
     lPat, rPat = pickle.load(f)
 
 # %% Load w/o Previous Results
-with open("processed_data\\patient6.pickle", "rb") as f:
+with open("processed_data\\patient11.pickle", "rb") as f:
     lPat, rPat = pickle.load(f)  
 
 # %% JDST Model Definition
@@ -87,6 +88,8 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
 
 models["JDST"] = model
 
+ticJDST = time.perf_counter()
+
 trn.cvTraining(lPat,
                rPat,
                K,
@@ -99,6 +102,11 @@ trn.cvTraining(lPat,
                models,
                "JDST",
                callbacks)
+
+tocJDST = time.perf_counter()
+
+timePat11JDST = tocJDST - ticJDST
+print(tocJDST - ticJDST)
 
 print("JDST Done")
 # %% Sequential w/2 Hidden Layers
@@ -475,6 +483,8 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
               metrics=tf.keras.metrics.RootMeanSquaredError())
 models["GRU H=1"] = model
 
+ticGRU = time.perf_counter()
+
 trn.cvTraining(lPat,
                 rPat,
                 4,
@@ -487,6 +497,11 @@ trn.cvTraining(lPat,
                 models,
                 "GRU H=1",
                 callbacks)
+
+tocGRU = time.perf_counter()
+
+timePat11GRU = tocGRU - ticGRU
+print(tocGRU - ticGRU)
 
 print("GRU H=1 Done")
 

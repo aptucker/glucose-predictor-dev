@@ -19,11 +19,11 @@ import training as trn
 
 models = {}
 # %% Load w/Previous Results
-with open("results\\patient6_analysis.pickle", "rb") as f:
+with open("results\\patient2_analysis.pickle", "rb") as f:
     lPat, rPat = pickle.load(f)
 
 # %% Load w/o Previous Results
-with open("processed_data\\patient6.pickle", "rb") as f:
+with open("processed_data\\patient2.pickle", "rb") as f:
     lPat, rPat = pickle.load(f)  
 
 # %% JDST Model Definition
@@ -104,7 +104,7 @@ trn.cvTraining(lPat,
                callbacks)
 
 tocJDST = time.perf_counter()
-
+timePat2JDST = tocJDST - ticJDST
 print(tocJDST - ticJDST)
 
 print("JDST Done")
@@ -499,7 +499,9 @@ trn.cvTraining(lPat,
 
 tocGRU = time.perf_counter()
 
+timePat2GRU = tocGRU - ticGRU
 print(tocGRU - ticGRU)
+
 print("GRU H=1 Done")
 
 # %% Save Results
