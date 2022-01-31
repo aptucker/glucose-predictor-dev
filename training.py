@@ -48,6 +48,16 @@ def MSError(Y, y_trn):
     MSE = (1/len(Y)) * np.sum(np.square(Y-y_trn), axis=0)
     return MSE
 
+def MARD(Y, y_trn):
+    """Calculate Mean Absolute Relative difference from prediction and labeled data.
+    
+    Arguments: 
+        Y - predicted data
+        y_trn - labeled training data
+    """
+    MARD = (1/len(Y)) * np.sum(np.divide(np.absolute(y_trn-Y), y_trn))
+    return MARD
+
 def fStatistic(error1, error2, nFoldIter):
     """Calculate the f-statistic for cross validation
     
@@ -105,6 +115,11 @@ def cvTraining(lPatient,
     rrMSE = np.zeros([nFoldIter*2, outSize])
     lrMSE = np.zeros([nFoldIter*2, outSize])
     rlMSE = np.zeros([nFoldIter*2, outSize])
+    
+    llMARD = np.zeros([nFoldIter*2, outSize])
+    rrMARD = np.zeros([nFoldIter*2, outSize])
+    lrMARD = np.zeros([nFoldIter*2, outSize])
+    rlMARD = np.zeros([nFoldIter*2, outSize])
     
     # Lag data if not already lagged
     if (len(lPatient.trainData.columns) < 2):
@@ -193,6 +208,26 @@ def cvTraining(lPatient,
         rlMSE[i, :] = MSError(rlValPredDeNorm, lPatient.tempVal[:, 0:outSize])
         rlMSE[i+nFoldIter, :] = MSError(rlTrnPredDeNorm, lPatient.tempTrain[:, 0:outSize])
     
+        # Calculate the mean absolute relative difference
+        llMARD[i, :] = MARD(llValPredDeNorm, lPatient.tempVal[:, 0:outSize])
+        llMARD[i+nFoldIter, :] = MARD(llTrnPredDeNorm, lPatient.tempTrain[:, 0:outSize])
+        rrMARD[i, :] = MARD(rrValPredDeNorm, rPatient.tempVal[:, 0:outSize])
+        rrMARD[i+nFoldIter, :] = MARD(rrTrnPredDeNorm, rPatient.tempTrain[:, 0:outSize])
+        lrMARD[i, :] = MARD(lrValPredDeNorm, rPatient.tempVal[:, 0:outSize])
+        lrMARD[i+nFoldIter, :] = MARD(lrTrnPredDeNorm, rPatient.tempTrain[:, 0:outSize])
+        rlMARD[i, :] = MARD(rlValPredDeNorm, lPatient.tempVal[:, 0:outSize])
+        rlMARD[i+nFoldIter, :] = MARD(rlTrnPredDeNorm, lPatient.tempTrain[:, 0:outSize])
+    
+    # Store the mean absolute relative difference
+    lFinalMARD = {
+        'llMARD': llMARD,
+        'rlMARD': rlMARD}
+    rFinalMARD = {
+        'rrMARD': rrMARD,
+        'lrMARD': lrMARD}
+    
+    lPatient.mardStorage[modelName] = lFinalMARD
+    rPatient.mardStorage[modelName] = rFinalMARD
     
     # Store the mean square error
     lFinalMSErrors = {
@@ -266,6 +301,11 @@ def cvTrainingParallel(lPatient,
     rrMSE = np.zeros([nFoldIter*2, outSize])
     lrMSE = np.zeros([nFoldIter*2, outSize])
     rlMSE = np.zeros([nFoldIter*2, outSize])
+    
+    llMARD = np.zeros([nFoldIter*2, outSize])
+    rrMARD = np.zeros([nFoldIter*2, outSize])
+    lrMARD = np.zeros([nFoldIter*2, outSize])
+    rlMARD = np.zeros([nFoldIter*2, outSize])
     
     # Lag data if not already lagged
     if (len(lPatient.trainData.columns) < 2):
@@ -383,6 +423,27 @@ def cvTrainingParallel(lPatient,
         lrMSE[i+nFoldIter, :] = MSError(lrTrnPredDeNorm, rPatient.tempTrain[:, 0:outSize])
         rlMSE[i, :] = MSError(rlValPredDeNorm, lPatient.tempVal[:, 0:outSize])
         rlMSE[i+nFoldIter, :] = MSError(rlTrnPredDeNorm, lPatient.tempTrain[:, 0:outSize])
+        
+        # Calculate the mean absolute relative difference
+        llMARD[i, :] = MARD(llValPredDeNorm, lPatient.tempVal[:, 0:outSize])
+        llMARD[i+nFoldIter, :] = MARD(llTrnPredDeNorm, lPatient.tempTrain[:, 0:outSize])
+        rrMARD[i, :] = MARD(rrValPredDeNorm, rPatient.tempVal[:, 0:outSize])
+        rrMARD[i+nFoldIter, :] = MARD(rrTrnPredDeNorm, rPatient.tempTrain[:, 0:outSize])
+        lrMARD[i, :] = MARD(lrValPredDeNorm, rPatient.tempVal[:, 0:outSize])
+        lrMARD[i+nFoldIter, :] = MARD(lrTrnPredDeNorm, rPatient.tempTrain[:, 0:outSize])
+        rlMARD[i, :] = MARD(rlValPredDeNorm, lPatient.tempVal[:, 0:outSize])
+        rlMARD[i+nFoldIter, :] = MARD(rlTrnPredDeNorm, lPatient.tempTrain[:, 0:outSize])
+    
+    # Store the mean absolute relative difference
+    lFinalMARD = {
+        'llMARD': llMARD,
+        'rlMARD': rlMARD}
+    rFinalMARD = {
+        'rrMARD': rrMARD,
+        'lrMARD': lrMARD}
+    
+    lPatient.mardStorage[modelName] = lFinalMARD
+    rPatient.mardStorage[modelName] = rFinalMARD
     
     
      # Store the mean square error

@@ -118,4 +118,60 @@ cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames, False, "
 cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames, False, "")
 cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\GRUError.pdf')
 
+# %% Export to Excel
+
+phLabels = [15, None, None, None,
+            30, None, None, None,
+            45, None, None, None,
+            60, None, None, None]
+compLabels = ['Left-Left', 'Right-Left', 'Right-Right', 'Left-Right',
+              'Left-Left', 'Right-Left', 'Right-Right', 'Left-Right',
+              'Left-Left', 'Right-Left', 'Right-Right', 'Left-Right',
+              'Left-Left', 'Right-Left', 'Right-Right', 'Left-Right']
+plusMinusLabels = ['+/-', '+/-', '+/-', '+/-',
+                   '+/-', '+/-', '+/-', '+/-',
+                   '+/-', '+/-', '+/-', '+/-',
+                   '+/-', '+/-', '+/-', '+/-']
+
+rmseDF = pd.DataFrame(phLabels, columns=['Prediction Horizon (min)'])
+rmseDF['Algorithm Setup (trained-tested)'] = compLabels
+
+
+for e in range(len(lPats)):
+    tempDFllRMSE = pd.DataFrame(np.mean(lPats[e].rmseStorage['GRU H=1']['llRMSE'], axis=0))
+    tempDFrlRMSE = pd.DataFrame(np.mean(lPats[e].rmseStorage['GRU H=1']['rlRMSE'], axis=0))
+    tempDFrrRMSE = pd.DataFrame(np.mean(rPats[e].rmseStorage['GRU H=1']['rrRMSE'], axis=0))
+    tempDFlrRMSE = pd.DataFrame(np.mean(rPats[e].rmseStorage['GRU H=1']['lrRMSE'], axis=0))
+    
+    tempDFllRMSEstd = pd.DataFrame(np.std(lPats[e].rmseStorage['GRU H=1']['llRMSE'], axis=0))
+    tempDFrlRMSEstd = pd.DataFrame(np.std(lPats[e].rmseStorage['GRU H=1']['rlRMSE'], axis=0))
+    tempDFrrRMSEstd = pd.DataFrame(np.std(rPats[e].rmseStorage['GRU H=1']['rrRMSE'], axis=0))
+    tempDFlrRMSEstd = pd.DataFrame(np.std(rPats[e].rmseStorage['GRU H=1']['lrRMSE'], axis=0))
+    
+    patDFmean = pd.DataFrame()
+    patDFstd = pd.DataFrame()
+    for i in range(3, -1, -1):
+        # patDF = pd.DataFrame([tempDFllRMSE.iloc[i],
+        #                       tempDFrlRMSE.iloc[i],
+        #                       tempDFrrRMSE.iloc[i],
+        #                       tempDFlrRMSE.iloc[i]])
+        patDFmean = patDFmean.append([tempDFllRMSE.iloc[i],
+                              tempDFrlRMSE.iloc[i],
+                              tempDFrrRMSE.iloc[i],
+                              tempDFlrRMSE.iloc[i]])
+        patDFstd = patDFstd.append([tempDFllRMSEstd.iloc[i],
+                              tempDFrlRMSEstd.iloc[i],
+                              tempDFrrRMSEstd.iloc[i],
+                              tempDFlrRMSEstd.iloc[i]])
+    
+    patDFmean = patDFmean.reset_index(drop=True)
+    patDFstd = patDFstd.reset_index(drop=True)
+    
+    rmseDF['Patient ' f'{e+1} ' 'RMSE (mg/dL)'] = patDFmean
+    rmseDF['Patient ' f'{e+1}'] = plusMinusLabels
+    rmseDF['Patient ' f'{e+1} ' 'STD'] = patDFstd
+    
+rmseDF.to_excel("G:\My Drive\Minnesota Files\Erdman Research\Final Paper\python_tables.xlsx", sheet_name='Raw_Python_Data', index=False)    
+    
+
 # %% Plot Testing
