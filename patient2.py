@@ -310,7 +310,7 @@ K = 4
 skip = 0 
 
 b_size = 1
-epochs = 20
+epochs = 100
 
 tower1Shapes = tower2Shapes = [H, H, K]
 tower1Activators = tower2Activators = ['sigmoid', 'sigmoid', None]

@@ -449,7 +449,7 @@ shapes = [H, H, K]
 activators = ['tanh', 'sigmoid', None]
 
 b_size = 1
-epochs = 20
+epochs = 100
 
 # lPat.randomizeTrainingData(Kfold, seed=1)
 lPat.resetData()
@@ -493,7 +493,7 @@ trn.cvTraining(lPat,
                 lag,
                 skip,
                 b_size,
-                20,
+                epochs,
                 models,
                 "GRU H=1",
                 callbacks)
