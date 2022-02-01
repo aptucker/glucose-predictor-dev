@@ -449,7 +449,7 @@ shapes = [H, H, K]
 activators = ['tanh', 'sigmoid', None]
 
 b_size = 1
-epochs = 100
+epochs = 20
 
 # lPat.randomizeTrainingData(Kfold, seed=1)
 lPat.resetData()

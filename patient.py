@@ -39,6 +39,8 @@ class Patient:
         self.rmseStorage = {}
         # F-statistic storage for models
         self.fStorage = {}
+        # MARD Storage
+        self.mardStorage = {}
         
     def partitionData(self, n, per, seed=None):
         """Method for splitting the patient data into training, test, and
