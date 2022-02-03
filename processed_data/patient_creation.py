@@ -8,7 +8,8 @@ Patient creation and pickling
 """
 
 import sys
-sys.path.append('../')
+# sys.path.append('../')
+sys.path.insert(0, 'C:\Code\glucose-predictor-dev')
 
 import patient as pat
 import pickle

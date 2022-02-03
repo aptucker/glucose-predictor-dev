@@ -108,6 +108,9 @@ tocJDST = time.perf_counter()
 timePat1JDST = tocJDST - ticJDST
 print(tocJDST - ticJDST)
 
+lPat.timeStorage["JDST"] = timePat1JDST
+rPat.timeStorage["JDST"] = timePat1JDST
+
 print("JDST Done")
 # %% Sequential w/2 Hidden Layers
 partNum = 1
@@ -502,6 +505,9 @@ tocGRU = time.perf_counter()
 
 timePat1GRU = tocGRU - ticGRU
 print(tocGRU - ticGRU)
+
+lPat.timeStorage["GRU H=1"] = timePat1GRU
+rPat.timeStorage["GRU H=1"] = timePat1GRU
 
 print("GRU H=1 Done")
 

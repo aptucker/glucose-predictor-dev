@@ -41,6 +41,8 @@ class Patient:
         self.fStorage = {}
         # MARD Storage
         self.mardStorage = {}
+        # Timing Storage
+        self.timeStorage = {}
         
     def partitionData(self, n, per, seed=None):
         """Method for splitting the patient data into training, test, and
