@@ -4,8 +4,14 @@
 #
 # ----------------------------------------------------------------------------
 
+# cellList = ['Imports and Data Loading',
+#             'Load w/Previous Results',
+#             'GRU H=1 Model',
+#             'Save Results']
+
 cellList = ['Imports and Data Loading',
-            'Load w/Previous Results',
+            'Load w/o Previous Results',
+            'JDST Model Definition',
             'GRU H=1 Model',
             'Save Results']
 

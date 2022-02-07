@@ -55,7 +55,7 @@ def MARD(Y, y_trn):
         Y - predicted data
         y_trn - labeled training data
     """
-    MARD = (1/len(Y)) * np.sum(np.divide(np.absolute(y_trn-Y), y_trn))
+    MARD = (1/len(Y)) * np.sum(np.divide(np.absolute(y_trn-Y), y_trn), axis=0)
     return MARD
 
 def fStatistic(error1, error2, nFoldIter):

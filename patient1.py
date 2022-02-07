@@ -26,6 +26,7 @@ with open("results\\patient1_analysis.pickle", "rb") as f:
 # %% Load w/o Previous Results
 with open("processed_data\\patient1.pickle", "rb") as f:
     lPat, rPat = pickle.load(f)  
+    
 # %% JDST Model Definition
 partNum = 1
 partSize = [0.1]
