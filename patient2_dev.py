@@ -465,12 +465,56 @@ pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
 
 [mlpNorm, mean, std] = trn.zscoreData(lPat.trainData.to_numpy())
 
+class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
+    
+    def __init__(self, patience=0, baseLoss=0):
+        super(EarlyStoppingAtMinLoss, self).__init__()
+        self.patience = patience
+        self.baseLoss = baseLoss
+        self.best_weights = None
+        
+    
+    def on_train_begin(self, logs=None):
+        self.wait = 0
+        self.stopped_epoch = 0
+        self.best = np.Inf
+        
+    def on_epoch_end(self, epoch, logs=None):
+        current = logs.get("loss")
+        if np.less(current, self.best):
+            if np.less(current, self.baseLoss):
+                self.best = current
+                self.wait = 0
+                self.stopped_epoch = epoch    
+                self.best_weights = self.model.get_weights()
+                self.model.stop_training = True
+            
+            self.best = current
+            self.wait = 0
+            self.best_weights = self.model.get_weights()
+            
+        else:
+            self.wait += 1
+            if self.wait >= self.patience:
+                self.stopped_epoch = epoch
+                self.model.stop_training = True
+                print("Restoring model weights from the end of the best epoch")
+                self.model.set_weights(self.best_weights)
+                
+    def on_train_end(self, logs=None):
+        if self.stopped_epoch > 0:
+            print("Epoch %05d: early stopping" % (self.stopped_epoch + 1))
+                
+
+
 # callbacks = []
-callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-                                              min_delta = 0.001,
-                                              patience = 100,
-                                              mode = "min",
-                                              restore_best_weights = True)]
+# callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+#                                               min_delta = 0.001,
+#                                               patience = 100,
+#                                               mode = "min",
+#                                               restore_best_weights = True)]
+
+callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.11)]
 
 inputs = tf.keras.Input(shape=(H,1))
 gruLayer = tf.keras.layers.GRU(H, activation='tanh', recurrent_activation='sigmoid', use_bias=True, bias_initializer='ones')
