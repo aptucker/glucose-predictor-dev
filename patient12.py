@@ -514,7 +514,7 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
 #                                               mode = "min",
 #                                               restore_best_weights = True)]
 
-callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.20)]
+callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15)]
 
 inputs = tf.keras.Input(shape=(H,1))
 gruLayer = tf.keras.layers.GRU(H, activation='tanh', recurrent_activation='sigmoid', use_bias=True, bias_initializer='ones')
