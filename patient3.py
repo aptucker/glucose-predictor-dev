@@ -513,7 +513,7 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
 #                                               mode = "min",
 #                                               restore_best_weights = True)]
 
-callbacks = [EarlyStoppingAtMinLoss(patience = 50, baseLoss = 0.17)]
+callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.20)]
 
 
 inputs = tf.keras.Input(shape=(H,1))

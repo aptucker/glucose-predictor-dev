@@ -148,6 +148,9 @@ def createPatient(file, diabType='0'):
     patData.drop_duplicates(subset='Meter Timestamp',
                             keep='first', inplace=True)
     
+    patData = patData[patData['Historic Glucose(mg/dL)'] > 65]
+    patData = patData[patData['Historic Glucose(mg/dL)'] < 250]
+    
     patData.set_index('Meter Timestamp', inplace=True)
     
     DailyData = []
