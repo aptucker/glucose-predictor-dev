@@ -13,7 +13,7 @@ import numpy as np
 import pandas as pd
 import pickle
 from scipy import stats
-import statsmodels
+import statsmodels.graphics.tsaplots as smgraphs
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.dates as mdates
@@ -381,23 +381,27 @@ def statisticalEvalPlot(lPatData,
     lkpssTest = cStats.kpss_test(lPatData)
     rkpssTest = cStats.kpss_test(rPatData)
     
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(9,5))
-    statsmodels.graphics.tsaplots.plot_acf(lPatData, ax1)
-    statsmodels.graphics.tsaplots.plot_pacf(lPatData, ax2, method='ols')
-    statsmodels.graphics.tsaplots.plot_acf(rPatData, ax3)
-    statsmodels.graphics.tsaplots.plot_pacf(rPatData, ax4, method='ols')
+    fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(9,8))
+    smgraphs.plot_acf(lPatData, ax3)
+    smgraphs.plot_pacf(lPatData, ax4, method='ols')
+    smgraphs.plot_acf(rPatData, ax5)
+    smgraphs.plot_pacf(rPatData, ax6, method='ols')
     
-    ax1.set_ylabel("Left Arm")
-    ax3.set_ylabel("Right Arm")
-    ax3.set_title(None)
-    ax4.set_title(None)
+    ax3.set_ylabel("Left Arm")
+    ax5.set_ylabel("Right Arm")
+    ax5.set_title(None)
+    ax6.set_title(None)
     
+    fig.tight_layout(pad=3.0)
     fig.suptitle("Patient" f" {patNumber}")
     fig.text(0.5,0, "P-values for: L_ADF = " f"{ladfTest['p-value']:.3f}; "\
-             "L_KPSS = " f"{lkpssTest['p-value']:.3f}; "\
-                 "R_ADF = " f"{radfTest['p-value']:.3f}; "\
-                     "R_KPSS = " f"{rkpssTest['p-value']:.3f}", ha='center')
+                 "R_ADF = " f"{radfTest['p-value']:.3f}; ", ha='center')
+        
     
+    # fig.text(0.5,0, "P-values for: L_ADF = " f"{ladfTest['p-value']:.3f}; "\
+    #          "L_KPSS = " f"{lkpssTest['p-value']:.3f}; "\
+    #              "R_ADF = " f"{radfTest['p-value']:.3f}; "\
+    #                  "R_KPSS = " f"{rkpssTest['p-value']:.3f}", ha='center')
 
 
 
