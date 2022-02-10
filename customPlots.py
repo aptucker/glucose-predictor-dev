@@ -19,6 +19,7 @@ import matplotlib.ticker as ticker
 import matplotlib.dates as mdates
 from matplotlib.dates import DateFormatter
 import matplotlib.font_manager as font_manager
+from matplotlib.collections import PolyCollection, LineCollection
 
 import patient as pat
 import customLayers as cLayers
@@ -391,13 +392,16 @@ def statisticalEvalPlot(lPatDataMean,
     rkpssTest = cStats.kpss_test(rPatData)
     
     fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(9,8))
-    ax1.plot(lPatMean)
-    ax2.plot(rPatMean)
-    smgraphs.plot_acf(lPatData, ax3)
-    smgraphs.plot_pacf(lPatData, ax4, method='ols')
-    smgraphs.plot_acf(rPatData, ax5)
-    smgraphs.plot_pacf(rPatData, ax6, method='ols')
+    ax1.plot(lPatDataMean.resample('D').mean(), 'k')
+    ax1.tick_params(axis='x', rotation = 25, labelsize=7)
+    ax2.plot(rPatDataMean.resample('D').mean(), 'k')
+    ax2.tick_params(axis='x', rotation = 25, labelsize=7)
+    smgraphs.plot_acf(lPatData, ax3, color='k')
+    smgraphs.plot_pacf(lPatData, ax4, color='k', method='ols')
+    smgraphs.plot_acf(rPatData, ax5, color='k')
+    smgraphs.plot_pacf(rPatData, ax6, color='k', method='ols')
     
+    ax1.set_ylabel("Blood Glucose (mg/dL)")
     ax3.set_ylabel("Left Arm")
     ax5.set_ylabel("Right Arm")
     ax5.set_title(None)
@@ -407,7 +411,57 @@ def statisticalEvalPlot(lPatDataMean,
     fig.suptitle("Patient" f" {patNumber}")
     fig.text(0.5,0, "P-values for: L_ADF = " f"{ladfTest['p-value']:.3f}; "\
                  "R_ADF = " f"{radfTest['p-value']:.3f}; ", ha='center')
+    
+    for item in ax3.collections:
+    #change the color of the CI 
+        if type(item)==PolyCollection:
+            item.set_facecolor('black')
+        #change the color of the vertical lines
+        if type(item)==LineCollection:
+            item.set_color('black')    
+
+    #change the color of the markers/horizontal line
+    for item in ax3.lines:
+        item.set_color('black')
         
+        
+    for item in ax4.collections:
+    #change the color of the CI 
+        if type(item)==PolyCollection:
+            item.set_facecolor('black')
+        #change the color of the vertical lines
+        if type(item)==LineCollection:
+            item.set_color('black')    
+
+    #change the color of the markers/horizontal line
+    for item in ax4.lines:
+        item.set_color('black')
+        
+        
+    for item in ax5.collections:
+    #change the color of the CI 
+        if type(item)==PolyCollection:
+            item.set_facecolor('black')
+        #change the color of the vertical lines
+        if type(item)==LineCollection:
+            item.set_color('black')    
+
+    #change the color of the markers/horizontal line
+    for item in ax5.lines:
+        item.set_color('black')
+        
+        
+    for item in ax6.collections:
+    #change the color of the CI 
+        if type(item)==PolyCollection:
+            item.set_facecolor('black')
+        #change the color of the vertical lines
+        if type(item)==LineCollection:
+            item.set_color('black')    
+
+    #change the color of the markers/horizontal line
+    for item in ax6.lines:
+        item.set_color('black')
     
     # fig.text(0.5,0, "P-values for: L_ADF = " f"{ladfTest['p-value']:.3f}; "\
     #          "L_KPSS = " f"{lkpssTest['p-value']:.3f}; "\
