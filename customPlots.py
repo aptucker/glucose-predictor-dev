@@ -360,9 +360,12 @@ def modelEvalPlot(lPats,
     if savePlot==True:
         plt.savefig(plotName, bbox_inches='tight')
     
-def statisticalEvalPlot(lPatData,
+def statisticalEvalPlot(lPatDataMean,
+                        rPatDataMean,
+                        lPatData,
                         rPatData,
-                        patNumber):
+                        patNumber,
+                        meanWindowSize):
     """Plot the autocorrelation and partial autocorrelation; report the ADF
     and KPSS test results for left and right arm data
     
@@ -376,12 +379,20 @@ def statisticalEvalPlot(lPatData,
         
     """
     
+    lPatMeanWindow = lPatDataMean.rolling(meanWindowSize)
+    rPatMeanWindow = rPatDataMean.rolling(meanWindowSize)
+    
+    lPatMean = lPatMeanWindow.mean().dropna()
+    rPatMean = rPatMeanWindow.mean().dropna()
+    
     ladfTest = cStats.adf_test(lPatData)
     radfTest = cStats.adf_test(rPatData)
     lkpssTest = cStats.kpss_test(lPatData)
     rkpssTest = cStats.kpss_test(rPatData)
     
     fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(9,8))
+    ax1.plot(lPatMean)
+    ax2.plot(rPatMean)
     smgraphs.plot_acf(lPatData, ax3)
     smgraphs.plot_pacf(lPatData, ax4, method='ols')
     smgraphs.plot_acf(rPatData, ax5)
