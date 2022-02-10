@@ -526,7 +526,7 @@ model = tf.keras.Model(inputs=inputs, outputs=output)
 model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
-              loss_weights=[1.0, 1.0, 1.0, 2.0])
+              loss_weights=[2.0, 2.0, 2.0, 1.0])
 models["GRU H=1"] = model
 
 ticGRU = time.perf_counter()
