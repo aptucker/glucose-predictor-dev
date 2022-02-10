@@ -121,6 +121,8 @@ def cvTraining(lPatient,
     lrMARD = np.zeros([nFoldIter*2, outSize])
     rlMARD = np.zeros([nFoldIter*2, outSize])
     
+    models[modelName].save_weights('model.start')
+    
     # Lag data if not already lagged
     if (len(lPatient.trainData.columns) < 2):
         pat.createLagData(lPatient.trainData, lag = lag, skip=skip, dropNaN=True)
@@ -140,6 +142,8 @@ def cvTraining(lPatient,
         [rTempValNorm, rTempValMean, rTempValStd] = zscoreData(rPatient.tempVal)
         
         # LEFT-LEFT Training->Validation
+        models[modelName].load_weights('model.start')
+        
         llTrnTrain = models[modelName].fit(lTempTrainNorm[:, outSize:], 
                                                     lTempTrainNorm[:, 0:outSize], 
                                                     batch_size = batch_size, 
@@ -151,7 +155,12 @@ def cvTraining(lPatient,
         lrValPred = models[modelName].predict(rTempValNorm[:, outSize:], 
                                                        batch_size = batch_size)
         
+        models[modelName].reset_metrics()
+        models[modelName].reset_states()
+        
         # LEFT-LEFT Validation->Training
+        models[modelName].load_weights('model.start')
+        
         llValTrain = models[modelName].fit(lTempValNorm[:, outSize:],
                                                    lTempValNorm[:, 0:outSize],
                                                    batch_size = batch_size,
@@ -163,7 +172,12 @@ def cvTraining(lPatient,
         lrTrnPred = models[modelName].predict(rTempTrainNorm[:, outSize:],
                                                        batch_size = batch_size)
         
+        models[modelName].reset_metrics()
+        models[modelName].reset_states()
+        
         # RIGHT-RIGHT Training->Validation
+        models[modelName].load_weights('model.start')
+        
         rrTrnTrain = models[modelName].fit(rTempTrainNorm[:, outSize:], 
                                                    rTempTrainNorm[:, 0:outSize], 
                                                    batch_size = batch_size, 
@@ -175,7 +189,12 @@ def cvTraining(lPatient,
         rlValPred = models[modelName].predict(lTempValNorm[:, outSize:], 
                                                        batch_size = batch_size)
         
+        models[modelName].reset_metrics()
+        models[modelName].reset_states()
+        
         # RIGHT-RIGHT Validation->Training
+        models[modelName].load_weights('model.start')
+        
         rrValTrain = models[modelName].fit(rTempValNorm[:, outSize:],
                                                    rTempValNorm[:, 0:outSize],
                                                    batch_size = batch_size,
@@ -186,6 +205,9 @@ def cvTraining(lPatient,
         # RIGHT-LEFT Training
         rlTrnPred = models[modelName].predict(lTempTrainNorm[:, outSize:],
                                                        batch_size = batch_size)
+        
+        models[modelName].reset_metrics()
+        models[modelName].reset_states()
         
         # DeNormalize the predictions
         llValPredDeNorm = deNormData(llValPred, lTempValMean, lTempValStd)
