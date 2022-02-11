@@ -123,8 +123,7 @@ def cvTraining(lPatient,
     lrMARD = np.zeros([nFoldIter*2, outSize])
     rlMARD = np.zeros([nFoldIter*2, outSize])
     
-    if reComp == False:
-        models[modelName].save_weights('model.start')
+    models[modelName].save_weights('model.start')
         
     
     # Lag data if not already lagged
@@ -153,6 +152,7 @@ def cvTraining(lPatient,
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
               loss_weights=lossWeights[0])
+            models[modelName].load_weights('model.start')
         
         llTrnTrain = models[modelName].fit(lTempTrainNorm[:, outSize:], 
                                                     lTempTrainNorm[:, 0:outSize], 
@@ -176,6 +176,7 @@ def cvTraining(lPatient,
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
               loss_weights=lossWeights[1])
+            models[modelName].load_weights('model.start')
         
         llValTrain = models[modelName].fit(lTempValNorm[:, outSize:],
                                                    lTempValNorm[:, 0:outSize],
@@ -199,6 +200,7 @@ def cvTraining(lPatient,
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
               loss_weights=lossWeights[2])
+            models[modelName].load_weights('model.start')
         
         rrTrnTrain = models[modelName].fit(rTempTrainNorm[:, outSize:], 
                                                    rTempTrainNorm[:, 0:outSize], 
@@ -222,6 +224,7 @@ def cvTraining(lPatient,
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
               loss_weights=lossWeights[3])
+            models[modelName].load_weights('model.start')
         
         rrValTrain = models[modelName].fit(rTempValNorm[:, outSize:],
                                                    rTempValNorm[:, 0:outSize],

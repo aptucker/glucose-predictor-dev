@@ -513,13 +513,13 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
 #                                               mode = "min",
 #                                               restore_best_weights = True)]
 
-callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.50),
-             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.50),
+callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.55),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.55),
              EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.25),
              EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.25)]
 
-lossWeights = [[1.0, 1.0, 1.0, 0.25],
-               [1.0, 1.0, 1.0, 0.25],
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0]]
 
@@ -537,6 +537,8 @@ model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
               loss_weights=[1.0, 1.0, 1.0, 0.25])
 models["GRU H=1"] = model
 
+# model.save_weights('model.start')
+
 # lPat.randomizeTrainingData(2, seed=0)
 # rPat.randomizeTrainingData(2, seed=0)
 
@@ -545,6 +547,8 @@ models["GRU H=1"] = model
 
 # [rTempTrainNorm, rTempTrainMean, rTempTrainStd] = trn.zscoreData(rPat.tempTrain)
 # [rTempValNorm, rTempValMean, rTempValStd] = trn.zscoreData(rPat.tempVal)
+
+# model.load_weights('model.start')
 
 # llTrnTrain = model.fit(lTempTrainNorm[:, 4:], 
 #                                                     lTempTrainNorm[:, 0:4], 
@@ -555,10 +559,34 @@ models["GRU H=1"] = model
 # llValPred = model.predict(lTempValNorm[:, 4:], 
 #                                                       batch_size = 1)
 
+# model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+#               loss=tf.keras.losses.MeanSquaredError(), 
+#               metrics=tf.keras.metrics.RootMeanSquaredError(),
+#               loss_weights=[1.0, 1.0, 1.0, 0.25])
+
+# model.load_weights('model.start')
+
+# llValTrain = model.fit(lTempValNorm[:, 4:],
+#                                                    lTempValNorm[:, 0:4],
+#                                                    batch_size = 1,
+#                                                    epochs = epochs,
+#                                                    callbacks = callbacks[1])
+# llTrnPred = model.predict(lTempTrainNorm[:, 4:],
+#                                               batch_size = 1)
+# # LEFT-RIGHT Training
+# lrTrnPred = model.predict(rTempTrainNorm[:, 4:],
+#                                                batch_size = 1)
+
 # llValPredDeNorm = trn.deNormData(llValPred, lTempValMean, lTempValStd)
-# llMSE = trn.MSError(llValPredDeNorm, lPat.tempVal[:, 0:4])
-# llRMSE = np.sqrt(llMSE)
-# print(llRMSE)
+# llTrnPredDeNorm = trn.deNormData(llTrnPred, lTempTrainMean, lTempTrainStd)
+
+# llMSE1 = trn.MSError(llValPredDeNorm, lPat.tempVal[:, 0:4])
+# llRMSE1 = np.sqrt(llMSE1)
+# llMSE2 = trn.MSError(llTrnPredDeNorm, lPat.tempTrain[:, 0:4])
+# llRMSE2 = np.sqrt(llMSE2)
+# print(llRMSE1)
+# print(llRMSE2)
+
 
 ticGRU = time.perf_counter()
 
