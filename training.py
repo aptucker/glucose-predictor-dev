@@ -91,7 +91,9 @@ def cvTraining(lPatient,
                epochs,
                models,
                modelName,
-               callbacks):
+               callbacks,
+               lossWeights,
+               reComp=False):
     """Cross validation training function uses model stored in patient object
     
     Arguments:
@@ -121,7 +123,9 @@ def cvTraining(lPatient,
     lrMARD = np.zeros([nFoldIter*2, outSize])
     rlMARD = np.zeros([nFoldIter*2, outSize])
     
-    models[modelName].save_weights('model.start')
+    if reComp == False:
+        models[modelName].save_weights('model.start')
+        
     
     # Lag data if not already lagged
     if (len(lPatient.trainData.columns) < 2):
@@ -142,13 +146,19 @@ def cvTraining(lPatient,
         [rTempValNorm, rTempValMean, rTempValStd] = zscoreData(rPatient.tempVal)
         
         # LEFT-LEFT Training->Validation
-        models[modelName].load_weights('model.start')
+        if reComp == False:
+            models[modelName].load_weights('model.start')
+        else:
+            models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError(),
+              loss_weights=lossWeights[0])
         
         llTrnTrain = models[modelName].fit(lTempTrainNorm[:, outSize:], 
                                                     lTempTrainNorm[:, 0:outSize], 
                                                     batch_size = batch_size, 
                                                     epochs = epochs,
-                                                    callbacks = callbacks)
+                                                    callbacks = callbacks[0])
         llValPred = models[modelName].predict(lTempValNorm[:, outSize:], 
                                                       batch_size = batch_size)
         # LEFT-RIGHT Validation
@@ -159,13 +169,19 @@ def cvTraining(lPatient,
         models[modelName].reset_states()
         
         # LEFT-LEFT Validation->Training
-        models[modelName].load_weights('model.start')
+        if reComp == False:
+            models[modelName].load_weights('model.start')
+        else:
+            models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError(),
+              loss_weights=lossWeights[1])
         
         llValTrain = models[modelName].fit(lTempValNorm[:, outSize:],
                                                    lTempValNorm[:, 0:outSize],
                                                    batch_size = batch_size,
                                                    epochs = epochs,
-                                                   callbacks = callbacks)
+                                                   callbacks = callbacks[1])
         llTrnPred = models[modelName].predict(lTempTrainNorm[:, outSize:],
                                                       batch_size = batch_size)
         # LEFT-RIGHT Training
@@ -176,13 +192,19 @@ def cvTraining(lPatient,
         models[modelName].reset_states()
         
         # RIGHT-RIGHT Training->Validation
-        models[modelName].load_weights('model.start')
+        if reComp == False:
+            models[modelName].load_weights('model.start')
+        else:
+            models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError(),
+              loss_weights=lossWeights[2])
         
         rrTrnTrain = models[modelName].fit(rTempTrainNorm[:, outSize:], 
                                                    rTempTrainNorm[:, 0:outSize], 
                                                    batch_size = batch_size, 
                                                    epochs = epochs,
-                                                   callbacks = callbacks)
+                                                   callbacks = callbacks[2])
         rrValPred = models[modelName].predict(rTempValNorm[:, outSize:], 
                                                       batch_size = batch_size)
         # RIGHT-LEFT Validation
@@ -193,13 +215,19 @@ def cvTraining(lPatient,
         models[modelName].reset_states()
         
         # RIGHT-RIGHT Validation->Training
-        models[modelName].load_weights('model.start')
+        if reComp == False:
+            models[modelName].load_weights('model.start')
+        else:
+            models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError(),
+              loss_weights=lossWeights[3])
         
         rrValTrain = models[modelName].fit(rTempValNorm[:, outSize:],
                                                    rTempValNorm[:, 0:outSize],
                                                    batch_size = batch_size,
                                                    epochs = epochs,
-                                                   callbacks = callbacks)
+                                                   callbacks = callbacks[3])
         rrTrnPred = models[modelName].predict(rTempTrainNorm[:, outSize:],
                                                       batch_size = batch_size)
         # RIGHT-LEFT Training

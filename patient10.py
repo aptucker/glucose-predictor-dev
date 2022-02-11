@@ -513,7 +513,15 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
 #                                               mode = "min",
 #                                               restore_best_weights = True)]
 
-callbacks = [EarlyStoppingAtMinLoss(patience = 30, baseLoss = 0.16)]
+callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.45),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.45),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.20),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.20)]
+
+lossWeights = [[1.0, 1.0, 1.0, 0.25],
+               [1.0, 1.0, 1.0, 0.25],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
 
 inputs = tf.keras.Input(shape=(H,1))
 gruLayer = tf.keras.layers.GRU(H, activation='tanh', recurrent_activation='sigmoid', use_bias=True, bias_initializer='ones')
@@ -526,8 +534,31 @@ model = tf.keras.Model(inputs=inputs, outputs=output)
 model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
-              loss_weights=[2.0, 1.0, 1.0, 0.15])
+              loss_weights=[1.0, 1.0, 1.0, 0.25])
 models["GRU H=1"] = model
+
+# lPat.randomizeTrainingData(2, seed=0)
+# rPat.randomizeTrainingData(2, seed=0)
+
+# [lTempTrainNorm, lTempTrainMean, lTempTrainStd] = trn.zscoreData(lPat.tempTrain)
+# [lTempValNorm, lTempValMean, lTempValStd] = trn.zscoreData(lPat.tempVal)
+
+# [rTempTrainNorm, rTempTrainMean, rTempTrainStd] = trn.zscoreData(rPat.tempTrain)
+# [rTempValNorm, rTempValMean, rTempValStd] = trn.zscoreData(rPat.tempVal)
+
+# llTrnTrain = model.fit(lTempTrainNorm[:, 4:], 
+#                                                     lTempTrainNorm[:, 0:4], 
+#                                                     batch_size = 1, 
+#                                                     epochs = 100,
+#                                                     callbacks = callbacks)
+
+# llValPred = model.predict(lTempValNorm[:, 4:], 
+#                                                       batch_size = 1)
+
+# llValPredDeNorm = trn.deNormData(llValPred, lTempValMean, lTempValStd)
+# llMSE = trn.MSError(llValPredDeNorm, lPat.tempVal[:, 0:4])
+# llRMSE = np.sqrt(llMSE)
+# print(llRMSE)
 
 ticGRU = time.perf_counter()
 
@@ -542,7 +573,9 @@ trn.cvTraining(lPat,
                 epochs,
                 models,
                 "GRU H=1",
-                callbacks)
+                callbacks,
+                lossWeights,
+                reComp=True)
 
 tocGRU = time.perf_counter()
 
@@ -555,4 +588,5 @@ print("GRU H=1 Done")
 
 with open("results\\patient10_analysis.pickle", "wb") as f:
     pickle.dump([lPat, rPat], f)
+
 
