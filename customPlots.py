@@ -366,7 +366,9 @@ def statisticalEvalPlot(lPatDataMean,
                         lPatData,
                         rPatData,
                         patNumber,
-                        meanWindowSize):
+                        meanWindowSize,
+                        savePlot,
+                        plotFileName):
     """Plot the autocorrelation and partial autocorrelation; report the ADF
     and KPSS test results for left and right arm data
     
@@ -393,19 +395,28 @@ def statisticalEvalPlot(lPatDataMean,
     
     fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(9,8))
     ax1.plot(lPatDataMean.resample('D').mean(), 'k')
-    ax1.tick_params(axis='x', rotation = 25, labelsize=7)
     ax2.plot(rPatDataMean.resample('D').mean(), 'k')
-    ax2.tick_params(axis='x', rotation = 25, labelsize=7)
     smgraphs.plot_acf(lPatData, ax3, color='k')
     smgraphs.plot_pacf(lPatData, ax4, color='k', method='ols')
     smgraphs.plot_acf(rPatData, ax5, color='k')
     smgraphs.plot_pacf(rPatData, ax6, color='k', method='ols')
     
-    ax1.set_ylabel("Blood Glucose (mg/dL)")
-    ax3.set_ylabel("Left Arm")
-    ax5.set_ylabel("Right Arm")
-    ax5.set_title(None)
-    ax6.set_title(None)
+    ax1.set_xlabel("Time (Day)", fontsize=9)
+    ax1.set_ylabel("Blood Glucose (mg/dL)", fontsize=9)
+    ax1.tick_params(axis='x', rotation = 25, labelsize=7)
+    ax1.tick_params(axis='y', labelsize=8)
+    ax2.set_xlabel("Time (Day)", fontsize=9)
+    ax2.set_ylabel("Blood Glucose (mg/dL)", fontsize=9)
+    ax2.tick_params(axis='x', rotation = 25, labelsize=7)
+    ax2.tick_params(axis='y', labelsize=8)
+    ax3.set_xlabel("Lag", fontsize=9)
+    ax3.set_ylabel("Left Arm", fontsize=9)
+    ax4.set_xlabel("Lag", fontsize=9)
+    ax4.set_ylabel("Left Arm", fontsize=9)
+    ax5.set_xlabel("Lag", fontsize=9)
+    ax5.set_ylabel("Right Arm", fontsize=9)
+    ax6.set_xlabel("Lag", fontsize=9)
+    ax6.set_ylabel("Right Arm", fontsize=9)
     
     fig.tight_layout(pad=3.0)
     fig.suptitle("Patient" f" {patNumber}")
@@ -463,6 +474,9 @@ def statisticalEvalPlot(lPatDataMean,
     for item in ax6.lines:
         item.set_color('black')
     
+    
+    if savePlot==True:
+        plt.savefig(plotFileName, bbox_inches='tight')
     # fig.text(0.5,0, "P-values for: L_ADF = " f"{ladfTest['p-value']:.3f}; "\
     #          "L_KPSS = " f"{lkpssTest['p-value']:.3f}; "\
     #              "R_ADF = " f"{radfTest['p-value']:.3f}; "\
