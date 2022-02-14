@@ -513,7 +513,15 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
 #                                               mode = "min",
 #                                               restore_best_weights = True)]
 
-callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.20)]
+callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.35),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.35),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.35),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.35)]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
 
 
 inputs = tf.keras.Input(shape=(H,1))
@@ -523,7 +531,8 @@ output = tf.keras.layers.Dense(K, activation=None, use_bias=True, bias_initializ
 model = tf.keras.Model(inputs=inputs, outputs=output)
 model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
               loss=tf.keras.losses.MeanSquaredError(), 
-              metrics=tf.keras.metrics.RootMeanSquaredError())
+              metrics=tf.keras.metrics.RootMeanSquaredError(),
+              loss_weights = [1.0, 1.0, 1.0, 1.0])
 models["GRU H=1"] = model
 
 ticGRU = time.perf_counter()
@@ -539,7 +548,9 @@ trn.cvTraining(lPat,
                 epochs,
                 models,
                 "GRU H=1",
-                callbacks)
+                callbacks,
+                lossWeights,
+                recomp=True)
 
 tocGRU = time.perf_counter()
 
