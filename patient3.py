@@ -513,10 +513,10 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
 #                                               mode = "min",
 #                                               restore_best_weights = True)]
 
-callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.35),
-             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.35),
-             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.35),
-             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.35)]
+callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.55),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.55),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.55),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.55)]
 
 lossWeights = [[1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0],
@@ -550,7 +550,7 @@ trn.cvTraining(lPat,
                 "GRU H=1",
                 callbacks,
                 lossWeights,
-                recomp=True)
+                reComp=True)
 
 tocGRU = time.perf_counter()
 
