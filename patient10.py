@@ -513,10 +513,10 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
 #                                               mode = "min",
 #                                               restore_best_weights = True)]
 
-callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.55),
-             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.55),
-             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.25),
-             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.25)]
+callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = .65),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = .65),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.30),
+             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.30)]
 
 lossWeights = [[1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0],
@@ -531,7 +531,7 @@ model = tf.keras.Model(inputs=inputs, outputs=output)
 # model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
 #               loss=tf.keras.losses.MeanSquaredError(), 
 #               metrics=tf.keras.metrics.RootMeanSquaredError())
-model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+model.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=0.001),
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
               loss_weights=[1.0, 1.0, 1.0, 1.0])
@@ -553,7 +553,7 @@ model.load_weights('model.start')
 llTrnTrain = model.fit(lTempTrainNorm[:, 4:], 
                                                     lTempTrainNorm[:, 0:4], 
                                                     batch_size = 1, 
-                                                    epochs = 100,
+                                                    epochs = epochs,
                                                     callbacks = callbacks)
 
 print(model.weights)
@@ -564,7 +564,7 @@ llValPred = model.predict(lTempValNorm[:, 4:],
 lrValPred = model.predict(rTempValNorm[:, 4:], 
                                                        batch_size = 1)
 
-model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+model.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.001),
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
               loss_weights=[1.0, 1.0, 1.0, 1.0])

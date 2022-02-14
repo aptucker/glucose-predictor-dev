@@ -151,7 +151,13 @@ def createPatient(file, diabType='0'):
     patData = patData[patData['Historic Glucose(mg/dL)'] > 65]
     patData = patData[patData['Historic Glucose(mg/dL)'] < 250]
     
+    
+    
     patData.set_index('Meter Timestamp', inplace=True)
+    
+    patData['diff'] = patData['Historic Glucose(mg/dL)'].diff()
+    patData = patData[patData['diff'].abs()<45]
+    patData.drop(columns='diff', inplace=True)
     
     DailyData = []
     for group in patData.groupby(patData.index.date):
