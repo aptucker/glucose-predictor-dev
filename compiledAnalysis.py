@@ -136,6 +136,8 @@ plusMinusLabels = ['+/-', '+/-', '+/-', '+/-',
 rmseDF = pd.DataFrame(phLabels, columns=['Prediction Horizon (min)'])
 rmseDF['Algorithm Setup (trained-tested)'] = compLabels
 
+mardDF = pd.DataFrame(phLabels, columns=['Prediction Horizon (min)'])
+mardDF['Algorithm Setup (trained-tested)'] = compLabels
 
 for e in range(len(lPats)):
     tempDFllRMSE = pd.DataFrame(np.mean(lPats[e].rmseStorage['GRU H=1']['llRMSE'], axis=0))
@@ -171,7 +173,41 @@ for e in range(len(lPats)):
     rmseDF['Patient ' f'{e+1}'] = plusMinusLabels
     rmseDF['Patient ' f'{e+1} ' 'STD'] = patDFstd
     
-rmseDF.to_excel("G:\My Drive\Minnesota Files\Erdman Research\Final Paper\python_tables.xlsx", sheet_name='Raw_Python_Data', index=False)    
+for e in range(len(lPats)):
+    tempDFllMARD = pd.DataFrame(np.mean(lPats[e].mardStorage['GRU H=1']['llMARD'], axis=0))
+    tempDFrlMARD = pd.DataFrame(np.mean(lPats[e].mardStorage['GRU H=1']['rlMARD'], axis=0))
+    tempDFrrMARD = pd.DataFrame(np.mean(rPats[e].mardStorage['GRU H=1']['rrMARD'], axis=0))
+    tempDFlrMARD = pd.DataFrame(np.mean(rPats[e].mardStorage['GRU H=1']['lrMARD'], axis=0))
     
+    tempDFllMARDstd = pd.DataFrame(np.std(lPats[e].mardStorage['GRU H=1']['llMARD'], axis=0))
+    tempDFrlMARDstd = pd.DataFrame(np.std(lPats[e].mardStorage['GRU H=1']['rlMARD'], axis=0))
+    tempDFrrMARDstd = pd.DataFrame(np.std(rPats[e].mardStorage['GRU H=1']['rrMARD'], axis=0))
+    tempDFlrMARDstd = pd.DataFrame(np.std(rPats[e].mardStorage['GRU H=1']['lrMARD'], axis=0))
+    
+    patDFmean = pd.DataFrame()
+    patDFstd = pd.DataFrame()
+    for i in range(3, -1, -1):
+        # patDF = pd.DataFrame([tempDFllRMSE.iloc[i],
+        #                       tempDFrlRMSE.iloc[i],
+        #                       tempDFrrRMSE.iloc[i],
+        #                       tempDFlrRMSE.iloc[i]])
+        patDFmean = patDFmean.append([tempDFllMARD.iloc[i],
+                              tempDFrlMARD.iloc[i],
+                              tempDFrrMARD.iloc[i],
+                              tempDFlrMARD.iloc[i]])
+        patDFstd = patDFstd.append([tempDFllMARDstd.iloc[i],
+                              tempDFrlMARDstd.iloc[i],
+                              tempDFrrMARDstd.iloc[i],
+                              tempDFlrMARDstd.iloc[i]])
+    
+    patDFmean = patDFmean.reset_index(drop=True)
+    patDFstd = patDFstd.reset_index(drop=True)
+    
+    mardDF['Patient ' f'{e+1} ' 'MARD (%)'] = patDFmean
+    mardDF['Patient ' f'{e+1}'] = plusMinusLabels
+    mardDF['Patient ' f'{e+1} ' 'STD'] = patDFstd
+    
+rmseDF.to_excel("G:\My Drive\Minnesota Files\Erdman Research\Final Paper\python_tables.xlsx", sheet_name='Raw_Python_Data', index=False)    
+mardDF.to_excel("G:\My Drive\Minnesota Files\Erdman Research\Final Paper\python_tables_mard.xlsx", sheet_name='Raw_Python_Data_MARD', index=False)
 
 # %% Plot Testing
