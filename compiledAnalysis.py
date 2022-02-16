@@ -72,12 +72,47 @@ patNames = ['Patient' f' {i}' for i in range(1, 14)]
     
 # %% Time Series Analysis
 
-cPlots.statisticalEvalPlot(l1.GenData, r1.GenData, l1.DayData[1].iloc[1:], r1.DayData[1].iloc[1:], 1, 50, True, 'C:\Code\glucose-predictor-dev\Pat1TSAnalysis.pdf')
+cPlots.statisticalEvalPlot(l1.GenData,
+                           r1.GenData,
+                           l1.DayData[1].iloc[1:],
+                           r1.DayData[1].iloc[1:],
+                           1,
+                           50,
+                           True,
+                           False,
+                           'ts_plots\\Pat1TSAnalysis.pdf')
+cPlots.statisticalEvalPlot(l1.GenData.diff(), 
+                           r1.GenData.diff(), 
+                           l1.DayData[1].diff().iloc[1:], 
+                           r1.DayData[1].diff().iloc[1:], 
+                           1, 
+                           50, 
+                           True,
+                           True,
+                           'ts_plots\\Pat1TSAnalysisDiff.pdf')
 
 # for i in range(len(lPats)):
 #     cPlots.statisticalEvalPlot(lPats[i].DayData[1].diff().iloc[1:], rPats[i].DayData[1].diff().iloc[1:], i+1)
 for i in range(len(lPats)):
-    cPlots.statisticalEvalPlot(lPats[i].DayData[1].iloc[1:], rPats[i].DayData[1].iloc[1:], i+1)
+    cPlots.statisticalEvalPlot(lPats[i].GenData,
+                               rPats[i].GenData,
+                               lPats[i].DayData[1].iloc[1:], 
+                               rPats[i].DayData[1].iloc[1:], 
+                               i+1, 
+                               50, 
+                               True, 
+                               False,
+                               'ts_plots\\Pat'f'{i+1}TSAnalysis.pdf')
+    
+    cPlots.statisticalEvalPlot(lPats[i].GenData.diff(),
+                               rPats[i].GenData.diff(),
+                               lPats[i].DayData[1].diff().iloc[1:], 
+                               rPats[i].DayData[1].diff().iloc[1:], 
+                               i+1, 
+                               50, 
+                               True, 
+                               True,
+                               'ts_plots\\Pat'f'{i+1}TSAnalysisDiff.pdf')
 # %% Single patient error analysis
 # Model Names
 # JDST

@@ -368,6 +368,7 @@ def statisticalEvalPlot(lPatDataMean,
                         patNumber,
                         meanWindowSize,
                         savePlot,
+                        diffData,
                         plotFileName):
     """Plot the autocorrelation and partial autocorrelation; report the ADF
     and KPSS test results for left and right arm data
@@ -390,8 +391,8 @@ def statisticalEvalPlot(lPatDataMean,
     
     ladfTest = cStats.adf_test(lPatData)
     radfTest = cStats.adf_test(rPatData)
-    lkpssTest = cStats.kpss_test(lPatData)
-    rkpssTest = cStats.kpss_test(rPatData)
+    # lkpssTest = cStats.kpss_test(lPatData)
+    # rkpssTest = cStats.kpss_test(rPatData)
     
     fig, ((ax1, ax2), (ax3, ax4), (ax5, ax6)) = plt.subplots(3, 2, figsize=(9,8))
     ax1.plot(lPatDataMean.resample('D').mean(), 'k')
@@ -405,10 +406,12 @@ def statisticalEvalPlot(lPatDataMean,
     ax1.set_ylabel("Blood Glucose (mg/dL)", fontsize=9)
     ax1.tick_params(axis='x', rotation = 25, labelsize=7)
     ax1.tick_params(axis='y', labelsize=8)
+    ax1.set_title("Blood Glucose Mean over Time")
     ax2.set_xlabel("Time (Day)", fontsize=9)
     ax2.set_ylabel("Blood Glucose (mg/dL)", fontsize=9)
     ax2.tick_params(axis='x', rotation = 25, labelsize=7)
     ax2.tick_params(axis='y', labelsize=8)
+    ax2.set_title("Blood Glucose Mean over Time")
     ax3.set_xlabel("Lag", fontsize=9)
     ax3.set_ylabel("Left Arm", fontsize=9)
     ax4.set_xlabel("Lag", fontsize=9)
@@ -419,7 +422,12 @@ def statisticalEvalPlot(lPatDataMean,
     ax6.set_ylabel("Right Arm", fontsize=9)
     
     fig.tight_layout(pad=3.0)
-    fig.suptitle("Patient" f" {patNumber}")
+    if diffData == False:
+        fig.suptitle("Patient" f" {patNumber} Statistical Analysis", fontsize=16)
+    
+    if diffData == True:
+        fig.suptitle("Patient" f" {patNumber} Statistical Analysis - Differenced Data", fontsize=16)
+    
     fig.text(0.5,0, "P-values for: L_ADF = " f"{ladfTest['p-value']:.3f}; "\
                  "R_ADF = " f"{radfTest['p-value']:.3f}; ", ha='center')
     
