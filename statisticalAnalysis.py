@@ -13,12 +13,14 @@ import pandas as pd
 import pickle
 from scipy import stats
 import statsmodels as sm
+import statsmodels.graphics.tsaplots as smgraphs
 from statsmodels.tsa.arima.model import ARIMA
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.dates as mdates
 from matplotlib.dates import DateFormatter
 import matplotlib.font_manager as font_manager
+from matplotlib.collections import PolyCollection, LineCollection
 
 import patient as pat
 import customLayers as cLayers
@@ -71,21 +73,36 @@ rPats = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13]
 # patNames = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 patNames = ['Patient' f' {i}' for i in range(1, 14)]
 
-# %% ARMA Forecasting
-l1.GenData.iloc[1:200].plot()
+# %% Example plots
+from random import gauss
+from random import seed
+from pandas import Series
 
-model = ARIMA(l1.GenData.iloc[1:200], order=(3, 0, 4))
-model_fit = model.fit()
-print(model_fit.summary())
+series = [gauss(0.0, 1.0)+0.01*i for i in range(1000)]
+series = Series(series)
+axWN = series.plot(color='k')
+axWN.set_xlabel('Generated Time')
+axWN.set_ylabel('Generated Data with Trend')
+axWN.set_title('Non-stationry Generated Data')
 
-resids = pd.DataFrame(model_fit.resid)
-resids.plot()
+plt.savefig('ts_plots\\ExampleTrendPlot.pdf')
 
-resids.plot(kind='kde')
-print(resids.describe())
+fig, ax = plt.subplots(1,1)
+smgraphs.plot_acf(series, ax, color='k')
+plt.xlabel('Lag')
+plt.ylabel('Autocorrelation Function')
+plt.title('Autocorrelation of Generated Data with Trend')
 
-for i in range(200):
-    model
+for item in ax.collections:
+    #change the color of the CI 
+        if type(item)==PolyCollection:
+            item.set_facecolor('black')
+        #change the color of the vertical lines
+        if type(item)==LineCollection:
+            item.set_color('black')    
+            
+plt.savefig('ts_plots\\ExampleTrendACF.pdf')
+
 # %% Mean, ACF, PACF Plots
 
 cPlots.statisticalEvalPlot(l1.GenData,
@@ -129,3 +146,63 @@ for i in range(len(lPats)):
                                True, 
                                True,
                                'ts_plots\\Pat'f'{i+1}TSAnalysisDiff.pdf')
+    
+    
+# %% ARMA Forecasting
+# l1.GenData.iloc[1:200].plot()
+
+# model = ARIMA(l1.GenData.iloc[1:200], order=(3, 0, 4))
+# model_fit = model.fit()
+# print(model_fit.summary())
+
+# resids = pd.DataFrame(model_fit.resid)
+# resids.plot()
+
+# resids.plot(kind='kde')
+# print(resids.describe())
+
+    
+X = l1.GenData.values
+size = int(len(X) * 0.66)
+train, test = X[0:size], X[size:len(X)]
+history = [x for x in train]
+predictions = list()
+# walk-forward validation
+
+for t in range(len(test)-4):
+    # model = ARIMA(history, order=(3,0,4))
+    model = ARIMA(history, order=(5,1,0))
+    model_fit = model.fit()
+    # output = model_fit.forecast()
+    # yhat = output[0]
+    output = model_fit.forecast(steps=4)
+    yhat = output
+    predictions.append(yhat)
+    obs = [test[t], test[t+1], test[t+2], test[t+3]]
+    history.append(obs[0])
+    
+    if t % 10 == 0:
+        print('predicted=%f, expected=%f' % (yhat[0], obs[0]))
+
+predictions15 = list()
+predictions30 = list()
+predictions45 = list()
+predictions60 = list()
+
+
+for i in range(len(predictions)):
+    predictions15.append(predictions[i][0])
+    predictions30.append(predictions[i][1])
+    predictions45.append(predictions[i][2])
+    predictions60.append(predictions[i][3])
+
+from math import sqrt
+from sklearn.metrics import mean_squared_error
+rmse15 = sqrt(mean_squared_error(test[0:len(predictions)], predictions15))
+rmse30 = sqrt(mean_squared_error(test[1:len(predictions)+1], predictions30))
+rmse45 = sqrt(mean_squared_error(test[2:len(predictions)+2], predictions45))
+rmse60 = sqrt(mean_squared_error(test[3:len(predictions)+3], predictions60))
+print('Test RMSE15: %.3f' % rmse15)
+print('Test RMSE30: %.3f' % rmse30)
+print('Test RMSE45: %.3f' % rmse45)
+print('Test RMSE60: %.3f' % rmse60)
