@@ -214,6 +214,25 @@ cPlots.statisticalEvalPlot(l1.GenData.diff(),
                            True,
                            'ts_plots\\Pat1TSAnalysisDiff.pdf')
 
+cPlots.statisticalEvalPlot(l6.GenData,
+                           r6.GenData,
+                           l6.DayData[23].iloc[1:],
+                           r6.DayData[23].iloc[1:],
+                           6,
+                           50,
+                           True,
+                           False,
+                           'ts_plots\\Pat6TSAnalysis.pdf')
+cPlots.statisticalEvalPlot(l6.GenData.diff(), 
+                           r6.GenData.diff(), 
+                           l6.DayData[23].diff().iloc[1:], 
+                           r6.DayData[23].diff().iloc[1:], 
+                           6, 
+                           50, 
+                           True,
+                           True,
+                           'ts_plots\\Pat6TSAnalysisDiff.pdf')
+
 # for i in range(len(lPats)):
 #     cPlots.statisticalEvalPlot(lPats[i].DayData[1].diff().iloc[1:], rPats[i].DayData[1].diff().iloc[1:], i+1)
 for i in range(len(lPats)):
