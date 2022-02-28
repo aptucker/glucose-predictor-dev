@@ -14,12 +14,14 @@ import pandas as pd
 import pickle
 from scipy import stats
 import statsmodels.graphics.tsaplots as smgraphs
+from statsmodels.tsa.stattools import ccf
 import matplotlib.pyplot as plt
 import matplotlib.ticker as ticker
 import matplotlib.dates as mdates
 from matplotlib.dates import DateFormatter
 import matplotlib.font_manager as font_manager
 from matplotlib.collections import PolyCollection, LineCollection
+from matplotlib.ticker import FormatStrFormatter
 
 import patient as pat
 import customLayers as cLayers
@@ -403,15 +405,15 @@ def statisticalEvalPlot(lPatDataMean,
     smgraphs.plot_pacf(rPatData, ax6, color='k', method='ols')
     
     ax1.set_xlabel("Time (Day)", fontsize=9)
-    ax1.set_ylabel("Blood Glucose (mg/dL)", fontsize=9)
+    ax1.set_ylabel("Glucose (mg/dL)", fontsize=9)
     ax1.tick_params(axis='x', rotation = 25, labelsize=7)
     ax1.tick_params(axis='y', labelsize=8)
-    ax1.set_title("Blood Glucose Mean over Time")
+    ax1.set_title("Glucose Mean over Time")
     ax2.set_xlabel("Time (Day)", fontsize=9)
-    ax2.set_ylabel("Blood Glucose (mg/dL)", fontsize=9)
+    ax2.set_ylabel("Glucose (mg/dL)", fontsize=9)
     ax2.tick_params(axis='x', rotation = 25, labelsize=7)
     ax2.tick_params(axis='y', labelsize=8)
-    ax2.set_title("Blood Glucose Mean over Time")
+    ax2.set_title("Glucose Mean over Time")
     ax3.set_xlabel("Lag", fontsize=9)
     ax3.set_ylabel("Left Arm", fontsize=9)
     ax4.set_xlabel("Lag", fontsize=9)
@@ -491,5 +493,49 @@ def statisticalEvalPlot(lPatDataMean,
     #                  "R_KPSS = " f"{rkpssTest['p-value']:.3f}", ha='center')
 
 
-
+def ccfPlot(lPatData,
+            rPatData,
+            lagsToPlot,
+            patNumber,
+            plotFileName,
+            savePlot):
+    
+    if len(lPatData) < len(rPatData):
+        rPatData = rPatData.iloc[0:len(lPatData)]
+    if len(rPatData) < len(lPatData):
+        lPatData = lPatData.iloc[0:len(rPatData)]
         
+    lags = range(1, len(lPatData)+1)
+    
+    ccfResults = ccf(lPatData, rPatData)
+    
+    fig, ax = plt.subplots(1,1)
+    ax.plot(lags[0:lagsToPlot],
+            ccfResults[0:lagsToPlot],
+            marker='o',
+            markerfacecolor='k',
+            markeredgecolor='k',
+            linestyle='None')
+    
+    for i in range(0, lagsToPlot):
+        ax.plot([lags[i], lags[i]], [0, ccfResults[i]], color='k')
+        
+    ax.fill_between(lags[0:lagsToPlot], 0, 2/np.sqrt(len(lPatData)), color='k', edgecolors='none', alpha=0.25)
+    ax.fill_between(lags[0:lagsToPlot], 0, -2/np.sqrt(len(lPatData)), color='k', edgecolors='none', alpha=0.25)
+    ax.axhline(0, color='k')
+    
+    ax.xaxis.set_major_formatter(FormatStrFormatter('%.0f'))
+    ax.yaxis.set_major_formatter(FormatStrFormatter('%0.1f'))
+    ax.set_xlim([0, 21])
+    ax.set_ylim([-1,1])
+    ax.set_title("Patient" f" {patNumber} Cross-Correlation", fontsize=14)
+    ax.set_xlabel('Lag', fontsize=12)
+    ax.set_ylabel('Cross-Correlation Left-Right', fontsize=12)
+    
+    if savePlot==True:
+        plt.savefig(plotFileName, bbox_inches='tight')
+    
+    
+    
+    
+    

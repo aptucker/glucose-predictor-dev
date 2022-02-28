@@ -103,6 +103,96 @@ for item in ax.collections:
             
 plt.savefig('ts_plots\\ExampleTrendACF.pdf')
 
+cPlots.ccfPlot(l1.GenData.loc["2018-10-14"],
+               r1.GenData.loc["2018-10-14"],
+               20,
+               1,
+               'ts_plots\\Pat1CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l2.GenData.loc["2018-10-22"],
+               r2.GenData.loc["2018-10-22"],
+               20,
+               2,
+               'ts_plots\\Pat2CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l3.GenData.loc["2018-11-10"],
+               r3.GenData.loc["2018-11-10"],
+               20,
+               3,
+               'ts_plots\\Pat3CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l4.GenData.loc["2018-11-15"],
+               r4.GenData.loc["2018-11-15"],
+               20,
+               4,
+               'ts_plots\\Pat4CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l5.GenData.loc["2018-12-10"],
+               r5.GenData.loc["2018-12-10"],
+               20,
+               5,
+               'ts_plots\\Pat5CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l6.GenData.loc["2019-01-07"],
+               r6.GenData.loc["2019-01-07"],
+               20,
+               6,
+               'ts_plots\\Pat6CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l7.GenData.loc["2019-05-27"],
+               r7.GenData.loc["2019-05-27"],
+               20,
+               7,
+               'ts_plots\\Pat7CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l8.GenData.loc["2019-05-27"],
+               r8.GenData.loc["2019-05-27"],
+               20,
+               8,
+               'ts_plots\\Pat8CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l9.GenData.loc["2019-06-11"],
+               r9.GenData.loc["2019-06-11"],
+               20,
+               9,
+               'ts_plots\\Pat9CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l10.GenData.loc["2019-06-18"],
+               r10.GenData.loc["2019-06-18"],
+               20,
+               10,
+               'ts_plots\\Pat10CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l11.GenData.loc["2019-07-08"],
+               r11.GenData.loc["2019-07-08"],
+               20,
+               11,
+               'ts_plots\\Pat11CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l12.GenData.loc["2019-07-18"],
+               r12.GenData.loc["2019-07-18"],
+               20,
+               12,
+               'ts_plots\\Pat12CCF.pdf',
+               True)
+
+cPlots.ccfPlot(l13.GenData.loc["2019-11-03"],
+               r13.GenData.loc["2019-11-03"],
+               20,
+               13,
+               'ts_plots\\Pat13CCF.pdf',
+               True)
 # %% Mean, ACF, PACF Plots
 
 cPlots.statisticalEvalPlot(l1.GenData,
