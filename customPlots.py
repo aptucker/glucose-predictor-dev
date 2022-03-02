@@ -430,8 +430,8 @@ def statisticalEvalPlot(lPatDataMean,
     if diffData == True:
         fig.suptitle("Patient" f" {patNumber} Statistical Analysis - Differenced Data", fontsize=16)
     
-    fig.text(0.5,0, "P-values for: L_ADF = " f"{ladfTest['p-value']:.3f}; "\
-                 "R_ADF = " f"{radfTest['p-value']:.3f}; ", ha='center')
+    fig.text(0.5,0, "P-values for: $L_{ADF}$ = " f"{ladfTest['p-value']:.3f}; "\
+                 "$R_{ADF}$ = " f"{radfTest['p-value']:.3f}; ", ha='center')
     
     for item in ax3.collections:
     #change the color of the CI 
