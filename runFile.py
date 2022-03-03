@@ -9,10 +9,15 @@
 #             'GRU H=1 Model',
 #             'Save Results']
 
+# cellList = ['Imports and Data Loading',
+#             'Load w/o Previous Results',
+#             'JDST Model Definition',
+#             'GRU H=1 Model',
+#             'Save Results']
+
 cellList = ['Imports and Data Loading',
-            'Load w/o Previous Results',
+            'Load w/Previous Results',
             'JDST Model Definition',
-            'GRU H=1 Model',
             'Save Results']
 
 fileList = ['C:/Code/glucose-predictor-dev/patient1.py',
