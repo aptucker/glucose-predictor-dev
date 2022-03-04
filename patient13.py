@@ -15,6 +15,7 @@ import time
 import patient as pat
 import customLayers as cLayers
 import customModels as cModels
+import customCallbacks as cBacks
 import training as trn
 
 models = {}    
@@ -41,7 +42,7 @@ K = 4
 D = lag+1
 
 b_size = 1
-epochs = 5
+epochs = 10
 
 lPat.resetData()
 rPat.resetData()
@@ -67,9 +68,20 @@ bInit = np.random.normal(0, 0.005, (H+1, K))
 # callbacks = []
 callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                               min_delta = 0.05,
-                                              patience = 2,
+                                              patience = 4,
                                               mode = "min",
                                               restore_best_weights = False)]
+
+callbacks = [callbacks,
+             callbacks,
+             callbacks,
+             callbacks]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
+
 
 initializers = [initializer1, initializer2]
 # initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
@@ -102,12 +114,16 @@ trn.cvTraining(lPat,
                epochs,
                models,
                "JDST",
-               callbacks)
+               callbacks,
+               lossWeights,
+               reComp=True)
 
 tocJDST = time.perf_counter()
 
-timePat13JDST = tocJDST - ticJDST
-print(tocJDST - ticJDST)
+timePatJDST = tocJDST - ticJDST
+
+lPat.timeStorage["JDST"] = timePatJDST
+rPat.timeStorage["JDST"] = timePatJDST
 
 print("JDST Done")
 # %% Sequential w/2 Hidden Layers
@@ -139,6 +155,17 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                              patience = 10,
                                              mode = "min",
                                              restore_best_weights = True)]
+
+callbacks = [callbacks,
+             callbacks,
+             callbacks,
+             callbacks]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
+
 
 lPat.resetData()
 rPat.resetData()
@@ -174,7 +201,9 @@ trn.cvTraining(lPat,
                epochs,
                models,
                "Sequential H=2",
-               callbacks)
+               callbacks,
+               lossWeights,
+               reComp=True)
 
 print("Sequential H=2 Done")
 
@@ -196,6 +225,17 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                              patience = 5,
                                              mode = "min",
                                              restore_best_weights = True)]
+
+callbacks = [callbacks,
+             callbacks,
+             callbacks,
+             callbacks]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
+
 
 lPat.resetData()
 rPat.resetData()
@@ -234,7 +274,9 @@ trn.cvTraining(lPat,
                epochs,
                models,
                "Circadian 1",
-               callbacks)
+               callbacks,
+               lossWeights,
+               reComp=True)
 
 print("Circadian 1 Done")
 
@@ -261,6 +303,12 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                              patience = 4,
                                              mode = "min",
                                              restore_best_weights = True)]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
+
 
 lPat.resetData()
 rPat.resetData()
@@ -322,18 +370,11 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                               patience = 10,
                                               mode = "min",
                                               restore_best_weights = True)]
-def scheduler(epoch, lr):
-    if epoch < 10:
-        return lr
-    else:
-        return lr * tf.math.exp(-0.1)
 
-# callbacks = [tf.keras.callbacks.LearningRateScheduler(scheduler),
-#              tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-#                                               min_delta = 0.05,
-#                                               patience = 20,
-#                                               mode = "min",
-#                                               restore_best_weights = True)]
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
 
 lPat.resetData()
 rPat.resetData()
@@ -395,6 +436,12 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                              patience = 10,
                                              mode = "min",
                                              restore_best_weights = True)]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
+
 
 lPat.resetData()
 rPat.resetData()
@@ -474,6 +521,17 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                               mode = "min",
                                               restore_best_weights = True)]
 
+callbacks = [callbacks,
+             callbacks,
+             callbacks,
+             callbacks]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
+
+
 inputs = tf.keras.Input(shape=(H,1))
 gruLayer = tf.keras.layers.GRU(H, activation='tanh', recurrent_activation='sigmoid', use_bias=True, bias_initializer='ones')
 x = gruLayer(inputs)
@@ -497,12 +555,16 @@ trn.cvTraining(lPat,
                 epochs,
                 models,
                 "GRU H=1",
-                callbacks)
+                callbacks,
+                lossWeights,
+                reComp=True)
 
 tocGRU = time.perf_counter()
 
-timePat13GRU = tocGRU - ticGRU
-print(tocGRU - ticGRU)
+timePatGRU = tocGRU - ticGRU
+
+lPat.timeStorage["GRU H=1"] = timePatGRU
+rPat.timeStorage["GRU H=1"] = timePatGRU
 
 print("GRU H=1 Done")
 

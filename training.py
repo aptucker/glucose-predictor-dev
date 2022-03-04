@@ -123,7 +123,11 @@ def cvTraining(lPatient,
     lrMARD = np.zeros([nFoldIter*2, outSize])
     rlMARD = np.zeros([nFoldIter*2, outSize])
     
-    models[modelName].save_weights('model.start')
+    if modelName == "GRU H=1":
+        models[modelName].save_weights('model.start')
+        
+    else:
+        modelWeightsStart = models[modelName].get_weights()
         
     
     # Lag data if not already lagged
@@ -145,14 +149,18 @@ def cvTraining(lPatient,
         [rTempValNorm, rTempValMean, rTempValStd] = zscoreData(rPatient.tempVal)
         
         # LEFT-LEFT Training->Validation
-        if reComp == False:
-            models[modelName].load_weights('model.start')
+        if modelName == "GRU H=1":
+            if reComp == False:
+                models[modelName].load_weights('model.start')
+            else:
+                models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+                  loss=tf.keras.losses.MeanSquaredError(), 
+                  metrics=tf.keras.metrics.RootMeanSquaredError(),
+                  loss_weights=lossWeights[0])
+                models[modelName].load_weights('model.start')
+        
         else:
-            models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
-              loss=tf.keras.losses.MeanSquaredError(), 
-              metrics=tf.keras.metrics.RootMeanSquaredError(),
-              loss_weights=lossWeights[0])
-            models[modelName].load_weights('model.start')
+            models[modelName].set_weights(modelWeightsStart)
         
         llTrnTrain = models[modelName].fit(lTempTrainNorm[:, outSize:], 
                                                     lTempTrainNorm[:, 0:outSize], 
@@ -169,14 +177,18 @@ def cvTraining(lPatient,
         models[modelName].reset_states()
         
         # LEFT-LEFT Validation->Training
-        if reComp == False:
-            models[modelName].load_weights('model.start')
+        if modelName == "GRU H=1":
+            if reComp == False:
+                models[modelName].load_weights('model.start')
+            else:
+                models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+                  loss=tf.keras.losses.MeanSquaredError(), 
+                  metrics=tf.keras.metrics.RootMeanSquaredError(),
+                  loss_weights=lossWeights[0])
+                models[modelName].load_weights('model.start')
+                
         else:
-            models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
-              loss=tf.keras.losses.MeanSquaredError(), 
-              metrics=tf.keras.metrics.RootMeanSquaredError(),
-              loss_weights=lossWeights[1])
-            models[modelName].load_weights('model.start')
+            models[modelName].set_weights(modelWeightsStart)
         
         llValTrain = models[modelName].fit(lTempValNorm[:, outSize:],
                                                    lTempValNorm[:, 0:outSize],
@@ -193,14 +205,18 @@ def cvTraining(lPatient,
         models[modelName].reset_states()
         
         # RIGHT-RIGHT Training->Validation
-        if reComp == False:
-            models[modelName].load_weights('model.start')
+        if modelName == "GRU H=1":
+            if reComp == False:
+                models[modelName].load_weights('model.start')
+            else:
+                models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+                  loss=tf.keras.losses.MeanSquaredError(), 
+                  metrics=tf.keras.metrics.RootMeanSquaredError(),
+                  loss_weights=lossWeights[0])
+                models[modelName].load_weights('model.start')
+                
         else:
-            models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
-              loss=tf.keras.losses.MeanSquaredError(), 
-              metrics=tf.keras.metrics.RootMeanSquaredError(),
-              loss_weights=lossWeights[2])
-            models[modelName].load_weights('model.start')
+            models[modelName].set_weights(modelWeightsStart)
         
         rrTrnTrain = models[modelName].fit(rTempTrainNorm[:, outSize:], 
                                                    rTempTrainNorm[:, 0:outSize], 
@@ -217,14 +233,18 @@ def cvTraining(lPatient,
         models[modelName].reset_states()
         
         # RIGHT-RIGHT Validation->Training
-        if reComp == False:
-            models[modelName].load_weights('model.start')
+        if modelName == "GRU H=1":
+            if reComp == False:
+                models[modelName].load_weights('model.start')
+            else:
+                models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+                  loss=tf.keras.losses.MeanSquaredError(), 
+                  metrics=tf.keras.metrics.RootMeanSquaredError(),
+                  loss_weights=lossWeights[0])
+                models[modelName].load_weights('model.start')
+                
         else:
-            models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
-              loss=tf.keras.losses.MeanSquaredError(), 
-              metrics=tf.keras.metrics.RootMeanSquaredError(),
-              loss_weights=lossWeights[3])
-            models[modelName].load_weights('model.start')
+            models[modelName].set_weights(modelWeightsStart)
         
         rrValTrain = models[modelName].fit(rTempValNorm[:, outSize:],
                                                    rTempValNorm[:, 0:outSize],

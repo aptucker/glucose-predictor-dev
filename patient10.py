@@ -15,6 +15,7 @@ import time
 import patient as pat
 import customLayers as cLayers
 import customModels as cModels
+import customCallbacks as cBacks
 import training as trn
 
 models = {}
@@ -40,7 +41,7 @@ K = 4
 D = lag+1
 
 b_size = 1
-epochs = 5
+epochs = 10
 
 lPat.resetData()
 rPat.resetData()
@@ -65,10 +66,20 @@ bInit = np.random.normal(0, 0.005, (H+1, K))
 
 # callbacks = []
 callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-                                              min_delta = 0.05,
-                                              patience = 2,
+                                              min_delta = 0.1,
+                                              patience = 4,
                                               mode = "min",
                                               restore_best_weights = False)]
+
+callbacks = [callbacks,
+             callbacks,
+             callbacks,
+             callbacks]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
 
 initializers = [initializer1, initializer2]
 # initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
@@ -101,12 +112,16 @@ trn.cvTraining(lPat,
                epochs,
                models,
                "JDST",
-               callbacks)
+               callbacks,
+               lossWeights,
+               reComp=True)
 
 tocJDST = time.perf_counter()
 
-timePat10JDST = tocJDST - ticJDST
-print(tocJDST - ticJDST)
+timePatJDST = tocJDST - ticJDST
+
+lPat.timeStorage["JDST"] = timePatJDST
+rPat.timeStorage["JDST"] = timePatJDST
 
 print("JDST Done")
 # %% Sequential w/2 Hidden Layers
@@ -138,6 +153,16 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                              patience = 10,
                                              mode = "min",
                                              restore_best_weights = True)]
+
+callbacks = [callbacks,
+             callbacks,
+             callbacks,
+             callbacks]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
 
 lPat.resetData()
 rPat.resetData()
@@ -173,7 +198,9 @@ trn.cvTraining(lPat,
                epochs,
                models,
                "Sequential H=2",
-               callbacks)
+               callbacks,
+               lossWeights,
+               reComp=True)
 
 print("Sequential H=2 Done")
 
@@ -195,6 +222,16 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                              patience = 5,
                                              mode = "min",
                                              restore_best_weights = True)]
+
+callbacks = [callbacks,
+             callbacks,
+             callbacks,
+             callbacks]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
 
 lPat.resetData()
 rPat.resetData()
@@ -233,7 +270,9 @@ trn.cvTraining(lPat,
                epochs,
                models,
                "Circadian 1",
-               callbacks)
+               callbacks,
+               lossWeights,
+               reComp=True)
 
 print("Circadian 1 Done")
 
@@ -260,6 +299,11 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                              patience = 4,
                                              mode = "min",
                                              restore_best_weights = True)]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
 
 lPat.resetData()
 rPat.resetData()
@@ -321,18 +365,11 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                               patience = 10,
                                               mode = "min",
                                               restore_best_weights = True)]
-def scheduler(epoch, lr):
-    if epoch < 10:
-        return lr
-    else:
-        return lr * tf.math.exp(-0.1)
 
-# callbacks = [tf.keras.callbacks.LearningRateScheduler(scheduler),
-#              tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-#                                               min_delta = 0.05,
-#                                               patience = 20,
-#                                               mode = "min",
-#                                               restore_best_weights = True)]
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
 
 lPat.resetData()
 rPat.resetData()
@@ -394,6 +431,11 @@ callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                              patience = 10,
                                              mode = "min",
                                              restore_best_weights = True)]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
 
 lPat.resetData()
 rPat.resetData()
@@ -466,46 +508,6 @@ pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
 
 [mlpNorm, mean, std] = trn.zscoreData(lPat.trainData.to_numpy())
 
-class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
-    
-    def __init__(self, patience=0, baseLoss=0):
-        super(EarlyStoppingAtMinLoss, self).__init__()
-        self.patience = patience
-        self.baseLoss = baseLoss
-        self.best_weights = None
-        
-    
-    def on_train_begin(self, logs=None):
-        self.wait = 0
-        self.stopped_epoch = 0
-        self.best = np.Inf
-        
-    def on_epoch_end(self, epoch, logs=None):
-        current = logs.get("loss")
-        if np.less(current, self.best):
-            if np.less(current, self.baseLoss):
-                self.best = current
-                self.wait = 0
-                self.stopped_epoch = epoch    
-                self.best_weights = self.model.get_weights()
-                self.model.stop_training = True
-            
-            self.best = current
-            self.wait = 0
-            self.best_weights = self.model.get_weights()
-            
-        else:
-            self.wait += 1
-            if self.wait >= self.patience:
-                self.stopped_epoch = epoch
-                self.model.stop_training = True
-                print("Restoring model weights from the end of the best epoch")
-                self.model.set_weights(self.best_weights)
-                
-    def on_train_end(self, logs=None):
-        if self.stopped_epoch > 0:
-            print("Epoch %05d: early stopping" % (self.stopped_epoch + 1))
-
 # callbacks = []
 # callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
 #                                               min_delta = 0.001,
@@ -513,10 +515,10 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
 #                                               mode = "min",
 #                                               restore_best_weights = True)]
 
-callbacks = [EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.65),
-             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.65),
-             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.65),
-             EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.65)]
+callbacks = [cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.65),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.65),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.65),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.65)]
 
 lossWeights = [[1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0],
@@ -536,74 +538,6 @@ model.compile(optimizer='SGD', #tf.keras.optimizers.SGD(learning_rate=0.001),
               metrics=tf.keras.metrics.RootMeanSquaredError(),
               loss_weights=[1.0, 1.0, 1.0, 1.0])
 models["GRU H=1"] = model
-
-# model.save_weights('model.start')
-
-# lPat.randomizeTrainingData(2, seed=0)
-# rPat.randomizeTrainingData(2, seed=0)
-
-# [lTempTrainNorm, lTempTrainMean, lTempTrainStd] = trn.zscoreData(lPat.tempTrain)
-# [lTempValNorm, lTempValMean, lTempValStd] = trn.zscoreData(lPat.tempVal)
-
-# [rTempTrainNorm, rTempTrainMean, rTempTrainStd] = trn.zscoreData(rPat.tempTrain)
-# [rTempValNorm, rTempValMean, rTempValStd] = trn.zscoreData(rPat.tempVal)
-
-# model.load_weights('model.start')
-
-# llTrnTrain = model.fit(lTempTrainNorm[:, 4:], 
-#                                                     lTempTrainNorm[:, 0:4], 
-#                                                     batch_size = 1, 
-#                                                     epochs = epochs,
-#                                                     callbacks = callbacks)
-
-# print(model.weights)
-
-# llValPred = model.predict(lTempValNorm[:, 4:], 
-#                                                       batch_size = 1)
-
-# lrValPred = model.predict(rTempValNorm[:, 4:], 
-#                                                        batch_size = 1)
-
-# model.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.001),
-#               loss=tf.keras.losses.MeanSquaredError(), 
-#               metrics=tf.keras.metrics.RootMeanSquaredError(),
-#               loss_weights=[1.0, 1.0, 1.0, 1.0])
-
-# model.load_weights('model.start')
-
-# llValTrain = model.fit(lTempValNorm[:, 4:],
-#                                                     lTempValNorm[:, 0:4],
-#                                                     batch_size = 1,
-#                                                     epochs = epochs,
-#                                                     callbacks = callbacks[1])
-
-# print(model.weights)
-# llTrnPred = model.predict(lTempTrainNorm[:, 4:],
-#                                               batch_size = 1)
-
-# lrTrnPred = model.predict(rTempTrainNorm[:, 4:],
-#                                                 batch_size = 1)
-
-# llValPredDeNorm = trn.deNormData(llValPred, lTempValMean, lTempValStd)
-# llTrnPredDeNorm = trn.deNormData(llTrnPred, lTempTrainMean, lTempTrainStd)
-
-# lrValPredDeNorm = trn.deNormData(lrValPred, rTempValMean, rTempValStd)
-# lrTrnPredDeNorm = trn.deNormData(lrTrnPred, rTempTrainMean, rTempTrainStd)
-
-# llMSE1 = trn.MSError(llValPredDeNorm, lPat.tempVal[:, 0:4])
-# llRMSE1 = np.sqrt(llMSE1)
-# llMSE2 = trn.MSError(llTrnPredDeNorm, lPat.tempTrain[:, 0:4])
-# llRMSE2 = np.sqrt(llMSE2)
-
-# lrMSE1 = trn.MSError(lrValPredDeNorm, rPat.tempVal[:, 0:4])
-# lrRMSE1 = np.sqrt(lrMSE1)
-# lrMSE2 = trn.MSError(lrTrnPredDeNorm, rPat.tempTrain[:, 0:4])
-# lrRMSE2 = np.sqrt(lrMSE2)
-
-# print(llRMSE1)
-# print(llRMSE2)
-# print(lrRMSE1)
-# print(lrRMSE2)
 
 
 ticGRU = time.perf_counter()
@@ -625,8 +559,10 @@ trn.cvTraining(lPat,
 
 tocGRU = time.perf_counter()
 
-timePat10GRU = tocGRU - ticGRU
-print(tocGRU - ticGRU)
+timePatGRU = tocGRU - ticGRU
+
+lPat.timeStorage["GRU H=1"] = timePatGRU
+rPat.timeStorage["GRU H=1"] = timePatGRU
 
 print("GRU H=1 Done")
 
