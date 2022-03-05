@@ -4,10 +4,10 @@
 #
 # ----------------------------------------------------------------------------
 
-# cellList = ['Imports and Data Loading',
-#             'Load w/Previous Results',
-#             'GRU H=1 Model',
-#             'Save Results']
+cellList = ['Imports and Data Loading',
+            'Load w/Previous Results',
+            'GRU H=1 Model',
+            'Save Results']
 
 # cellList = ['Imports and Data Loading',
 #             'Load w/o Previous Results',
@@ -15,10 +15,10 @@
 #             'GRU H=1 Model',
 #             'Save Results']
 
-cellList = ['Imports and Data Loading',
-            'Load w/Previous Results',
-            'JDST Model Definition',
-            'Save Results']
+# cellList = ['Imports and Data Loading',
+#             'Load w/Previous Results',
+#             'JDST Model Definition',
+#             'Save Results']
 
 fileList = ['C:/Code/glucose-predictor-dev/patient1.py',
             'C:/Code/glucose-predictor-dev/patient2.py',

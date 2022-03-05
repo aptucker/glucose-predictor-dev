@@ -151,7 +151,8 @@ cPlots.modelEvalPlot(lPats, rPats, 'Sequential H=2', labels, index, patNames, Fa
 cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames, False, "")
 cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames, False, "")
 cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames, False, "")
-cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\GRUError.pdf')
+# cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\GRUError.pdf')
+cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, False, "")
 
 # %% Export to Excel
 
