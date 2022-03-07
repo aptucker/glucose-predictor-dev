@@ -150,9 +150,9 @@ def cvTraining(lPatient,
         
         # LEFT-LEFT Training->Validation
         if modelName == "GRU H=1":
-            if reComp == False:
-                models[modelName].load_weights('model.start')
-            else:
+            # if reComp == False:
+                # models[modelName].load_weights('model.start')
+            if reComp == True:
                 models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
                   loss=tf.keras.losses.MeanSquaredError(), 
                   metrics=tf.keras.metrics.RootMeanSquaredError(),
@@ -178,9 +178,9 @@ def cvTraining(lPatient,
         
         # LEFT-LEFT Validation->Training
         if modelName == "GRU H=1":
-            if reComp == False:
-                models[modelName].load_weights('model.start')
-            else:
+            # if reComp == False:
+                # models[modelName].load_weights('model.start')
+            if reComp == True:
                 models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
                   loss=tf.keras.losses.MeanSquaredError(), 
                   metrics=tf.keras.metrics.RootMeanSquaredError(),
@@ -206,9 +206,9 @@ def cvTraining(lPatient,
         
         # RIGHT-RIGHT Training->Validation
         if modelName == "GRU H=1":
-            if reComp == False:
-                models[modelName].load_weights('model.start')
-            else:
+            # if reComp == False:
+                # models[modelName].load_weights('model.start')
+            if reComp == True:
                 models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
                   loss=tf.keras.losses.MeanSquaredError(), 
                   metrics=tf.keras.metrics.RootMeanSquaredError(),
@@ -234,9 +234,9 @@ def cvTraining(lPatient,
         
         # RIGHT-RIGHT Validation->Training
         if modelName == "GRU H=1":
-            if reComp == False:
-                models[modelName].load_weights('model.start')
-            else:
+            # if reComp == False:
+                # models[modelName].load_weights('model.start')
+            if reComp == True:
                 models[modelName].compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
                   loss=tf.keras.losses.MeanSquaredError(), 
                   metrics=tf.keras.metrics.RootMeanSquaredError(),

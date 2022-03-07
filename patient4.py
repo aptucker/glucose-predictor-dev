@@ -139,7 +139,7 @@ K = 4
 skip = None 
 
 b_size = 1
-epochs = 20
+epochs = 40
 
 initializers = [tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
                 tf.keras.initializers.RandomNormal(mean=0, stddev=0.005),
@@ -150,8 +150,8 @@ activators = ['sigmoid', 'sigmoid', None]
 shapes = [H, H, K]
 
 callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-                                             min_delta = 0.05,
-                                             patience = 10,
+                                             min_delta = 0.01,
+                                             patience = 25,
                                              mode = "min",
                                              restore_best_weights = True)]
 
@@ -201,7 +201,7 @@ trn.cvTraining(lPat,
                "Sequential H=2",
                callbacks,
                lossWeights,
-               reComp=True)
+               reComp=False)
 
 print("Sequential H=2 Done")
 
@@ -273,7 +273,7 @@ trn.cvTraining(lPat,
                "Circadian 1",
                callbacks,
                lossWeights,
-               reComp=True)
+               reComp=False)
 
 print("Circadian 1 Done")
 

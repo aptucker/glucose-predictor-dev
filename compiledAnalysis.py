@@ -147,10 +147,10 @@ cPlots.singlePatientError(l13, r13, modelNames, labels, index, modelDrops, 13)
 
 # [e15, e30, e45, e60] = 
 cPlots.modelEvalPlot(lPats, rPats, 'JDST', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\JDSTError.pdf')
-cPlots.modelEvalPlot(lPats, rPats, 'Sequential H=2', labels, index, patNames, False, "")
-cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames, False, "")
-cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames, False, "")
-cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames, False, "")
+cPlots.modelEvalPlot(lPats, rPats, 'Sequential H=2', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\SeqH2Error.pdf')
+cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\Circ1Error.pdf')
+cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\ParError.pdf')
+cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\ParCircError.pdf')
 # cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\GRUError.pdf')
 cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, False, "")
 
@@ -172,6 +172,18 @@ plusMinusLabels = ['+/-', '+/-', '+/-', '+/-',
 
 cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'RMSE', 'JDST', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_rmse_JDST.xlsx")
 cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MARD', 'JDST', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_mard_JDST.xlsx")
+
+cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'RMSE', 'Sequential H=2', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_rmse_SeqH2.xlsx")
+cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MARD', 'Sequential H=2', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_mard_SeqH2.xlsx")
+
+cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'RMSE', 'Circadian 1', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_rmse_Circ1.xlsx")
+cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MARD', 'Circadian 1', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_mard_Circ1.xlsx")
+
+cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'RMSE', 'Parallel', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_rmse_Par.xlsx")
+cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MARD', 'Parallel', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_mard_Par.xlsx")
+
+cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'RMSE', 'Parallel Circadian', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_rmse_ParCirc.xlsx")
+cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MARD', 'Parallel Circadian', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_mard_ParCirc.xlsx")
 
 cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'RMSE', 'GRU H=1', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\python_tables.xlsx")
 cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MARD', 'GRU H=1', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\python_tables_mard.xlsx")
