@@ -533,7 +533,7 @@ model = tf.keras.Model(inputs=inputs, outputs=output)
 # model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
 #               loss=tf.keras.losses.MeanSquaredError(), 
 #               metrics=tf.keras.metrics.RootMeanSquaredError())
-model.compile(optimizer='SGD', #tf.keras.optimizers.SGD(learning_rate=0.001),
+model.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.001),
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
               loss_weights=[1.0, 1.0, 1.0, 1.0])

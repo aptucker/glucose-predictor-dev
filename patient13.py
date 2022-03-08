@@ -515,16 +515,21 @@ pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
 [mlpNorm, mean, std] = trn.zscoreData(lPat.trainData.to_numpy())
 
 # callbacks = []
-callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-                                              min_delta = 0.001,
-                                              patience = 100,
-                                              mode = "min",
-                                              restore_best_weights = True)]
+# callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+#                                               min_delta = 0.001,
+#                                               patience = 100,
+#                                               mode = "min",
+#                                               restore_best_weights = True)]
 
-callbacks = [callbacks,
-             callbacks,
-             callbacks,
-             callbacks]
+# callbacks = [callbacks,
+#              callbacks,
+#              callbacks,
+#              callbacks]
+
+callbacks = [cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.29),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.29),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.29),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.29)]
 
 lossWeights = [[1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0],

@@ -532,7 +532,7 @@ gruLayer = tf.keras.layers.GRU(H, activation='tanh', recurrent_activation='sigmo
 x = gruLayer(inputs)
 output = tf.keras.layers.Dense(K, activation=None, use_bias=True, bias_initializer='ones')(x)
 model = tf.keras.Model(inputs=inputs, outputs=output)
-model.compile(optimizer= 'SGD', #tf.keras.optimizers.SGD(learning_rate=0.0001)
+model.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.001),
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
               loss_weights = [1.0, 1.0, 1.0, 1.0])

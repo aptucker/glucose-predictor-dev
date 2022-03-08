@@ -12,6 +12,19 @@ import numpy as np
 
 class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
     
+    """
+    Custom callback for stopping at a set error to prevent overfitting
+    
+    Inputs: 
+        Patience - The number of epochs to wait to stop if metric has not been 
+        achieved
+        baseLoss - The floor for loss to stop the model training
+        
+    Outputs:
+        EarlyStoppingAtMinLoss - Stops training early if metrics are met
+        
+    """
+    
     def __init__(self, patience=0, baseLoss=0):
         super(EarlyStoppingAtMinLoss, self).__init__()
         self.patience = patience
@@ -49,3 +62,23 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
     def on_train_end(self, logs=None):
         if self.stopped_epoch > 0:
             print("Epoch %05d: early stopping" % (self.stopped_epoch + 1))
+
+
+class GetErrorOnBatch(tf.keras.callbacks.Callback):
+    
+    def __init__(self):
+        super(GetErrorOnBatch, self).__init__()
+    
+    def on_train_begin(self, logs=None):
+        batchList = np.array([])
+        lossList = np.array([])
+        
+    def on_train_batch_end(self, batch, logs=None):
+        np.append(batchList, batch)
+        np.append(lossList, logs.get('loss'))
+                  
+    def on_train_end(self, logs=None):
+        errorOut = np.reshape(np.concatenate((batchList, lossList), axis=0), (-1, 2))
+        
+    
+    

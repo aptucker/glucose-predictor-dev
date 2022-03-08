@@ -148,16 +148,21 @@ activators = ['sigmoid', 'sigmoid', None]
 
 shapes = [H, H, K]
 
-callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-                                             min_delta = 0.01,
-                                             patience = 25,
-                                             mode = "min",
-                                             restore_best_weights = True)]
+# callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+#                                              min_delta = 0.01,
+#                                              patience = 25,
+#                                              mode = "min",
+#                                              restore_best_weights = True)]
 
-callbacks = [callbacks,
-             callbacks,
-             callbacks,
-             callbacks]
+# callbacks = [callbacks,
+#              callbacks,
+#              callbacks,
+#              callbacks]
+
+callbacks = [cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15)]
 
 lossWeights = [[1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0],
@@ -491,7 +496,7 @@ shapes = [H, H, K]
 activators = ['tanh', 'sigmoid', None]
 
 b_size = 1
-epochs = 100
+epochs = 50
 
 # lPat.randomizeTrainingData(Kfold, seed=1)
 lPat.resetData()
@@ -515,10 +520,10 @@ pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
 #                                               mode = "min",
 #                                               restore_best_weights = True)]
 
-callbacks = [cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.17),
-             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.17),
-             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.17),
-             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.17)]
+callbacks = [cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.19),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.19),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.19),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.19)]
 
 lossWeights = [[1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0],

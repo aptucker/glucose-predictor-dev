@@ -4,15 +4,15 @@
 #
 # ----------------------------------------------------------------------------
 
-# cellList = ['Imports and Data Loading',
-#             'Load w/Previous Results',
-#             'GRU H=1 Model',
-#             'Save Results']
-
 cellList = ['Imports and Data Loading',
             'Load w/Previous Results',
-            'Parallel with Circadian Inputs',
+            'GRU H=1 Model',
             'Save Results']
+
+# cellList = ['Imports and Data Loading',
+#             'Load w/Previous Results',
+#             'Parallel with Circadian Inputs',
+#             'Save Results']
 
 # cellList = ['Imports and Data Loading',
 #             'Load w/o Previous Results',

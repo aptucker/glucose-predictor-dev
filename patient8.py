@@ -492,7 +492,7 @@ shapes = [H, H, K]
 activators = ['tanh', 'sigmoid', None]
 
 b_size = 1
-epochs = 20
+epochs = 50
 
 # lPat.randomizeTrainingData(Kfold, seed=1)
 lPat.resetData()
@@ -509,17 +509,22 @@ pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
 
 [mlpNorm, mean, std] = trn.zscoreData(lPat.trainData.to_numpy())
 
-callbacks = []
+# callbacks = []
 # callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-#                                              min_delta = 0.001,
-#                                              patience = 2,
-#                                              mode = "min",
-#                                              restore_best_weights = True)]
+#                                               min_delta = 0.05,
+#                                               patience = 10,
+#                                               mode = "min",
+#                                               restore_best_weights = True)]
 
-callbacks = [callbacks,
-             callbacks,
-             callbacks,
-             callbacks]
+# callbacks = [callbacks,
+#              callbacks,
+#              callbacks,
+#              callbacks]
+
+callbacks = [cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15),
+             cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15)]
 
 lossWeights = [[1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0],
@@ -546,7 +551,7 @@ trn.cvTraining(lPat,
                 lag,
                 skip,
                 b_size,
-                20,
+                epochs,
                 models,
                 "GRU H=1",
                 callbacks,

@@ -252,19 +252,19 @@ def modelEvalPlot(lPats,
                            index = labels)
     
     patLabs = ["",
-               "PATIENT 1",
-               "PATIENT 2",
-               "PATIENT 3",
-               "PATIENT 4",
-               "PATIENT 5",
-               "PATIENT 6",
-               "PATIENT 7",
-               "PATIENT 8",
-               "PATIENT 9",
-               "PATIENT 10",
-               "PATIENT 11",
-               "PATIENT 12",
-               "PATIENT 13"]
+               "PARTICIPANT 1",
+               "PARTICIPANT 2",
+               "PARTICIPANT 3",
+               "PARTICIPANT 4",
+               "PARTICIPANT 5",
+               "PARTICIPANT 6",
+               "PARTICIPANT 7",
+               "PARTICIPANT 8",
+               "PARTICIPANT 9",
+               "PARTICIPANT 10",
+               "PARTICIPANT 11",
+               "PARTICIPANT 12",
+               "PARTICIPANT 13"]
     
     dotchart = plt.figure(figsize=(9.5,11))
     ax = plt.axes()
@@ -500,6 +500,24 @@ def ccfPlot(lPatData,
             plotFileName,
             savePlot):
     
+    """
+    The cross-correlation plot between two sets of glucose data is used to 
+    examine correlation between right and left arm CGM data. A whole day of 
+    data should be used to calculate this metric.
+    
+    Inputs:
+        lPatData - Left arm data
+        rPatData - Right arm Data
+        lagsToPlot - The number of lags to show on plot
+        patNumber - Patient number for plot
+        plotFileName - File name to save plot
+        savePlot - Boolean to toggle file save
+        
+    Outputs:
+        ccfPlot - saved if toggled on
+        
+    """
+    
     if len(lPatData) < len(rPatData):
         rPatData = rPatData.iloc[0:len(lPatData)]
     if len(rPatData) < len(lPatData):
@@ -544,6 +562,24 @@ def excelTableExport(lPats,
                      dataNameToExport,
                      modelName,
                      fileName):
+    
+    """
+    Export RMSE or MARD data to an excel table.
+    
+    Inputs:
+        lPats - List of patients left arm CGM data
+        rPats - List of patients right arm CGM data
+        phLabels - Prediction horizon labels
+        compLabels - Comparator (e.g., left-left) labels
+        plusMinusLabels - Add a plus minus for visuals
+        dataNameToExport - Toggle rmse or mard
+        modelName - Name of algorithm to export
+        fileName - Name of file to export to
+        
+    Outputs:
+        excelTableExport - Excel table saved in location given by fileName
+    
+    """
     
     outputDF = pd.DataFrame(phLabels, columns=['Prediction Horizon (min)'])
     outputDF['Algorithm Setup (trained-tested)'] = compLabels
@@ -616,3 +652,69 @@ def excelTableExport(lPats,
     
     
     outputDF.to_excel(fileName, sheet_name='Raw_Python_Data', index=False)
+    
+
+def dayPredictionPlot(lPatData,
+                      rPatData,
+                      model,
+                      patNumber,
+                      saveFile,
+                      fileName):
+    
+    
+    lPatPlotDF = pd.DataFrame(lPatData.copy())
+    rPatPlotDF = pd.DataFrame(rPatData.copy())
+    
+    pat.createLagData(lPatPlotDF, lag=3)
+    pat.createLagData(rPatPlotDF, lag=3)
+    
+    lPatPlot = lPatPlotDF[['Lag: 1', 'Lag: 2', 'Lag: 3']].values
+    rPatPlot = rPatPlotDF[['Lag: 1', 'Lag: 2', 'Lag: 3']].values
+    
+    [lPatZScore, lPatMean, lPatStd] = trn.zscoreData(lPatPlot)
+    [rPatZScore, rPatMean, rPatStd] = trn.zscoreData(rPatPlot)
+    
+    lPatPredNorm = model.predict(lPatZScore, batch_size=1)
+    rPatPredNorm = model.predict(rPatZScore, batch_size=1)
+    
+    lPatPred = trn.deNormData(lPatPredNorm, lPatMean, lPatStd)
+    rPatPred = trn.deNormData(rPatPredNorm, rPatMean, rPatStd)
+    
+    lPatPredDF = pd.DataFrame(lPatPlotDF['Historic Glucose(mg/dL)'].iloc[3:].copy())
+    rPatPredDF = pd.DataFrame(rPatPlotDF['Historic Glucose(mg/dL)'].iloc[3:].copy())
+    
+    lPatPredDF['15min PH'] = lPatPred[3:, 3]
+    rPatPredDF['15min PH'] = rPatPred[3:, 3]
+    
+    lPatPredDF['30min PH'] = lPatPred[3:, 2]
+    rPatPredDF['30min PH'] = rPatPred[3:, 2]
+    
+    lPatPredDF['45min PH'] = lPatPred[3:, 1]
+    rPatPredDF['45min PH'] = rPatPred[3:, 1]
+    
+    lPatPredDF['60min PH'] = lPatPred[3:, 0]
+    rPatPredDF['60min PH'] = rPatPred[3:, 0]
+    
+    lPatPredDF.rename(columns={'Historic Glucose(mg/dL)': 'Measured'}, inplace=True)
+    rPatPredDF.rename(columns={'Historic Glucose(mg/dL)': 'Measured'}, inplace=True)
+    
+    fig, ax = plt.subplots(1,1)
+    
+    # ax.plot(lPatPredDF.index, lPatPredDF['Historic Glucose(mg/dL)'])
+    colors=['k',
+           '#3F7D6E',
+           '#593560',
+           '#A25756',
+           '#E7B56D']
+    linestyles = ['--',
+                  '-',
+                  '-',
+                  '-',
+                  '-']
+    
+    ax.set_prop_cycle(c=colors,
+                      ls=linestyles)
+    
+    lPatPredDF.plot(kind='line', ax=ax)
+    
+
