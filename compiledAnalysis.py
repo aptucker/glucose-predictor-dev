@@ -166,9 +166,43 @@ for i in range(len(lPats)):
         rPats[i].rmseStorage['GRU H=1']['rrRMSE'],
         rPats[i].rmseStorage['JDST']['rrRMSE'],
         5)}
-    
 
 cPlots.multiModelEvalPlot(lPats, rPats, ['JDST', 'GRU H=1'], labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\JDSTvGRUError.pdf')
+
+# %% Error Comparisons
+
+lErrorComp = []
+rErrorComp = []
+
+lCompPerc = []
+rCompPerc = []
+
+for i in range(len(lPats)):
+    lErrorComp.append([np.mean(lPats[i].rmseStorage['GRU H=1']['llRMSE'], axis=0) < np.mean(lPats[i].rmseStorage['JDST']['llRMSE'], axis=0)])
+    rErrorComp.append([np.mean(rPats[i].rmseStorage['GRU H=1']['rrRMSE'], axis=0) < np.mean(rPats[i].rmseStorage['JDST']['rrRMSE'], axis=0)])
+    
+    
+    
+    
+print('\n'.join(map(str, lErrorComp)))
+print('\n')
+print('\n'.join(map(str, rErrorComp)))
+
+# %% Time Comparisons
+timeDF = pd.DataFrame(index=range(1,14))
+tempHolder1 = []
+tempHolder2 = []
+
+for i in range(len(lPats)):
+    tempHolder1.append(lPats[i].timeStorage['GRU H=1'])
+    tempHolder2.append(lPats[i].timeStorage['JDST'])
+
+timeDF['JDST'] = tempHolder2
+timeDF['GRU'] = tempHolder1
+
+    
+print(timeDF)
+    
 
 # %% Export to Excel
 

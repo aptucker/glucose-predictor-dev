@@ -4,6 +4,8 @@
 #
 # ----------------------------------------------------------------------------
 
+from sys import platform 
+
 cellList = ['Imports and Data Loading',
             'Load w/Previous Results',
             'GRU H=1 Model',
@@ -25,19 +27,35 @@ cellList = ['Imports and Data Loading',
 #             'JDST Model Definition',
 #             'Save Results']
 
-fileList = ['C:/Code/glucose-predictor-dev/patient1.py',
-            'C:/Code/glucose-predictor-dev/patient2.py',
-            'C:/Code/glucose-predictor-dev/patient3.py',
-            'C:/Code/glucose-predictor-dev/patient4.py',
-            'C:/Code/glucose-predictor-dev/patient5.py',
-            'C:/Code/glucose-predictor-dev/patient6.py',
-            'C:/Code/glucose-predictor-dev/patient7.py',
-            'C:/Code/glucose-predictor-dev/patient8.py',
-            'C:/Code/glucose-predictor-dev/patient9.py',
-            'C:/Code/glucose-predictor-dev/patient10.py',
-            'C:/Code/glucose-predictor-dev/patient11.py',
-            'C:/Code/glucose-predictor-dev/patient12.py',
-            'C:/Code/glucose-predictor-dev/patient13.py']
+if platform == 'win32':
+    fileList = ['C:/Code/glucose-predictor-dev/patient1.py',
+                'C:/Code/glucose-predictor-dev/patient2.py',
+                'C:/Code/glucose-predictor-dev/patient3.py',
+                'C:/Code/glucose-predictor-dev/patient4.py',
+                'C:/Code/glucose-predictor-dev/patient5.py',
+                'C:/Code/glucose-predictor-dev/patient6.py',
+                'C:/Code/glucose-predictor-dev/patient7.py',
+                'C:/Code/glucose-predictor-dev/patient8.py',
+                'C:/Code/glucose-predictor-dev/patient9.py',
+                'C:/Code/glucose-predictor-dev/patient10.py',
+                'C:/Code/glucose-predictor-dev/patient11.py',
+                'C:/Code/glucose-predictor-dev/patient12.py',
+                'C:/Code/glucose-predictor-dev/patient13.py']
+    
+if platform == 'darwin':
+    fileList = ['C:/Code/glucose-predictor-dev/patient1.py',
+                'C:/Code/glucose-predictor-dev/patient2.py',
+                'C:/Code/glucose-predictor-dev/patient3.py',
+                'C:/Code/glucose-predictor-dev/patient4.py',
+                'C:/Code/glucose-predictor-dev/patient5.py',
+                'C:/Code/glucose-predictor-dev/patient6.py',
+                'C:/Code/glucose-predictor-dev/patient7.py',
+                'C:/Code/glucose-predictor-dev/patient8.py',
+                'C:/Code/glucose-predictor-dev/patient9.py',
+                'C:/Code/glucose-predictor-dev/patient10.py',
+                'C:/Code/glucose-predictor-dev/patient11.py',
+                'C:/Code/glucose-predictor-dev/patient12.py',
+                'C:/Code/glucose-predictor-dev/patient13.py']
 
 for i in range(len(fileList)):
     for e in range(len(cellList)):

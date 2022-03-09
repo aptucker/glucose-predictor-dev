@@ -11,6 +11,7 @@ import tensorflow as tf
 import numpy as np
 import pickle
 import time
+from sys import platform
 
 import patient as pat
 import customLayers as cLayers
@@ -21,12 +22,24 @@ import training as trn
 models = {}    
 
 # %% Load w/Previous Results
-with open("results\\patient7_analysis.pickle", "rb") as f:
-    lPat, rPat = pickle.load(f)
+
+if platform == 'win32':
+    with open("results\\patient7_analysis.pickle", "rb") as f:
+        lPat, rPat = pickle.load(f)
+
+if platform == 'darwin':
+    with open("results//patient7_analysis.pickle", "rb") as f:
+        lPat, rPat = pickle.load(f)
 
 # %% Load w/o Previous Results
-with open("processed_data\\patient7.pickle", "rb") as f:
-    lPat, rPat = pickle.load(f)
+
+if platform == 'win32':
+    with open("processed_data\\patient7.pickle", "rb") as f:
+        lPat, rPat = pickle.load(f)
+        
+if platform == 'darwin':
+    with open("processed_data//patient7.pickle", "rb") as f:
+        lPat, rPat = pickle.load(f)
 
 # %% JDST Model Definition
 partNum = 1
@@ -563,6 +576,10 @@ rPat.timeStorage["GRU H=1"] = timePatGRU
 print("GRU H=1 Done")
 # %% Save Results
 
-with open("results\\patient7_analysis.pickle", "wb") as f:
-    pickle.dump([lPat, rPat], f)
+if platform == 'win32':
+    with open("results\\patient7_analysis.pickle", "wb") as f:
+        pickle.dump([lPat, rPat], f)
 
+if platform == 'darwin':
+    with open("results//patient7_analysis.pickle", "wb") as f:
+        pickle.dump([lPat, rPat], f)
