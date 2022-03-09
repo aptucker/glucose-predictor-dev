@@ -16,6 +16,7 @@ import patient as pat
 import customLayers as cLayers
 import customModels as cModels
 import customCallbacks as cBacks
+import customPlots as cPlots
 import training as trn
 
 models = {}    
@@ -572,6 +573,13 @@ lPat.timeStorage["GRU H=1"] = timePatGRU
 rPat.timeStorage["GRU H=1"] = timePatGRU
 
 print("GRU H=1 Done")
+
+# %% Example Prediction Plots
+
+fileNames = ['C:\Code\glucose-predictor-dev\misc_plots\l13DayPlot.pdf',
+             'C:\Code\glucose-predictor-dev\misc_plots\r13DayPlot.pdf']
+
+cPlots.dayPredictionPlot(lPat.DayData[10], rPat.DayData[10], model, 13, True, fileNames)
 
 # %% Save Results
 

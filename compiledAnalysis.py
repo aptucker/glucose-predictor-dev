@@ -146,13 +146,29 @@ cPlots.singlePatientError(l13, r13, modelNames, labels, index, modelDrops, 13)
 
 
 # [e15, e30, e45, e60] = 
-cPlots.modelEvalPlot(lPats, rPats, 'JDST', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\JDSTError.pdf')
-cPlots.modelEvalPlot(lPats, rPats, 'Sequential H=2', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\SeqH2Error.pdf')
-cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\Circ1Error.pdf')
-cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\ParError.pdf')
-cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\ParCircError.pdf')
-cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, True, 'C:\Code\glucose-predictor-dev\GRUError.pdf')
+cPlots.modelEvalPlot(lPats, rPats, 'JDST', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\JDSTError.pdf')
+cPlots.modelEvalPlot(lPats, rPats, 'Sequential H=2', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\SeqH2Error.pdf')
+cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\Circ1Error.pdf')
+cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\ParError.pdf')
+cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\ParCircError.pdf')
+cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\GRUError.pdf')
 # cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, False, "")
+
+# %% Multi Model Plots
+
+for i in range(len(lPats)):
+    lPats[i].fStorage['JDSTvGRU H=1'] = {'pValues': trn.fStatistic(
+        lPats[i].rmseStorage['GRU H=1']['llRMSE'],
+        lPats[i].rmseStorage['JDST']['llRMSE'],
+        5)}
+    
+    rPats[i].fStorage['JDSTvGRU H=1'] = {'pValues': trn.fStatistic(
+        rPats[i].rmseStorage['GRU H=1']['rrRMSE'],
+        rPats[i].rmseStorage['JDST']['rrRMSE'],
+        5)}
+    
+
+cPlots.multiModelEvalPlot(lPats, rPats, ['JDST', 'GRU H=1'], labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\JDSTvGRUError.pdf')
 
 # %% Export to Excel
 

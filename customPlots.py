@@ -659,7 +659,7 @@ def dayPredictionPlot(lPatData,
                       model,
                       patNumber,
                       saveFile,
-                      fileName):
+                      fileNames):
     
     
     lPatPlotDF = pd.DataFrame(lPatData.copy())
@@ -683,22 +683,22 @@ def dayPredictionPlot(lPatData,
     lPatPredDF = pd.DataFrame(lPatPlotDF['Historic Glucose(mg/dL)'].iloc[3:].copy())
     rPatPredDF = pd.DataFrame(rPatPlotDF['Historic Glucose(mg/dL)'].iloc[3:].copy())
     
-    lPatPredDF['15min PH'] = lPatPred[3:, 3]
-    rPatPredDF['15min PH'] = rPatPred[3:, 3]
+    lPatPredDF['PH = 15MIN'] = lPatPred[3:, 3]
+    rPatPredDF['PH = 15MIN'] = rPatPred[3:, 3]
     
-    lPatPredDF['30min PH'] = lPatPred[3:, 2]
-    rPatPredDF['30min PH'] = rPatPred[3:, 2]
+    lPatPredDF['PH = 30MIN'] = lPatPred[3:, 2]
+    rPatPredDF['PH = 30MIN'] = rPatPred[3:, 2]
     
-    lPatPredDF['45min PH'] = lPatPred[3:, 1]
-    rPatPredDF['45min PH'] = rPatPred[3:, 1]
+    lPatPredDF['PH = 45MIN'] = lPatPred[3:, 1]
+    rPatPredDF['PH = 45MIN'] = rPatPred[3:, 1]
     
-    lPatPredDF['60min PH'] = lPatPred[3:, 0]
-    rPatPredDF['60min PH'] = rPatPred[3:, 0]
+    lPatPredDF['PH = 60MIN'] = lPatPred[3:, 0]
+    rPatPredDF['PH = 60MIN'] = rPatPred[3:, 0]
     
-    lPatPredDF.rename(columns={'Historic Glucose(mg/dL)': 'Measured'}, inplace=True)
-    rPatPredDF.rename(columns={'Historic Glucose(mg/dL)': 'Measured'}, inplace=True)
+    lPatPredDF.rename(columns={'Historic Glucose(mg/dL)': 'MEASURED'}, inplace=True)
+    rPatPredDF.rename(columns={'Historic Glucose(mg/dL)': 'MEASURED'}, inplace=True)
     
-    fig, ax = plt.subplots(1,1)
+    
     
     # ax.plot(lPatPredDF.index, lPatPredDF['Historic Glucose(mg/dL)'])
     colors=['k',
@@ -712,9 +712,251 @@ def dayPredictionPlot(lPatData,
                   '-',
                   '-']
     
-    ax.set_prop_cycle(c=colors,
+    figL, axL = plt.subplots(1,1)
+    axL.set_prop_cycle(c=colors,
                       ls=linestyles)
     
-    lPatPredDF.plot(kind='line', ax=ax)
+    lPatPredDF.plot(kind='line', ax=axL)
+    
+    axL.set_xlabel('TIME (H:M)')
+    axL.set_ylabel('PARTICIPANT ' f'{patNumber} ' 'LEFT CGM\n GLUCOSE CONCENTRATION (mg/dL)')
+    axL.legend(fontsize='small', frameon=False)
+    
+    if saveFile == True:
+        plt.savefig(fileNames[0], bbox_inches='tight')
+    
+    figR, axR = plt.subplots(1,1)
+    axR.set_prop_cycle(c=colors,
+                      ls=linestyles)
+    
+    rPatPredDF.plot(kind='line', ax=axR)
+    
+    axR.set_xlabel('TIME (H:M)')
+    axR.set_ylabel('PARTICIPANT ' f'{patNumber} ' 'RIGHT CGM\n GLUCOSE CONCENTRATION (mg/dL)')
+    axR.legend(fontsize='small', frameon=False)
+    
+    if saveFile == True:
+        plt.savefig(fileNames[1], bbox_inches='tight')
     
 
+def multiModelEvalPlot(lPats,
+                  rPats,
+                  modelNames,
+                  labels,
+                  index,
+                  patNames,
+                  savePlot,
+                  plotName):
+    
+    
+    # outputDF = pd.DataFrame(phLabels, columns=['Prediction Horizon (min)'])
+    # # outputDF['Algorithm Setup (trained-tested)'] = compLabels
+    
+    # for e in range(len(lPats)):
+    #     tempDFllMARD = pd.DataFrame(np.mean(lPats[e].mardStorage[modelName]['llMARD'], axis=0))
+    #     tempDFrlMARD = pd.DataFrame(np.mean(lPats[e].mardStorage[modelName]['rlMARD'], axis=0))
+    #     tempDFrrMARD = pd.DataFrame(np.mean(rPats[e].mardStorage[modelName]['rrMARD'], axis=0))
+    #     tempDFlrMARD = pd.DataFrame(np.mean(rPats[e].mardStorage[modelName]['lrMARD'], axis=0))
+        
+    #     tempDFllMARDstd = pd.DataFrame(np.std(lPats[e].mardStorage[modelName]['llMARD'], axis=0))
+    #     tempDFrlMARDstd = pd.DataFrame(np.std(lPats[e].mardStorage[modelName]['rlMARD'], axis=0))
+    #     tempDFrrMARDstd = pd.DataFrame(np.std(rPats[e].mardStorage[modelName]['rrMARD'], axis=0))
+    #     tempDFlrMARDstd = pd.DataFrame(np.std(rPats[e].mardStorage[modelName]['lrMARD'], axis=0))
+        
+    #     patDFmean = pd.DataFrame()
+    #     patDFstd = pd.DataFrame()
+    #     for i in range(3, -1, -1):
+    #         patDFmean = patDFmean.append([tempDFllMARD.iloc[i],
+    #                               tempDFrlMARD.iloc[i],
+    #                               tempDFrrMARD.iloc[i],
+    #                               tempDFlrMARD.iloc[i]])
+    #         patDFstd = patDFstd.append([tempDFllMARDstd.iloc[i],
+    #                               tempDFrlMARDstd.iloc[i],
+    #                               tempDFrrMARDstd.iloc[i],
+    #                               tempDFlrMARDstd.iloc[i]])
+        
+    #     patDFmean = patDFmean.reset_index(drop=True)
+    #     patDFstd = patDFstd.reset_index(drop=True)
+        
+    #     outputDF['Patient ' f'{e+1} ' 'MARD (%)'] = patDFmean
+    #     # outputDF['Patient ' f'{e+1}'] = plusMinusLabels
+    #     outputDF['Patient ' f'{e+1} ' 'STD'] = patDFstd
+    
+    llMeans = []
+    rlMeans = []
+    rrMeans = []
+    lrMeans = []
+    
+    plotModelNames = modelNames.copy()
+    
+    for i in range(len(modelNames)):
+        if modelNames[i] == 'JDST':
+            plotModelNames[i] = 'FF NN'
+    
+        if modelNames[i] == 'GRU H=1':
+            plotModelNames[i] = 'GRU NN'
+    
+    
+    Comps = ["",
+             f"{plotModelNames[0]}" " LEFT ARM",
+             f"{plotModelNames[1]}" " LEFT ARM",
+             f"{plotModelNames[0]}" " RIGHT ARM",
+             f"{plotModelNames[1]}" " RIGHT ARM"]
+    
+    for i in range(len(lPats)):
+        Comps.extend([f"{plotModelNames[0]}" " LEFT ARM",
+             f"{plotModelNames[1]}" " LEFT ARM",
+             f"{plotModelNames[0]}" " RIGHT ARM",
+             f"{plotModelNames[1]}" " RIGHT ARM"])
+   
+    for lPat in lPats:
+        llMeans.append(np.mean(lPat.rmseStorage[modelNames[0]]['llRMSE'], axis=0))
+        rlMeans.append(np.mean(lPat.rmseStorage[modelNames[1]]['llRMSE'], axis=0))
+    for rPat in rPats:
+        rrMeans.append(np.mean(rPat.rmseStorage[modelNames[0]]['rrRMSE'], axis=0))
+        lrMeans.append(np.mean(rPat.rmseStorage[modelNames[1]]['rrRMSE'], axis=0))
+    
+    llMeans = np.array(llMeans)
+    rlMeans = np.array(rlMeans)
+    rrMeans = np.array(rrMeans)
+    lrMeans = np.array(lrMeans)
+    
+    llMeansDF = pd.DataFrame(np.flip(np.transpose(llMeans), axis=0), index = index, columns = patNames)
+    rlMeansDF = pd.DataFrame(np.flip(np.transpose(rlMeans), axis=0), index = index, columns = patNames)
+    rrMeansDF = pd.DataFrame(np.flip(np.transpose(rrMeans), axis=0), index = index, columns = patNames)
+    lrMeansDF = pd.DataFrame(np.flip(np.transpose(lrMeans), axis=0), index = index, columns = patNames)
+    
+    errDF15 = pd.DataFrame([llMeansDF.iloc[0,:],
+                            rlMeansDF.iloc[0,:],
+                            rrMeansDF.iloc[0,:],
+                            lrMeansDF.iloc[0,:]],
+                           index = labels)
+    errDF30 = pd.DataFrame([llMeansDF.iloc[1,:],
+                            rlMeansDF.iloc[1,:],
+                            rrMeansDF.iloc[1,:],
+                            lrMeansDF.iloc[1,:]],
+                           index = labels)
+    errDF45 = pd.DataFrame([llMeansDF.iloc[2,:],
+                            rlMeansDF.iloc[2,:],
+                            rrMeansDF.iloc[2,:],
+                            lrMeansDF.iloc[2,:]],
+                           index = labels)
+    errDF60 = pd.DataFrame([llMeansDF.iloc[3,:],
+                            rlMeansDF.iloc[3,:],
+                            rrMeansDF.iloc[3,:],
+                            lrMeansDF.iloc[3,:]],
+                           index = labels)
+    
+    patLabs = ["",
+               "PARTICIPANT 1",
+               "PARTICIPANT 2",
+               "PARTICIPANT 3",
+               "PARTICIPANT 4",
+               "PARTICIPANT 5",
+               "PARTICIPANT 6",
+               "PARTICIPANT 7",
+               "PARTICIPANT 8",
+               "PARTICIPANT 9",
+               "PARTICIPANT 10",
+               "PARTICIPANT 11",
+               "PARTICIPANT 12",
+               "PARTICIPANT 13"]
+    
+    dotchart = plt.figure(figsize=(9.5,11))
+    ax = plt.axes()
+    ax.set_xlim(0,80)
+    ax.set_ylim(14,0.9)
+    ax.xaxis.set_major_locator(ticker.MultipleLocator(10))
+    ax.xaxis.set_ticks_position("both")
+    ax.yaxis.set_major_locator(ticker.MultipleLocator(1))
+    ax.yaxis.set_minor_locator(ticker.MultipleLocator(0.2))
+    ax.tick_params(axis = 'x', which='major', width=1.00, length=5)
+    ax.tick_params(axis = 'y', which='major', length=0, labelsize=10, pad=85)
+    ax.tick_params(axis = 'y', which='minor', length=0, labelsize=7, pad=70)
+    ax.xaxis.set_major_formatter(ticker.ScalarFormatter())
+    ax.yaxis.set_major_formatter(ticker.FormatStrFormatter('Patient %d'))
+    ax.yaxis.set_minor_formatter(ticker.FixedFormatter(Comps))
+    ax.set_yticklabels(labels=Comps, minor=True, ha='left', fontname='Times New Roman')
+    ax.set_yticklabels(labels=patLabs, ha='left', fontname='Times New Roman')
+    ax.set_xlabel(f'{plotModelNames[0]} ' 'AND ' f'{plotModelNames[1]}' ' ROOT MEAN SQUARE ERROR (mg/dL)', fontname='Times New Roman', size=14)
+    #plt.title("BLOOD GLUCOSE NEURAL NETWORK PREDICTION ERRORS", fontname='Times New Roman', size=18)
+    ax.title.set_position([0.5, 1.01])
+    secax = ax.twinx()
+    secax.set_ylim(14, 0.9)
+    secax.tick_params(axis='y', which='both', length=0)
+    secax.yaxis.set_minor_locator(ticker.MultipleLocator(0.2))
+    
+    secax.set_yticklabels(labels=[])
+    # secax.set_yticklabels(labels = sigLabs, minor=True)
+    
+    for i in range(len(errDF15.columns)):
+        for e in range(len(errDF15['Patient ' f'{i+1}'])):    
+            ax.plot(np.linspace(0, 
+                                max(errDF15['Patient ' f'{i+1}'].iloc[e],
+                                    errDF30['Patient ' f'{i+1}'].iloc[e],
+                                    errDF45['Patient ' f'{i+1}'].iloc[e],
+                                    errDF60['Patient ' f'{i+1}'].iloc[e]),
+                                50),
+                    np.ones(50)*(i+1)+((e+1)*0.2),
+                    dashes=[1,5],
+                    color='#191A27',
+                    lw=0.8,
+                    label='_nolegend_')
+        
+        ax.plot(errDF15['Patient ' f'{i+1}'],
+                (i+1)+np.array([0.2, 0.4, 0.6, 0.8]),
+                'o', color='#3F7D6E',
+                fillstyle='full',
+                markersize=5)
+        ax.plot(errDF30['Patient ' f'{i+1}'],
+                (i+1)+np.array([0.2, 0.4, 0.6, 0.8]),
+                'o', color='#593560',
+                fillstyle='full',
+                markersize=5)
+        ax.plot(errDF45['Patient ' f'{i+1}'],
+                (i+1)+np.array([0.2, 0.4, 0.6, 0.8]),
+                'o', color='#A25756',
+                fillstyle='full',
+                markersize=5)
+        ax.plot(errDF60['Patient ' f'{i+1}'],
+                (i+1)+np.array([0.2, 0.4, 0.6, 0.8]),
+                'o', color='#E7B56D',
+                fillstyle='full',
+                markersize=5)
+        
+        colors = ['#3F7D6E',
+                  '#593560',
+                  '#A25756',
+                  '#E7B56D']
+        
+        for e in range(len(lPats[i].fStorage[f'{modelNames[0]}' 'v' f'{modelNames[1]}']['pValues'])):
+            if (lPats[i].fStorage[f'{modelNames[0]}' 'v' f'{modelNames[1]}']['pValues'][e] < 0.054):
+                ax.plot((79-e),
+                        (i+1)+0.4,
+                        marker=(6,2,0),
+                        label='_nolegend_',
+                        color = colors[-(e+1)],
+                        markersize=5)
+            
+            if (rPats[i].fStorage[f'{modelNames[0]}' 'v' f'{modelNames[1]}']['pValues'][e] < 0.054):
+                ax.plot((79-e),
+                        (i+1)+0.8,
+                        marker=(6,2,0),
+                        label='_nolegend_',
+                        color = colors[-(e+1)],
+                        markersize=5)
+                
+            
+        
+    ax.legend(["15 Minute PH",
+               "30 Minute PH",
+               "45 Minute PH",
+               "60 Minute PH"],
+              ncol=4,
+              loc='center left',
+              bbox_to_anchor=(0.07,1.03))
+    
+    if savePlot==True:
+        plt.savefig(plotName, bbox_inches='tight')
+    
+    
