@@ -20,6 +20,8 @@ from matplotlib.dates import DateFormatter
 import matplotlib.font_manager as font_manager
 import time
 import math
+import control as ctrl
+import control.matlab as ctrlmat
 
 import patient as pat
 import customLayers as cLayers
@@ -120,7 +122,7 @@ pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
 
 batch_end_loss = list()
 
-callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.20),
+callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.40),
              cBacks.GetErrorOnBatch(batch_end_loss)]
 
 
@@ -146,7 +148,7 @@ output = tf.keras.layers.Dense(K,
                                bias_initializer='ones')(x)
 model = tf.keras.Model(inputs=inputs,
                        outputs=output)
-model.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.1),
+model.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.01),
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError(),
               loss_weights = [1.0, 1.0, 1.0, 1.0])
@@ -166,16 +168,81 @@ tocGRU = time.perf_counter()
 
 timePatGRU = tocGRU - ticGRU
 # range(1, len(batch_end_loss) + 1
-batchLossDF = pd.DataFrame(batch_end_loss, index=np.linspace(1, timePatGRU, len(batch_end_loss)), columns=['Batch Loss'])
-batchLossDF.plot()
+batchLossDF = pd.DataFrame(batch_end_loss, index=np.linspace(0, timePatGRU, len(batch_end_loss)), columns=['Batch Loss'])
+batchLossDF['Batch Loss'].plot()
 
 print(timePatGRU)
 
 # lPat.timeStorage["GRU H=1"] = timePatGRU
 # rPat.timeStorage["GRU H=1"] = timePatGRU
 
+ # %% System ID
+dt = batchLossDF.index.values[1] - batchLossDF.index.values[0]
+
+batchLossDF = pd.DataFrame(batch_end_loss, index=np.linspace(0, timePatGRU, len(batch_end_loss)), columns=['Batch Loss'])
+batchLossDF.insert(0, 'Batch Loss db/dt', batchLossDF['Batch Loss'].diff()/dt)
+batchLossDF.insert(0, 'Batch Loss db2/dt2', batchLossDF['Batch Loss db/dt'].diff()/dt)
 
 
+batchLossDF.dropna(axis=0, inplace=True)
+
+uBatch = 0.2*np.ones(len(batchLossDF))
+
+batchLossDF['Input'] = uBatch
+
+constants = np.matmul(np.linalg.pinv(batchLossDF[['Batch Loss db2/dt2', 'Batch Loss db/dt', 'Batch Loss']].values), batchLossDF['Input'])
+constants1 = np.matmul(np.linalg.pinv(batchLossDF[['Batch Loss db/dt', 'Batch Loss']].values), batchLossDF['Input'])
+
+a1 = [-constants1[1]/constants1[0]]
+b1 = [1/constants1[0]]
+c1 = [1]
+d1 = [0]
+
+a = [[-constants[1]/constants[0], -constants[2]/constants[0]],
+     [1, 0]]
+
+b = [[1/constants[0]],
+     [0]]
+
+c = [0, 1]
+
+d = [0]
+
+sysTest = ctrlmat.ss(a, b, c, d)
+
+tTest = batchLossDF.index.values
+
+u = 0.2*np.ones([len(tTest), 1])
+
+x0 = [0, 0]
+x0t = [0, batchLossDF['Batch Loss'].iloc[0]]
+
+yout, tout, xout = ctrlmat.lsim(sysTest, u, tTest, x0t)
+
+outDF = pd.DataFrame(yout, index=tout)
+outDF.plot()
+
+# %% Control Systems Testing
+wn = 2
+zeta = .7
+k = 1
+
+num= [k*wn**2]
+deno= [1, 2*zeta*wn, wn**2]
+g = ctrlmat.tf(num, deno)
+t = ctrlmat.feedback(g,1)
+# [A, B, C, D] = ctrlmat.tf2ss(num, deno)
+sysmid = ctrlmat.tf2ss(num, deno)
+sys = ctrlmat.ss(sysmid.A, -sysmid.B, -sysmid.C, sysmid.D)
+
+t = np.linspace(0, 5, 100)
+x0 = [0, 1]
+u = 0.2*np.ones([len(t), 1])
+
+yout, tout, xout = ctrlmat.lsim(sys, u, t, x0)
+
+outDF = pd.DataFrame(yout, index=tout)
+outDF.plot()
 
 
 
