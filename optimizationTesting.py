@@ -30,7 +30,6 @@ import training as trn
 import customPlots as cPlots
 import customStats as cStats
 import customCallbacks as cBacks
-import optimizationFunctions as optFun
 
 with open('results\\patient1_analysis.pickle', 'rb') as f:
     l1, r1 = pickle.load(f)
@@ -76,7 +75,7 @@ rPats = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13]
 # patNames = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 patNames = ['Patient' f' {i}' for i in range(1, 14)]
 
-# %% Timing Testing
+# %% Callbacks Testing
 
 lPat = l2
 rPat = r2
@@ -97,41 +96,76 @@ outSize = 4
 shapes = [H, H, K]
 activators = ['tanh', 'sigmoid', None]
 
-[lPatsTrain,
- rPatsTrain,
- lPatsTest,
- rPatsTest] = optFun.dataCombiner(lPats, rPats, partNum, partSize, lag)
+
 # lPat.randomizeTrainingData(Kfold, seed=1)
-# lPat.resetData()
-# rPat.resetData()
+lPat.resetData()
+rPat.resetData()
 
-# lPat.partitionData(partNum, partSize)
-# rPat.partitionData(partNum, partSize)
+lPat.partitionData(partNum, partSize)
+rPat.partitionData(partNum, partSize)
 
-# pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
-# pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
-# pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
-# pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
 
 
-[mlpNorm, mean, std] = trn.zscoreData(lPatsTrain.to_numpy())
-[mlpNormTest, testMean, testStd] = trn.zscoreData(lPatsTest.to_numpy())
+[mlpNorm, mean, std] = trn.zscoreData(lPat.trainData.to_numpy())
+[mlpNormTest, testMean, testStd] = trn.zscoreData(lPat.testData.to_numpy())
+
+
+# callbacks = [cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15),
+#              cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15),
+#              cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15),
+#              cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.15)]
+
+class lrScheduler(tf.keras.callbacks.Callback):
+    
+    def __init__(self, refLoss, lossHistory, gain):
+        super(lrScheduler, self).__init__()
+        self.refLoss = refLoss
+        self.lossHistory = lossHistory
+        self.gain = gain
+        
+    def on_train_batch_begin(self, batch, logs=None):
+        self.tic = time.perf_counter()
+        
+    def on_train_batch_end(self, batch, logs=None):
+        # lr = float(tf.keras.backend.get_value(self.model.optimizer.learning_rate))
+        
+        self.toc = time.perf_counter()
+        
+        dt = self.toc - self.tic
+        
+        new_lr = float(self.gain * (logs['loss'] - self.refLoss))
+        # new_lr = float(self.gain * ( (logs['loss'] - self.refLoss)  +  
+        #                             1.0*((logs['loss'] - self.lossHistory[-1])/dt) ))
+        # new_lr = float(self.gain * ( 0.38*(logs['loss'] - self.refLoss)  +  
+        #                             0.0*((logs['loss'] - self.lossHistory[-1])/dt) + 
+        #                             (dt/1.0)*(self.refLoss - (logs['loss'] + self.lossHistory[-1])/2 ) ))
+        # if batch%100:
+            # print(new_lr)
+        # print(self.lossHistory[-1])
+        
+        tf.keras.backend.set_value(self.model.optimizer.lr, new_lr)
 
 
 batch_end_loss = list()
 
 callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
              cBacks.GetErrorOnBatch(batch_end_loss),
-             cBacks.lrScheduler(refLoss=0.2, lossHistory=batch_end_loss, gain=0.1)]
+             lrScheduler(refLoss=0.2, lossHistory=batch_end_loss, gain=0.1)]
 
-
+# callbacks = [cBacks.earlyStoppingBatchLoss(patience=2, baseLoss=0.40),
+#              cBacks.GetErrorOnBatch(batch_end_loss),
+#              lrScheduler(refLoss=0.2, lossHistory=batch_end_loss, gain=1.1)]
 
 lossWeights = [[1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0],
                [1.0, 1.0, 1.0, 1.0]]
 
-b_size = 1000
+b_size = 10
 epochs = 10
 
 inputs = tf.keras.Input(shape=(H,1))
@@ -176,6 +210,76 @@ batchLossDF['Batch Loss'].plot()
 
 print(timePatGRU)
 
+# lPat.timeStorage["GRU H=1"] = timePatGRU
+# rPat.timeStorage["GRU H=1"] = timePatGRU
+
+ # %% System ID
+dt = batchLossDF.index.values[1] - batchLossDF.index.values[0]
+
+batchLossDF = pd.DataFrame(batch_end_loss, index=np.linspace(0, timePatGRU, len(batch_end_loss)), columns=['Batch Loss'])
+batchLossDF.insert(0, 'Batch Loss db/dt', batchLossDF['Batch Loss'].diff()/dt)
+batchLossDF.insert(0, 'Batch Loss db2/dt2', batchLossDF['Batch Loss db/dt'].diff()/dt)
+
+
+batchLossDF.dropna(axis=0, inplace=True)
+
+uBatch = 0.2*np.ones(len(batchLossDF))
+
+batchLossDF['Input'] = uBatch
+
+constants = np.matmul(np.linalg.pinv(batchLossDF[['Batch Loss db2/dt2', 'Batch Loss db/dt', 'Batch Loss']].values), batchLossDF['Input'])
+constants1 = np.matmul(np.linalg.pinv(batchLossDF[['Batch Loss db/dt', 'Batch Loss']].values), batchLossDF['Input'])
+
+a1 = [-constants1[1]/constants1[0]]
+b1 = [1/constants1[0]]
+c1 = [1]
+d1 = [0]
+
+a = [[-constants[1]/constants[0], -constants[2]/constants[0]],
+     [1, 0]]
+
+b = [[1/constants[0]],
+     [0]]
+
+c = [0, 1]
+
+d = [0]
+
+sysTest = ctrlmat.ss(a, b, c, d)
+
+tTest = batchLossDF.index.values
+
+u = 0.2*np.ones([len(tTest), 1])
+
+x0 = [0, 0]
+x0t = [0, batchLossDF['Batch Loss'].iloc[0]]
+
+yout, tout, xout = ctrlmat.lsim(sysTest, u, tTest, x0t)
+
+outDF = pd.DataFrame(yout, index=tout)
+outDF.plot()
+
+# %% Control Systems Testing
+wn = 2
+zeta = .7
+k = 1
+
+num= [k*wn**2]
+deno= [1, 2*zeta*wn, wn**2]
+g = ctrlmat.tf(num, deno)
+t = ctrlmat.feedback(g,1)
+# [A, B, C, D] = ctrlmat.tf2ss(num, deno)
+sysmid = ctrlmat.tf2ss(num, deno)
+sys = ctrlmat.ss(sysmid.A, -sysmid.B, -sysmid.C, sysmid.D)
+
+t = np.linspace(0, 5, 100)
+x0 = [0, 1]
+u = 0.2*np.ones([len(t), 1])
+
+yout, tout, xout = ctrlmat.lsim(sys, u, t, x0)
+
+outDF = pd.DataFrame(yout, index=tout)
+outDF.plot()
 
 
 

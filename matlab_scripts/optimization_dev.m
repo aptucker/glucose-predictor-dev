@@ -61,3 +61,9 @@ outtc1 = lsim(systc1, ut, tt, 2.45);
 gout1 = lsim(g1, ut, tt,  [189; 2.707]);
 goutt = lsim(gt, ut, tt, 2.707);
 gouttc1 = lsim(gtc1, ut, tt, 2.45);
+
+
+for i = 0.1:0.1:0.9
+   hold on
+   lsim(ss(feedback(i*htc1, 1)), 0.5*ut, tt, 2.45);
+end

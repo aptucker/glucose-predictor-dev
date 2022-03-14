@@ -11,6 +11,7 @@ import tensorflow as tf
 import numpy as np
 from matplotlib import pyplot as plt
 from IPython.display import clear_output
+import time
 
 class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
     
@@ -65,6 +66,53 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
         if self.stopped_epoch > 0:
             print("Epoch %05d: early stopping" % (self.stopped_epoch + 1))
 
+class earlyStoppingBatchLoss(tf.keras.callbacks.Callback):
+    
+    def __init__(self, patience=0, baseLoss=0):
+        super(earlyStoppingBatchLoss, self).__init__()
+        self.patience = patience
+        self.baseLoss = baseLoss
+        self.best_weights=None
+        
+    def on_train_begin(self, logs=None):
+        self.wait = 0
+        self.stopped_batch = 0
+        self.best = np.Inf
+        
+    def on_batch_end(self, batch, logs=None):
+        current = logs.get('loss')
+        if np.less(current, self.best):
+            if np.less(current, self.baseLoss):
+                self.best = current
+                self.wait = 0
+                self.stopped_batch = batch
+                self.best_weights = self.model.get_weights()
+                self.model.stop_training = True
+            
+            self.best = current
+            self.wait = 0
+            self.best_weights = self.model.get_weights()
+        
+        else:
+            self.wait += 1
+            if self. wait >= self.patience:
+                self.stopped_batch = batch
+                self.model.stop_training = True
+                print("Restoring model weights from end of best batch")
+                self.model.set_weights(self.best_weights)
+                
+    def on_epoch_end(self, epoch, logs=None):
+        if self.model.stop_training:
+            self.model.stop_training = True
+                
+    
+    def on_train_end(self, logs=None):
+        if self.stopped_batch > 0:
+            print("Batch %05d: early stopping" % (self.stopped_batch + 1))
+        
+    
+    
+        
 
 class GetErrorOnBatch(tf.keras.callbacks.Callback):
     
@@ -117,5 +165,39 @@ class PlotLearning(tf.keras.callbacks.Callback):
         plt.tight_layout()
         plt.show()
         
+
+class lrScheduler(tf.keras.callbacks.Callback):
     
-    
+    def __init__(self, refLoss, lossHistory, gain):
+        super(lrScheduler, self).__init__()
+        self.refLoss = refLoss
+        self.lossHistory = lossHistory
+        self.gain = gain
+        
+    def on_train_batch_begin(self, batch, logs=None):
+        self.tic = time.perf_counter()
+        
+    def on_train_batch_end(self, batch, logs=None):
+        # lr = float(tf.keras.backend.get_value(self.model.optimizer.learning_rate))
+        
+        self.toc = time.perf_counter()
+        
+        dt = self.toc - self.tic
+        
+        new_lr = float(self.gain * (logs['loss'] - self.refLoss))
+        
+        # Derivative Equation
+        # new_lr = float(self.gain * ( (logs['loss'] - self.refLoss)  +  
+        #                             1.0*((logs['loss'] - self.lossHistory[-1])/dt) ))
+        
+        # Proportional Integral Derivative Equation
+        # new_lr = float(self.gain * ( 0.38*(logs['loss'] - self.refLoss)  +  
+        #                             0.0*((logs['loss'] - self.lossHistory[-1])/dt) + 
+        #                             (dt/1.0)*(self.refLoss - (logs['loss'] + self.lossHistory[-1])/2 ) ))
+        
+        # Print to test
+        # if batch%100:
+            # print(new_lr)
+        # print(self.lossHistory[-1])
+        
+        tf.keras.backend.set_value(self.model.optimizer.lr, new_lr)
