@@ -120,19 +120,25 @@ activators = ['tanh', 'sigmoid', None]
 
 batch_end_loss = list()
 
+# callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+#              cBacks.GetErrorOnBatch(batch_end_loss),
+             # cBacks.lrScheduler(refLoss=0.2, lossHistory=batch_end_loss, gain=0.1)]
+
 callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
-             cBacks.GetErrorOnBatch(batch_end_loss),
-             cBacks.lrScheduler(refLoss=0.2, lossHistory=batch_end_loss, gain=0.1)]
+             cBacks.batchErrorModel()]
 
+learningRates = optFun.lrDict()
+learningRates.storeLR(0.001, 'standard')
 
+optimizers = optFun.optimizerDict()
+optimizers.storeOptimizer(tf.keras.optimizers.Adam(), 'adam')
 
-lossWeights = [[1.0, 1.0, 1.0, 1.0],
-               [1.0, 1.0, 1.0, 1.0],
-               [1.0, 1.0, 1.0, 1.0],
-               [1.0, 1.0, 1.0, 1.0]]
+trialsToRun = 2
 
-b_size = 1000
+b_size = 100
 epochs = 10
+
+models = {}
 
 inputs = tf.keras.Input(shape=(H,1))
 gruLayer = tf.keras.layers.GRU(H,
@@ -153,9 +159,28 @@ model = tf.keras.Model(inputs=inputs,
 #               loss_weights = [1.0, 1.0, 1.0, 1.0])
 model.compile(optimizer= tf.keras.optimizers.Adam(learning_rate=0.001),
               loss=tf.keras.losses.MeanSquaredError(), 
-              metrics=tf.keras.metrics.RootMeanSquaredError(),
-              loss_weights = [1.0, 1.0, 1.0, 1.0])
-# models["GRU H=1"] = model
+              metrics=tf.keras.metrics.RootMeanSquaredError())#,
+              # loss_weights = [1.0, 1.0, 1.0, 1.0])
+models['gru'] = model
+modelNames = list(['gru'])
+
+optFun.timeTester(lPats,
+                  rPats,
+                  partNum,
+                  partSize,
+                  lag,
+                  models,
+                  modelNames,
+                  learningRates,
+                  'standard',
+                  optimizers,
+                  'adam',
+                  b_size,
+                  epochs,
+                  trialsToRun,
+                  callbacks)
+
+# %%
 
 ticGRU = time.perf_counter()
 
@@ -171,7 +196,8 @@ tocGRU = time.perf_counter()
 
 timePatGRU = tocGRU - ticGRU
 # range(1, len(batch_end_loss) + 1
-batchLossDF = pd.DataFrame(batch_end_loss, index=np.linspace(0, timePatGRU, len(batch_end_loss)), columns=['Batch Loss'])
+batchLossDF = pd.DataFrame(model.lossDict['newLoss'], index=np.linspace(0, timePatGRU, len(model.lossDict['newLoss'])), columns=['Batch Loss'])
+# batchLossDF = pd.DataFrame(batch_end_loss, index=np.linspace(0, timePatGRU, len(batch_end_loss)), columns=['Batch Loss'])
 batchLossDF['Batch Loss'].plot()
 
 print(timePatGRU)

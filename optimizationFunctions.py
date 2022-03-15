@@ -7,9 +7,12 @@
 Optimization functions 
 """
 
+import numpy as np
 import pandas as pd
+import tensorflow as tf
 
 import patient as pat
+import training as trn
 
 
 
@@ -63,5 +66,136 @@ def dataCombiner(lPats,
     return [lTrainDataOut, rTrainDataOut, lTestDataOut, rTestDataOut]
         
     
+
+def timeTester(lPats,
+               rPats,
+               partNum,
+               partSize,
+               lag, 
+               models,
+               modelNames,
+               learningRates,
+               learningRateNames,
+               optimizers,
+               optimizerNames,
+               b_size,
+               epochs,
+               trialsToRun,
+               callbacks):
+    
+    [lTrainLarge,
+     rTrainLarge,
+     lTestLarge,
+     rTestLarge] = dataCombiner(lPats,
+                                rPats,
+                                partNum,
+                                partSize,
+                                lag)
+                                
+    [lTrainNorm, lTrainMean, lTrainSTD] = trn.zscoreData(lTrainLarge.copy().sample(frac=1).to_numpy())
+    [rTrainNorm, rTrainMean, rTrainSTD] = trn.zscoreData(rTrainLarge.copy().sample(frac=1).to_numpy())
+    [lTestNorm, lTestMean, lTestSTD] = trn.zscoreData(lTestLarge.copy().sample(frac=1).to_numpy())
+    [rTestNorm, rTestMean, rTestSTD] = trn.zscoreData(rTestLarge.copy().sample(frac=1).to_numpy())
+    
+    lossDF = pd.DataFrame()
+    
+    for i in range(len(modelNames)):                        
+        outDF = runTimeTrials(lTrainNorm,
+                              lTestNorm,
+                              models, 
+                              modelNames[i],
+                              learningRates.getLR(learningRateNames),
+                              optimizers,
+                              optimizerNames,
+                              trialsToRun,
+                              b_size,
+                              epochs,
+                              callbacks)
+        for (columnName, columnData) in outDF.iteritems():
+            lossDF[f'{modelNames[i]} ' f'{columnName}'] = outDF[columnName]
+    
+    
+    return lossDF
         
+        
+    
+
+
+def runTimeTrials(trainTrialData,
+                  testTrialData,
+                  models,
+                  modelName,
+                  learningRate,
+                  optimizers,
+                  optimizerName,
+                  trialsToRun,
+                  b_size,
+                  epochs,
+                  callbacks):
+    
+    outSize = 4
+    
+    optimizers.setLearningRate(optimizerName,
+                               learningRate)
+    
+    
+    # models[modelName].save_weights('model.start')
+    
+    # FIX FOR MULTIPLE SIZED DATAFRAMES !!!!!!!!!!!!!!!!!!!!!!!!!!!!
+    
+    batchLossDF = pd.DataFrame()
+    
+    for i in range(trialsToRun):
+        
+        # models[modelName].load_weights('model.start')
+        models[modelName].compile(optimizer=optimizers.getOptimizer(optimizerName),
+                                  loss=tf.keras.losses.MeanSquaredError(),
+                                  metrics=tf.keras.metrics.RootMeanSquaredError())
+        
+        history = models[modelName].fit(trainTrialData[:, outSize:],
+                                        trainTrialData[:, 0:outSize],
+                                        batch_size=b_size,
+                                        epochs=epochs,
+                                        validation_data = (testTrialData[:, outSize:],
+                                                           testTrialData[:, 0:outSize]),
+                                        callbacks=callbacks)
+        
+        if 'newLoss' in models[modelName].lossDict.keys():
+            batchLossDF['Loss Iteration ' f'{i+1}'] = models[modelName].lossDict['newLoss']
+            
+    return batchLossDF
+        
+        
+        
+        
+
+
+class optimizerDict:
+    
+    def __init__(self):
+        super(optimizerDict, self).__init__()
+        self.optimizers = {}
+    
+    def storeOptimizer(self, optimizerIn, optimizerName):
+        self.optimizers[optimizerName] = optimizerIn
+        
+    def getOptimizer(self, optimizerName):
+        return self.optimizers[optimizerName]
+    
+    def setLearningRate(self, optimizerName, learningRate):
+        self.optimizers[optimizerName].learning_rate = learningRate
+    
+        
+class lrDict:
+    
+    def __init__(self):
+        super(lrDict, self).__init__()
+        self.lrs = {}
+        
+    def storeLR(self, lrIn, lrName):        
+        self.lrs[lrName] = lrIn
+        
+    def getLR(self, lrName):        
+        return self.lrs[lrName]
+    
     

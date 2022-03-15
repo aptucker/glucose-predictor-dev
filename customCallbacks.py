@@ -124,7 +124,24 @@ class GetErrorOnBatch(tf.keras.callbacks.Callback):
     def on_train_batch_end(self, batch, logs=None):
         self.lossList.append(logs['loss'])
         
-
+class batchErrorModel(tf.keras.callbacks.Callback):
+    
+    def __init__(self):
+        super(batchErrorModel, self).__init__()
+        self.lossList = []
+        
+        
+    def on_train_begin(self, logs=None):
+        self.lossList = []
+        
+        # if hasattr(self.model, 'lossDict') == False:
+        self.model.lossDict = {}
+    
+    def on_train_batch_end(self, batch, logs=None):
+        self.lossList.append(logs['loss'])
+    
+    def on_train_end(self, logs=None):
+        self.model.lossDict['newLoss'] = self.lossList
 
 class PlotLearning(tf.keras.callbacks.Callback):
     """
@@ -201,3 +218,7 @@ class lrScheduler(tf.keras.callbacks.Callback):
         # print(self.lossHistory[-1])
         
         tf.keras.backend.set_value(self.model.optimizer.lr, new_lr)
+        
+    def resetVars(self, refLoss, gain):
+        self.refLoss = refLoss
+        self.gain = gain
