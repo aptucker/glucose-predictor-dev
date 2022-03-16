@@ -74,10 +74,6 @@ def timeTester(lPats,
                lag, 
                models,
                modelNames,
-               learningRates,
-               learningRateNames,
-               optimizers,
-               optimizerNames,
                b_size,
                epochs,
                trialsToRun,
@@ -97,25 +93,21 @@ def timeTester(lPats,
     [lTestNorm, lTestMean, lTestSTD] = trn.zscoreData(lTestLarge.copy().sample(frac=1).to_numpy())
     [rTestNorm, rTestMean, rTestSTD] = trn.zscoreData(rTestLarge.copy().sample(frac=1).to_numpy())
     
-    lossDF = pd.DataFrame()
+    lossDict = {}
     
     for i in range(len(modelNames)):                        
-        outDF = runTimeTrials(lTrainNorm,
+        outDict = runTimeTrials(lTrainNorm,
                               lTestNorm,
                               models, 
                               modelNames[i],
-                              learningRates.getLR(learningRateNames),
-                              optimizers,
-                              optimizerNames,
                               trialsToRun,
                               b_size,
                               epochs,
                               callbacks)
-        for (columnName, columnData) in outDF.iteritems():
-            lossDF[f'{modelNames[i]} ' f'{columnName}'] = outDF[columnName]
+        lossDict[modelNames[i]] = outDict
     
     
-    return lossDF
+    return lossDict
         
         
     
@@ -125,9 +117,6 @@ def runTimeTrials(trainTrialData,
                   testTrialData,
                   models,
                   modelName,
-                  learningRate,
-                  optimizers,
-                  optimizerName,
                   trialsToRun,
                   b_size,
                   epochs,
@@ -135,22 +124,14 @@ def runTimeTrials(trainTrialData,
     
     outSize = 4
     
-    optimizers.setLearningRate(optimizerName,
-                               learningRate)
+    # optimizers.setLearningRate(optimizerName,
+    #                            learningRate)
     
-    
-    # models[modelName].save_weights('model.start')
-    
-    # FIX FOR MULTIPLE SIZED DATAFRAMES !!!!!!!!!!!!!!!!!!!!!!!!!!!!
-    
-    batchLossDF = pd.DataFrame()
+    batchLossDict = {}
     
     for i in range(trialsToRun):
         
-        # models[modelName].load_weights('model.start')
-        models[modelName].compile(optimizer=optimizers.getOptimizer(optimizerName),
-                                  loss=tf.keras.losses.MeanSquaredError(),
-                                  metrics=tf.keras.metrics.RootMeanSquaredError())
+        models[modelName].load_weights(f'{modelName}' 'Model.start')
         
         history = models[modelName].fit(trainTrialData[:, outSize:],
                                         trainTrialData[:, 0:outSize],
@@ -161,9 +142,13 @@ def runTimeTrials(trainTrialData,
                                         callbacks=callbacks)
         
         if 'newLoss' in models[modelName].lossDict.keys():
-            batchLossDF['Loss Iteration ' f'{i+1}'] = models[modelName].lossDict['newLoss']
+            batchLossDict['Loss It. ' f'{i+1}'] = pd.DataFrame(models[modelName].lossDict['newLoss'],
+                                                               index=np.linspace(0,
+                                                                                 models[modelName].trainTime,
+                                                                                 len(models[modelName].lossDict['newLoss'])),
+                                                               columns=['Loss It. ' f'{i+1}'])
             
-    return batchLossDF
+    return batchLossDict
         
         
         

@@ -133,15 +133,16 @@ class batchErrorModel(tf.keras.callbacks.Callback):
         
     def on_train_begin(self, logs=None):
         self.lossList = []
-        
-        # if hasattr(self.model, 'lossDict') == False:
         self.model.lossDict = {}
+        self.trainStart = time.perf_counter()
     
     def on_train_batch_end(self, batch, logs=None):
         self.lossList.append(logs['loss'])
     
     def on_train_end(self, logs=None):
         self.model.lossDict['newLoss'] = self.lossList
+        self.trainStop = time.perf_counter()
+        self.model.trainTime = self.trainStop - self.trainStart
 
 class PlotLearning(tf.keras.callbacks.Callback):
     """
@@ -185,17 +186,23 @@ class PlotLearning(tf.keras.callbacks.Callback):
 
 class lrScheduler(tf.keras.callbacks.Callback):
     
-    def __init__(self, refLoss, lossHistory, gain):
+    def __init__(self, refLoss, gain):
         super(lrScheduler, self).__init__()
         self.refLoss = refLoss
-        self.lossHistory = lossHistory
         self.gain = gain
+        self.lossList = []
+    
+    def on_train_begin(self, logs=None):
+        self.lossList = []
+        self.model.lossDict = {}
+        self.trainStart = time.perf_counter()
         
     def on_train_batch_begin(self, batch, logs=None):
         self.tic = time.perf_counter()
         
     def on_train_batch_end(self, batch, logs=None):
-        # lr = float(tf.keras.backend.get_value(self.model.optimizer.learning_rate))
+        
+        self.lossList.append(logs['loss'])
         
         self.toc = time.perf_counter()
         
@@ -212,13 +219,17 @@ class lrScheduler(tf.keras.callbacks.Callback):
         #                             0.0*((logs['loss'] - self.lossHistory[-1])/dt) + 
         #                             (dt/1.0)*(self.refLoss - (logs['loss'] + self.lossHistory[-1])/2 ) ))
         
-        # Print to test
-        # if batch%100:
-            # print(new_lr)
-        # print(self.lossHistory[-1])
         
         tf.keras.backend.set_value(self.model.optimizer.lr, new_lr)
+    
+    def on_train_end(self, logs=None):
+        self.model.lossDict['newLoss'] = self.lossList
+        self.trainStop = time.perf_counter()
         
+        self.model.trainTime = self.trainStop - self.trainStart
+    
     def resetVars(self, refLoss, gain):
         self.refLoss = refLoss
         self.gain = gain
+        
+    

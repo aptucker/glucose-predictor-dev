@@ -124,8 +124,9 @@ batch_end_loss = list()
 #              cBacks.GetErrorOnBatch(batch_end_loss),
              # cBacks.lrScheduler(refLoss=0.2, lossHistory=batch_end_loss, gain=0.1)]
 
-callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
-             cBacks.batchErrorModel()]
+# callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+#              cBacks.batchErrorModel(),
+#              cBacks.lrScheduler(refLoss=0.2, lossHistory=model.lossDict['newLoss'], gain=0.1)]
 
 learningRates = optFun.lrDict()
 learningRates.storeLR(0.001, 'standard')
@@ -162,23 +163,48 @@ model.compile(optimizer= tf.keras.optimizers.Adam(learning_rate=0.001),
               metrics=tf.keras.metrics.RootMeanSquaredError())#,
               # loss_weights = [1.0, 1.0, 1.0, 1.0])
 models['gru'] = model
-modelNames = list(['gru'])
+model.save_weights('gruModel.start')
 
-optFun.timeTester(lPats,
-                  rPats,
-                  partNum,
-                  partSize,
-                  lag,
-                  models,
-                  modelNames,
-                  learningRates,
-                  'standard',
-                  optimizers,
-                  'adam',
-                  b_size,
-                  epochs,
-                  trialsToRun,
-                  callbacks)
+inputs1 = tf.keras.Input(shape=(H,1))
+gruLayer1 = tf.keras.layers.GRU(H,
+                               activation='tanh',
+                               recurrent_activation='sigmoid',
+                               use_bias=True,
+                               bias_initializer='ones')
+x1 = gruLayer(inputs1)
+output1 = tf.keras.layers.Dense(K,
+                               activation=None,
+                               use_bias=True,
+                               bias_initializer='ones')(x1)
+model1 = tf.keras.Model(inputs=inputs1,
+                       outputs=output1)
+# model.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.01),
+#               loss=tf.keras.losses.MeanSquaredError(), 
+#               metrics=tf.keras.metrics.RootMeanSquaredError(),
+#               loss_weights = [1.0, 1.0, 1.0, 1.0])
+model1.compile(optimizer= tf.keras.optimizers.Adam(learning_rate=0.01),
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError())#,
+              # loss_weights = [1.0, 1.0, 1.0, 1.0])
+models['gru1'] = model1
+model1.save_weights('gru1Model.start')
+
+modelNames = list(['gru', 'gru1'])
+
+callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+             cBacks.lrScheduler(refLoss=0.2, gain=0.1)]
+
+outDict = optFun.timeTester(lPats,
+                            rPats,
+                            partNum,
+                            partSize,
+                            lag,
+                            models,
+                            modelNames,
+                            b_size,
+                            epochs,
+                            trialsToRun,
+                            callbacks)
 
 # %%
 
