@@ -117,27 +117,23 @@ activators = ['tanh', 'sigmoid', None]
 [mlpNorm, mean, std] = trn.zscoreData(lPatsTrain.to_numpy())
 [mlpNormTest, testMean, testStd] = trn.zscoreData(lPatsTest.to_numpy())
 
+np.random.seed(1)
+initializer1 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (H, 4)))
+np.random.seed(1)
+aInit = np.random.normal(0, 0.005, (H, D))
+
+np.random.seed(4)
+initializer2 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (H+1, K)))
+np.random.seed(4)
+bInit = np.random.normal(0, 0.005, (H+1, K))
+
 
 batch_end_loss = list()
 
-# callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
-#              cBacks.GetErrorOnBatch(batch_end_loss),
-             # cBacks.lrScheduler(refLoss=0.2, lossHistory=batch_end_loss, gain=0.1)]
+trialsToRun = 10
 
-# callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
-#              cBacks.batchErrorModel(),
-#              cBacks.lrScheduler(refLoss=0.2, lossHistory=model.lossDict['newLoss'], gain=0.1)]
-
-learningRates = optFun.lrDict()
-learningRates.storeLR(0.001, 'standard')
-
-optimizers = optFun.optimizerDict()
-optimizers.storeOptimizer(tf.keras.optimizers.Adam(), 'adam')
-
-trialsToRun = 2
-
-b_size = 100
-epochs = 10
+b_size = 1
+epochs = 20
 
 models = {}
 
@@ -152,47 +148,120 @@ output = tf.keras.layers.Dense(K,
                                activation=None,
                                use_bias=True,
                                bias_initializer='ones')(x)
-model = tf.keras.Model(inputs=inputs,
-                       outputs=output)
-# model.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.01),
-#               loss=tf.keras.losses.MeanSquaredError(), 
-#               metrics=tf.keras.metrics.RootMeanSquaredError(),
-#               loss_weights = [1.0, 1.0, 1.0, 1.0])
-model.compile(optimizer= tf.keras.optimizers.Adam(learning_rate=0.001),
-              loss=tf.keras.losses.MeanSquaredError(), 
-              metrics=tf.keras.metrics.RootMeanSquaredError())#,
-              # loss_weights = [1.0, 1.0, 1.0, 1.0])
-models['gru'] = model
-model.save_weights('gruModel.start')
 
-inputs1 = tf.keras.Input(shape=(H,1))
-gruLayer1 = tf.keras.layers.GRU(H,
-                               activation='tanh',
-                               recurrent_activation='sigmoid',
-                               use_bias=True,
-                               bias_initializer='ones')
-x1 = gruLayer(inputs1)
-output1 = tf.keras.layers.Dense(K,
-                               activation=None,
-                               use_bias=True,
-                               bias_initializer='ones')(x1)
-model1 = tf.keras.Model(inputs=inputs1,
-                       outputs=output1)
-# model.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.01),
-#               loss=tf.keras.losses.MeanSquaredError(), 
-#               metrics=tf.keras.metrics.RootMeanSquaredError(),
-#               loss_weights = [1.0, 1.0, 1.0, 1.0])
-model1.compile(optimizer= tf.keras.optimizers.Adam(learning_rate=0.01),
-              loss=tf.keras.losses.MeanSquaredError(), 
-              metrics=tf.keras.metrics.RootMeanSquaredError())#,
-              # loss_weights = [1.0, 1.0, 1.0, 1.0])
-models['gru1'] = model1
-model1.save_weights('gru1Model.start')
+standardModel = tf.keras.Model(inputs=inputs,
+                               outputs=output)
+adamStandardModel = tf.keras.Model(inputs=inputs,
+                                   outputs=output)
+lrScheduledStandardModel = tf.keras.Model(inputs=inputs,
+                                          outputs=output)
+lrScheduledAdamModel = tf.keras.Model(inputs=inputs,
+                                      outputs=output)
+standardScheduleStandardModel = tf.keras.Model(inputs=inputs,
+                                               outputs=output)
+standardScheduleAdamModel = tf.keras.Model(inputs=inputs,
+                                           outputs=output)
 
-modelNames = list(['gru', 'gru1'])
+jinputs = tf.keras.Input(shape=(H,))
+hlayer = tf.keras.layers.Dense(H, 
+                               activation='sigmoid',
+                               use_bias=True,
+                               kernel_initializer=initializer1,
+                               bias_initializer='ones')(inputs)
+outLayer = tf.keras.layers.Dense(K,
+                                 activation=None,
+                                 use_bias=True,
+                                 kernel_initializer=initializer2,
+                                 bias_initializer='ones')(hlayer)
+
+jdstModel = tf.keras.Model(inputs=jinputs, outputs=outLayer)
+
+# jdstModel = cModels.sbSeqModel(H, 
+#                            K,
+#                            use_bias = True,
+#                            initializers = initializers,
+#                            bias_size = b_size,
+#                            activators = ["sigmoid", None])
+# jdstModel(tf.keras.Input(shape=H))
+
+lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
+    initial_learning_rate=1e-2,
+    decay_steps=10000,
+    decay_rate=0.9)
+
+standardModel.compile(optimizer= tf.keras.optimizers.SGD(),
+                      loss=tf.keras.losses.MeanSquaredError(), 
+                      metrics=tf.keras.metrics.RootMeanSquaredError())
+
+adamStandardModel.compile(optimizer= tf.keras.optimizers.Adam(),
+                          loss=tf.keras.losses.MeanSquaredError(), 
+                          metrics=tf.keras.metrics.RootMeanSquaredError())
+
+lrScheduledStandardModel.compile(optimizer= tf.keras.optimizers.SGD(),
+                                 loss=tf.keras.losses.MeanSquaredError(), 
+                                 metrics=tf.keras.metrics.RootMeanSquaredError())
+
+lrScheduledAdamModel.compile(optimizer= tf.keras.optimizers.Adam(),
+                          loss=tf.keras.losses.MeanSquaredError(), 
+                          metrics=tf.keras.metrics.RootMeanSquaredError())
+
+standardScheduleStandardModel.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule),
+                                      loss=tf.keras.losses.MeanSquaredError(),
+                                      metrics=tf.keras.metrics.RootMeanSquaredError())
+
+standardScheduleAdamModel.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule),
+                                      loss=tf.keras.losses.MeanSquaredError(),
+                                      metrics=tf.keras.metrics.RootMeanSquaredError())
+jdstModel.compile(optimizer= 'SGD', 
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError())
 
 callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
              cBacks.lrScheduler(refLoss=0.2, gain=0.1)]
+
+standardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                           cBacks.batchErrorModel()]
+adamStandardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                               cBacks.batchErrorModel()]
+lrScheduledStandardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                                      cBacks.lrScheduler(refLoss=0.2, gain=0.5)]
+lrScheduledAdamModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                                  cBacks.lrScheduler(refLoss=0.2, gain=0.1)]
+standardScheduleStandardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                                           cBacks.batchErrorModel()]
+standardScheduleAdamModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                                       cBacks.batchErrorModel()]
+jdstModel.callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                              min_delta = 0.1,
+                                              patience = 4,
+                                              mode = "min",
+                                              restore_best_weights = False)]
+
+models['standard'] = standardModel
+standardModel.save_weights('standardModel.start')
+
+models['adam'] = adamStandardModel
+adamStandardModel.save_weights('adamModel.start')
+
+models['lrStandard'] = lrScheduledStandardModel
+lrScheduledStandardModel.save_weights('lrStandardModel.start')
+
+models['lrAdam'] = lrScheduledAdamModel
+lrScheduledAdamModel.save_weights('lrAdamModel.start')
+
+models['standardSchedule'] = standardScheduleStandardModel
+standardScheduleStandardModel.save_weights('standardScheduleModel.start')
+
+models['standardAdam'] = standardScheduleAdamModel
+standardScheduleAdamModel.save_weights('standardAdamModel.start')
+
+models['jdst'] = jdstModel
+jdstModel.save_weights('jdstModel.start')
+
+modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam'])
+# modelNames = list(['lrAdam'])
+
+
 
 outDict = optFun.timeTester(lPats,
                             rPats,
@@ -204,8 +273,26 @@ outDict = optFun.timeTester(lPats,
                             b_size,
                             epochs,
                             trialsToRun,
-                            callbacks)
+                            maxDataSize=1000)
 
+# %% Plots
+fig, ax = plt.subplots(1,1)
+
+legendNames = []
+modelstoplot = ['standardSchedule', 'lrStandard', 'lrAdam']
+
+for i in range(len(modelNames)):
+    for e in range(1):
+        outDict[modelNames[i]]['Loss It. ' f'{e+1}'].plot(ax=ax)
+        legendNames.append(f'{modelNames[i]}' ' It. ' f'{e+1}')
+        
+ax.legend(legendNames)
+ax.set_xlabel('TIME [s]')
+ax.set_ylabel('LOSS')
+ax.set_title('NETWORK LOSS DURING TRAINING')
+ax.set_xlim([-1, 30])
+
+plt.savefig('C:\Code\glucose-predictor-dev\speedtest.pdf', bbox_inches='tight')
 # %%
 
 ticGRU = time.perf_counter()

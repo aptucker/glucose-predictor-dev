@@ -208,15 +208,15 @@ class gruH1(tf.keras.Model):
         self.recActivator = activators[1]
         self.outActivator = activators[2]
         
-        self.inLayer = tf.keras.Input(shape=(None, self.inShape, 1))
+        # self.inLayer = tf.keras.Input(shape=[None , None, self.inShape])
         
-        self.gruLayer = tf.keras.layers.GRU(self.gruShape,
+        self.gruLayer = tf.keras.layers.GRU(units=self.gruShape,
                                             activation = self.gruActivator,
                                             recurrent_activation = self.recActivator,
                                             use_bias = self.use_bias,
                                             bias_initializer = 'ones')
         
-        self.outLayer = tf.keras.layers.Dense(self.outShape,
+        self.outLayer = tf.keras.layers.Dense(units=self.outShape,
                                               activation = self.outActivator,
                                               use_bias = self.use_bias,
                                               bias_initializer = 'ones')

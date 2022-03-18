@@ -152,7 +152,7 @@ cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames, True,
 cPlots.modelEvalPlot(lPats, rPats, 'Parallel', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\ParError.pdf')
 cPlots.modelEvalPlot(lPats, rPats, 'Parallel Circadian', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\ParCircError.pdf')
 cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\GRUError.pdf')
-# cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, False, "")
+cPlots.modelEvalPlot(lPats, rPats, 'GRU LR', labels, index, patNames, False, "")
 
 # %% Multi Model Plots
 

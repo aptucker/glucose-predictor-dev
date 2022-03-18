@@ -77,7 +77,7 @@ def timeTester(lPats,
                b_size,
                epochs,
                trialsToRun,
-               callbacks):
+               maxDataSize=None):
     
     [lTrainLarge,
      rTrainLarge,
@@ -93,6 +93,12 @@ def timeTester(lPats,
     [lTestNorm, lTestMean, lTestSTD] = trn.zscoreData(lTestLarge.copy().sample(frac=1).to_numpy())
     [rTestNorm, rTestMean, rTestSTD] = trn.zscoreData(rTestLarge.copy().sample(frac=1).to_numpy())
     
+    if maxDataSize != None:
+        lTrainNorm = lTrainNorm[0:maxDataSize]
+        rTrainNorm = rTrainNorm[0:maxDataSize]
+        lTestNorm = lTestNorm[0:int(maxDataSize*partSize[0])]
+        rTestNorm = rTestNorm[0:int(maxDataSize*partSize[0])]
+    
     lossDict = {}
     
     for i in range(len(modelNames)):                        
@@ -103,7 +109,7 @@ def timeTester(lPats,
                               trialsToRun,
                               b_size,
                               epochs,
-                              callbacks)
+                              models[modelNames[i]].callbacks)
         lossDict[modelNames[i]] = outDict
     
     
@@ -154,6 +160,14 @@ def runTimeTrials(trainTrialData,
         
         
 
+
+def findConvergenceTime(dfIn, averageWindow, threshold):
+    
+    dfMean = dfIn.rolling(averageWindow).mean()
+    
+    timeOut = dfMean[dfMean < threshold].first_valid_index()
+    
+    return timeOut
 
 class optimizerDict:
     

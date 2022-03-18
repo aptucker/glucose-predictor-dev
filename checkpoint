@@ -1,2 +1,2 @@
-model_checkpoint_path: "gru1Model.start"
-all_model_checkpoint_paths: "gru1Model.start"
+model_checkpoint_path: "standardAdamModel.start"
+all_model_checkpoint_paths: "standardAdamModel.start"

@@ -574,6 +574,94 @@ lPat.timeStorage["GRU H=1"] = timePatGRU
 rPat.timeStorage["GRU H=1"] = timePatGRU
 
 print("GRU H=1 Done")
+
+# %% GRU LR
+
+partNum = 1
+partSize = [0.1]
+lag = 6
+
+Kfold = 2
+nFoldIter = 5
+
+H = 3
+K = 4
+D = lag+1
+skip = 0 
+
+shapes = [H, H, K]
+activators = ['tanh', 'sigmoid', None]
+
+b_size = 1
+epochs = 20
+
+# lPat.randomizeTrainingData(Kfold, seed=1)
+lPat.resetData()
+rPat.resetData()
+
+lPat.partitionData(partNum, partSize)
+rPat.partitionData(partNum, partSize)
+
+pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
+pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
+
+
+[mlpNorm, mean, std] = trn.zscoreData(lPat.trainData.to_numpy())
+
+
+callbacks = [[cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.38),
+              cBacks.lrScheduler(refLoss=0.3, gain=0.1)],
+             [cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.38),
+              cBacks.lrScheduler(refLoss=0.3, gain=0.1)],
+             [cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.38),
+              cBacks.lrScheduler(refLoss=0.3, gain=0.1)],
+             [cBacks.EarlyStoppingAtMinLoss(patience = 20, baseLoss = 0.38),
+              cBacks.lrScheduler(refLoss=0.3, gain=0.1)]]
+
+lossWeights = [[1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0],
+               [1.0, 1.0, 1.0, 1.0]]
+
+
+inputs = tf.keras.Input(shape=(H,1))
+gruLayer = tf.keras.layers.GRU(H, activation='tanh', recurrent_activation='sigmoid', use_bias=True, bias_initializer='ones')
+x = gruLayer(inputs)
+output = tf.keras.layers.Dense(K, activation=None, use_bias=True, bias_initializer='ones')(x)
+model = tf.keras.Model(inputs=inputs, outputs=output)
+model.compile(optimizer= tf.keras.optimizers.Adam(),
+              loss=tf.keras.losses.MeanSquaredError(), 
+              metrics=tf.keras.metrics.RootMeanSquaredError())#,
+              # loss_weights = [1.0, 1.0, 1.0, 1.0])
+models["GRU LR"] = model
+
+ticGRU = time.perf_counter()
+
+trn.cvTraining(lPat,
+                rPat,
+                4,
+                nFoldIter,
+                Kfold,
+                lag,
+                skip,
+                b_size,
+                epochs,
+                models,
+                "GRU LR",
+                callbacks,
+                lossWeights,
+                reComp=True)
+
+tocGRU = time.perf_counter()
+
+timePatGRU = tocGRU - ticGRU
+
+lPat.timeStorage["GRU LR"] = timePatGRU
+rPat.timeStorage["GRU LR"] = timePatGRU
+
+print("GRU LR Done")
 # %% Save Results
 
 if platform == 'win32':

@@ -8,7 +8,7 @@ from sys import platform
 
 cellList = ['Imports and Data Loading',
             'Load w/Previous Results',
-            'GRU H=1 Model',
+            'GRU LR',
             'Save Results']
 
 # cellList = ['Imports and Data Loading',
