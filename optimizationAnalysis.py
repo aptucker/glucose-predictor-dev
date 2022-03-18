@@ -162,27 +162,13 @@ standardScheduleStandardModel = tf.keras.Model(inputs=inputs,
 standardScheduleAdamModel = tf.keras.Model(inputs=inputs,
                                            outputs=output)
 
-jinputs = tf.keras.Input(shape=(H,))
-hlayer = tf.keras.layers.Dense(H, 
-                               activation='sigmoid',
-                               use_bias=True,
-                               kernel_initializer=initializer1,
-                               bias_initializer='ones')(inputs)
-outLayer = tf.keras.layers.Dense(K,
-                                 activation=None,
-                                 use_bias=True,
-                                 kernel_initializer=initializer2,
-                                 bias_initializer='ones')(hlayer)
-
-jdstModel = tf.keras.Model(inputs=jinputs, outputs=outLayer)
-
-# jdstModel = cModels.sbSeqModel(H, 
-#                            K,
-#                            use_bias = True,
-#                            initializers = initializers,
-#                            bias_size = b_size,
-#                            activators = ["sigmoid", None])
-# jdstModel(tf.keras.Input(shape=H))
+jdstModel = cModels.sbSeqModel(H, 
+                            K,
+                            use_bias = True,
+                            initializers = initializers,
+                            bias_size = b_size,
+                            activators = ["sigmoid", None])
+jdstModel(tf.keras.Input(shape=H))
 
 lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
     initial_learning_rate=1e-2,
@@ -235,7 +221,8 @@ jdstModel.callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
                                               min_delta = 0.1,
                                               patience = 4,
                                               mode = "min",
-                                              restore_best_weights = False)]
+                                              restore_best_weights = False),
+                       cBacks.batchErrorModel()]
 
 models['standard'] = standardModel
 standardModel.save_weights('standardModel.start')
@@ -256,9 +243,9 @@ models['standardAdam'] = standardScheduleAdamModel
 standardScheduleAdamModel.save_weights('standardAdamModel.start')
 
 models['jdst'] = jdstModel
-jdstModel.save_weights('jdstModel.start')
+# jdstModel.save_weights('jdstModel.start')
 
-modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam'])
+modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
 # modelNames = list(['lrAdam'])
 
 
@@ -274,6 +261,45 @@ outDict = optFun.timeTester(lPats,
                             epochs,
                             trialsToRun,
                             maxDataSize=1000)
+
+outDict2 = optFun.timeTester(lPats,
+                            rPats,
+                            partNum,
+                            partSize,
+                            lag,
+                            models,
+                            modelNames,
+                            b_size,
+                            epochs,
+                            trialsToRun,
+                            maxDataSize=10000)
+
+# %% Time Results Analysis
+
+timeDF1 = optFun.compileTimeTrialResults(outDict,
+                                         modelNames,
+                                         averageWindow=30,
+                                         threshold=0.25)
+
+timeDF2 = optFun.compileTimeTrialResults(outDict2,
+                                         modelNames,
+                                         averageWindow=30,
+                                         threshold=0.25)
+
+tempList = []
+timeDF = pd.DataFrame()
+
+for i in range(len(modelNames)):
+    for e in range(len(outDict[modelNames[i]])):
+        convTime = optFun.findConvergenceTime(outDict[modelNames[i]]['Loss It. ' f'{e+1}'], 
+                                              averageWindow=30,
+                                              threshold=0.25)
+        
+        tempList.append(convTime)
+    
+    timeDF[modelNames[i]] = tempList
+    
+    tempList = []
 
 # %% Plots
 fig, ax = plt.subplots(1,1)

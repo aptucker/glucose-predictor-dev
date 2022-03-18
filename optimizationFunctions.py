@@ -137,7 +137,8 @@ def runTimeTrials(trainTrialData,
     
     for i in range(trialsToRun):
         
-        models[modelName].load_weights(f'{modelName}' 'Model.start')
+        if modelName != 'jdst':
+            models[modelName].load_weights(f'{modelName}' 'Model.start')
         
         history = models[modelName].fit(trainTrialData[:, outSize:],
                                         trainTrialData[:, 0:outSize],
@@ -168,6 +169,26 @@ def findConvergenceTime(dfIn, averageWindow, threshold):
     timeOut = dfMean[dfMean < threshold].first_valid_index()
     
     return timeOut
+
+def compileTimeTrialResults(dfIn, modelNames, averageWindow, threshold):
+    
+    tempList = []
+    timeDF = pd.DataFrame()
+    
+    for i in range(len(modelNames)):
+        for e in range(len(dfIn[modelNames[i]])):
+            convTime = findConvergenceTime(dfIn[modelNames[i]]['Loss It. ' f'{e+1}'], 
+                                           averageWindow=averageWindow,
+                                           threshold=threshold)
+            
+            tempList.append(convTime)
+        
+        timeDF[modelNames[i]] = tempList
+        
+        tempList = []
+        
+    
+    return timeDF
 
 class optimizerDict:
     
