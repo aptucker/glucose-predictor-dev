@@ -127,6 +127,7 @@ initializer2 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (H+1, K
 np.random.seed(4)
 bInit = np.random.normal(0, 0.005, (H+1, K))
 
+initializers = [initializer1, initializer2]
 
 batch_end_loss = list()
 
@@ -246,7 +247,7 @@ models['jdst'] = jdstModel
 # jdstModel.save_weights('jdstModel.start')
 
 modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
-# modelNames = list(['lrAdam'])
+# modelNames = list(['jdst'])
 
 
 
@@ -279,12 +280,12 @@ outDict2 = optFun.timeTester(lPats,
 timeDF1 = optFun.compileTimeTrialResults(outDict,
                                          modelNames,
                                          averageWindow=30,
-                                         threshold=0.25)
+                                         threshold=0.35)
 
 timeDF2 = optFun.compileTimeTrialResults(outDict2,
                                          modelNames,
                                          averageWindow=30,
-                                         threshold=0.25)
+                                         threshold=0.35)
 
 tempList = []
 timeDF = pd.DataFrame()
@@ -305,18 +306,21 @@ for i in range(len(modelNames)):
 fig, ax = plt.subplots(1,1)
 
 legendNames = []
-modelstoplot = ['standardSchedule', 'lrStandard', 'lrAdam']
+# modelstoplot = ['standardSchedule', 'lrStandard', 'lrAdam', 'jdst']
+# modelstoplot = ['standard', 'jdst', 'lrAdam']
+modelstoplot = ['lrAdam', 'standard']
 
-for i in range(len(modelNames)):
+for i in range(len(modelstoplot)):
     for e in range(1):
-        outDict[modelNames[i]]['Loss It. ' f'{e+1}'].plot(ax=ax)
-        legendNames.append(f'{modelNames[i]}' ' It. ' f'{e+1}')
+        outDict2[modelstoplot[i]]['Loss It. ' f'{e+1}'].plot(ax=ax)
+        legendNames.append(f'{modelstoplot[i]}' ' It. ' f'{e+1}')
         
 ax.legend(legendNames)
 ax.set_xlabel('TIME [s]')
 ax.set_ylabel('LOSS')
 ax.set_title('NETWORK LOSS DURING TRAINING')
-ax.set_xlim([-1, 30])
+ax.set_xlim([-0.5, 5])
+
 
 plt.savefig('C:\Code\glucose-predictor-dev\speedtest.pdf', bbox_inches='tight')
 # %%

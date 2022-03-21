@@ -13,6 +13,8 @@ import tensorflow as tf
 
 import patient as pat
 import training as trn
+import customModels as cModels
+import customCallbacks as cBacks
 
 
 
@@ -139,6 +141,34 @@ def runTimeTrials(trainTrialData,
         
         if modelName != 'jdst':
             models[modelName].load_weights(f'{modelName}' 'Model.start')
+            
+        elif modelName == 'jdst':
+            np.random.seed(1)
+            initializer1 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (3, 4)))
+
+            np.random.seed(4)
+            initializer2 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (3+1, 4)))
+            
+            initializers = [initializer1, initializer2]
+            
+            models[modelName] = cModels.sbSeqModel(3, 
+                                                   4,
+                                                   use_bias = True,
+                                                   initializers = initializers,
+                                                   bias_size = b_size,
+                                                   activators = ["sigmoid", None])
+            models[modelName](tf.keras.Input(shape=3))
+            
+            models[modelName].compile(optimizer= 'SGD', 
+                                      loss=tf.keras.losses.MeanSquaredError(), 
+                                      metrics=tf.keras.metrics.RootMeanSquaredError())
+            
+            models[modelName].callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
+                                                                            min_delta = 0.1,
+                                                                            patience = 4,
+                                                                            mode = "min",
+                                                                            restore_best_weights = False),
+                                           cBacks.batchErrorModel()]
         
         history = models[modelName].fit(trainTrialData[:, outSize:],
                                         trainTrialData[:, 0:outSize],
