@@ -102,6 +102,11 @@ def timeTester(lPats,
         rTestNorm = rTestNorm[0:int(maxDataSize*partSize[0])]
     
     lossDict = {}
+    # if inDict == None:
+    #     lossDict = {}
+        
+    # else:
+    #     lossDict = inDict
     
     for i in range(len(modelNames)):                        
         outDict = runTimeTrials(lTrainNorm,

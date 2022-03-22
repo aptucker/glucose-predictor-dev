@@ -211,9 +211,9 @@ standardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0
 adamStandardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                                cBacks.batchErrorModel()]
 lrScheduledStandardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
-                                      cBacks.lrScheduler(refLoss=0.2, gain=0.5)]
+                                      cBacks.lrScheduler(refLoss=0.23, gain=0.1)]
 lrScheduledAdamModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
-                                  cBacks.lrScheduler(refLoss=0.2, gain=0.1)]
+                                  cBacks.lrScheduler(refLoss=0.23, gain=0.1)]
 standardScheduleStandardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                                            cBacks.batchErrorModel()]
 standardScheduleAdamModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
@@ -263,6 +263,20 @@ outDict = optFun.timeTester(lPats,
                             trialsToRun,
                             maxDataSize=1000)
 
+# %%
+
+outDict = optFun.timeTester(lPats,
+                            rPats,
+                            partNum,
+                            partSize,
+                            lag,
+                            models, 
+                            modelNames,
+                            b_size,
+                            epochs,
+                            trialsToRun,
+                            maxDataSize=1000)
+
 outDict2 = optFun.timeTester(lPats,
                             rPats,
                             partNum,
@@ -270,7 +284,7 @@ outDict2 = optFun.timeTester(lPats,
                             lag,
                             models,
                             modelNames,
-                            b_size,
+                            10,
                             epochs,
                             trialsToRun,
                             maxDataSize=10000)
@@ -308,12 +322,19 @@ fig, ax = plt.subplots(1,1)
 legendNames = []
 # modelstoplot = ['standardSchedule', 'lrStandard', 'lrAdam', 'jdst']
 # modelstoplot = ['standard', 'jdst', 'lrAdam']
-modelstoplot = ['lrAdam', 'standard']
+modelstoplot = ['lrAdam', 'standard', 'adam', 'jdst']
+
+rangeToPlot = range(1,2)
 
 for i in range(len(modelstoplot)):
-    for e in range(1):
+    for e in rangeToPlot:
         outDict2[modelstoplot[i]]['Loss It. ' f'{e+1}'].plot(ax=ax)
-        legendNames.append(f'{modelstoplot[i]}' ' It. ' f'{e+1}')
+        
+        if len(rangeToPlot) > 1:
+            legendNames.append(f'{modelstoplot[i]}' ' It. ' f'{e+1}')
+        
+        else:
+            legendNames.append(f'{modelstoplot[i]}')
         
 ax.legend(legendNames)
 ax.set_xlabel('TIME [s]')
