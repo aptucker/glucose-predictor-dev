@@ -316,13 +316,29 @@ for i in range(len(modelNames)):
     
     tempList = []
 
+tempList = []
+tcDF = pd.DataFrame()
+
+for i in range(len(modelNames)):
+    for e in range(len(outDict[modelNames[i]])):
+        tc = optFun.findTimeConstant(outDict2[modelNames[i]]['Loss It. ' f'{e+1}'])
+        
+        tempList.append(tc)
+    
+    tcDF[modelNames[i]] = tempList
+    
+    tempList = []
+    
+
+
+
 # %% Plots
 fig, ax = plt.subplots(1,1)
 
 legendNames = []
 # modelstoplot = ['standardSchedule', 'lrStandard', 'lrAdam', 'jdst']
 # modelstoplot = ['standard', 'jdst', 'lrAdam']
-modelstoplot = ['lrAdam', 'standard', 'adam', 'jdst']
+modelstoplot = ['lrAdam', 'standard', 'adam', 'jdst', 'lrStandard']
 
 rangeToPlot = range(1,2)
 
@@ -344,6 +360,60 @@ ax.set_xlim([-0.5, 5])
 
 
 plt.savefig('C:\Code\glucose-predictor-dev\speedtest.pdf', bbox_inches='tight')
+
+
+# %% Control Law Testing
+
+[lPatsTrain,
+ rPatsTrain,
+ lPatsTest,
+ rPatsTest] = optFun.dataCombiner(lPats, rPats, partNum, partSize, lag)
+
+[mlpNorm, mean, std] = trn.zscoreData(lPatsTrain.to_numpy())
+[mlpNormTest, testMean, testStd] = trn.zscoreData(lPatsTest.to_numpy())
+
+H = 3
+K = 4
+outSize = K
+
+inputs = tf.keras.Input(shape=(H,1))
+gruLayer = tf.keras.layers.GRU(H,
+                               activation='tanh',
+                               recurrent_activation='sigmoid',
+                               use_bias=True,
+                               bias_initializer='ones')
+x = gruLayer(inputs)
+output = tf.keras.layers.Dense(K,
+                               activation=None,
+                               use_bias=True,
+                               bias_initializer='ones')(x)
+
+standardTestModel = tf.keras.Model(inputs=inputs,
+                               outputs=output)
+
+standardTestModel.compile(optimizer=tf.keras.optimizers.SGD(lr=0.01),
+                          loss=tf.keras.losses.MeanSquaredError(),
+                          metrics=tf.keras.metrics.RootMeanSquaredError())
+
+stModelCallbacks = [cBacks.batchErrorModel(),
+                    cBacks.sinLRScheduler(freq=2, startLR=0.001)]
+
+stModelCallbacks = [cBacks.batchErrorModel(),
+                    cBacks.lrScheduler(refLoss=0.23, gain=.85)]
+
+
+
+history = standardTestModel.fit(mlpNorm[:, outSize:],
+                                mlpNorm[:, 0:outSize],
+                                batch_size=10,
+                                epochs=3,
+                                validation_data = (mlpNormTest[:, outSize:],
+                                                   mlpNormTest[:, 0:outSize]),
+                                callbacks=stModelCallbacks)
+
+
+plt.plot(np.linspace(0, standardTestModel.trainTime, len(standardTestModel.lossDict['newLoss'])), standardTestModel.lossDict['newLoss'])
+
 # %%
 
 ticGRU = time.perf_counter()

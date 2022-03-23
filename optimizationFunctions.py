@@ -205,6 +205,14 @@ def findConvergenceTime(dfIn, averageWindow, threshold):
     
     return timeOut
 
+def findTimeConstant(dfIn):
+    
+    tcVal = dfIn.max()*0.38
+    
+    timeConstant = dfIn[dfIn < tcVal].first_valid_index()
+    
+    return timeConstant
+
 def compileTimeTrialResults(dfIn, modelNames, averageWindow, threshold):
     
     tempList = []

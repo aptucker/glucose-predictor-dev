@@ -12,6 +12,7 @@ import numpy as np
 from matplotlib import pyplot as plt
 from IPython.display import clear_output
 import time
+import math
 
 class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
     
@@ -232,4 +233,33 @@ class lrScheduler(tf.keras.callbacks.Callback):
         self.refLoss = refLoss
         self.gain = gain
         
+
+
+
+class sinLRScheduler(tf.keras.callbacks.Callback):
     
+    def __init__(self, freq, startLR):
+        super(sinLRScheduler, self).__init__()
+        self.freq = freq
+        self.startLR = startLR
+        
+    def on_train_begin(self, logs=None):
+        self.trainStart = time.perf_counter()
+    
+    def on_train_batch_begin(self, batch, logs=None):
+        self.tic = time.perf_counter()
+        
+    def on_train_batch_end(self, batch, logs=None):
+        self.toc = time.perf_counter()
+        
+        tNow = self.toc - self.trainStart
+        
+        new_lr = float(self.startLR * math.sin(self.freq * tNow))
+        
+        tf.keras.backend.set_value(self.model.optimizer.lr, new_lr)
+    
+    def on_train_end(self, logs=None):
+        self.trainStop = time.perf_counter()
+        self.model.trainTime = self.trainStop - self.trainStart
+        
+        
