@@ -414,27 +414,6 @@ history = standardTestModel.fit(mlpNorm[:, outSize:],
 
 plt.plot(np.linspace(0, standardTestModel.trainTime, len(standardTestModel.lossDict['newLoss'])), standardTestModel.lossDict['newLoss'])
 
-# %%
-
-ticGRU = time.perf_counter()
-
-history = model.fit(mlpNorm[:, outSize:],
-                    mlpNorm[:, 0:outSize],
-                    batch_size=b_size,
-                    epochs=epochs,
-                    validation_data = (mlpNormTest[:, outSize:],
-                                       mlpNormTest[:, 0:outSize]),
-                    callbacks=callbacks)
-
-tocGRU = time.perf_counter()
-
-timePatGRU = tocGRU - ticGRU
-# range(1, len(batch_end_loss) + 1
-batchLossDF = pd.DataFrame(model.lossDict['newLoss'], index=np.linspace(0, timePatGRU, len(model.lossDict['newLoss'])), columns=['Batch Loss'])
-# batchLossDF = pd.DataFrame(batch_end_loss, index=np.linspace(0, timePatGRU, len(batch_end_loss)), columns=['Batch Loss'])
-batchLossDF['Batch Loss'].plot()
-
-print(timePatGRU)
 
 
 
