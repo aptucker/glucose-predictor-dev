@@ -97,8 +97,9 @@ q = 1;
 r = 1;
 
 kNew = lqr(ss(g1), q, r);
+h1 = feedback(kNew*g1, 1);
 
-lsim(ss(feedback(kNew*g1, 1)), u1, t1, x01);
+lsim(c2d(ss(feedback(kNew*g1, 1)), 0.001), 0.23*ones(length([0:0.001:1]), 1), [0:0.001:1], x01);
 
 
 

@@ -130,7 +130,7 @@ class batchErrorModel(tf.keras.callbacks.Callback):
     def __init__(self):
         super(batchErrorModel, self).__init__()
         self.lossList = []
-        
+        # self.epochTimes = []
         
     def on_train_begin(self, logs=None):
         self.lossList = []
@@ -139,6 +139,9 @@ class batchErrorModel(tf.keras.callbacks.Callback):
     
     def on_train_batch_end(self, batch, logs=None):
         self.lossList.append(logs['loss'])
+    
+    def on_epoch_end(self, batch, logs=None):
+        print('\nEpoch Done:' f'{time.perf_counter()-self.trainStart}')
     
     def on_train_end(self, logs=None):
         self.model.lossDict['newLoss'] = self.lossList

@@ -133,7 +133,7 @@ batch_end_loss = list()
 
 trialsToRun = 10
 
-b_size = 1
+b_size = 10
 epochs = 20
 
 models = {}
@@ -211,9 +211,9 @@ standardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0
 adamStandardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                                cBacks.batchErrorModel()]
 lrScheduledStandardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
-                                      cBacks.lrScheduler(refLoss=0.23, gain=0.1)]
+                                      cBacks.lrScheduler(refLoss=0.1, gain=0.85)]
 lrScheduledAdamModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
-                                  cBacks.lrScheduler(refLoss=0.23, gain=0.1)]
+                                  cBacks.lrScheduler(refLoss=0.1, gain=0.1)]
 standardScheduleStandardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                                            cBacks.batchErrorModel()]
 standardScheduleAdamModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
@@ -251,7 +251,7 @@ modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule
 
 
 
-outDict = optFun.timeTester(lPats,
+outDictAllData = optFun.timeTester(lPats,
                             rPats,
                             partNum,
                             partSize,
@@ -261,7 +261,7 @@ outDict = optFun.timeTester(lPats,
                             b_size,
                             epochs,
                             trialsToRun,
-                            maxDataSize=1000)
+                            maxDataSize=None)
 
 # %%
 
@@ -338,7 +338,7 @@ fig, ax = plt.subplots(1,1)
 legendNames = []
 # modelstoplot = ['standardSchedule', 'lrStandard', 'lrAdam', 'jdst']
 # modelstoplot = ['standard', 'jdst', 'lrAdam']
-modelstoplot = ['lrAdam', 'standard', 'adam', 'jdst', 'lrStandard']
+modelstoplot = ['lrAdam', 'standard', 'adam', 'jdst', 'standardAdam']
 
 rangeToPlot = range(1,2)
 
@@ -355,8 +355,8 @@ for i in range(len(modelstoplot)):
 ax.legend(legendNames)
 ax.set_xlabel('TIME [s]')
 ax.set_ylabel('LOSS')
-ax.set_title('NETWORK LOSS DURING TRAINING')
-ax.set_xlim([-0.5, 5])
+ax.set_title('NETWORK LOSS DURING TRAINING n=10000')
+ax.set_xlim([-0.2, 5])
 
 
 plt.savefig('C:\Code\glucose-predictor-dev\speedtest.pdf', bbox_inches='tight')
@@ -364,13 +364,17 @@ plt.savefig('C:\Code\glucose-predictor-dev\speedtest.pdf', bbox_inches='tight')
 
 # %% Control Law Testing
 
+partNum = 1
+partSize = [0.1]
+lag = 6
+
 [lPatsTrain,
  rPatsTrain,
  lPatsTest,
  rPatsTest] = optFun.dataCombiner(lPats, rPats, partNum, partSize, lag)
 
-[mlpNorm, mean, std] = trn.zscoreData(lPatsTrain.to_numpy())
-[mlpNormTest, testMean, testStd] = trn.zscoreData(lPatsTest.to_numpy())
+[mlpNorm, mean, std] = trn.zscoreData(lPatsTrain.sample(frac=1).to_numpy())
+[mlpNormTest, testMean, testStd] = trn.zscoreData(lPatsTest.sample(frac=1).to_numpy())
 
 H = 3
 K = 4
@@ -391,21 +395,27 @@ output = tf.keras.layers.Dense(K,
 standardTestModel = tf.keras.Model(inputs=inputs,
                                outputs=output)
 
-standardTestModel.compile(optimizer=tf.keras.optimizers.SGD(lr=0.01),
+standardTestModel.compile(optimizer=tf.keras.optimizers.Adam(),
                           loss=tf.keras.losses.MeanSquaredError(),
                           metrics=tf.keras.metrics.RootMeanSquaredError())
+
+# standardTestModel.compile(optimizer=tf.keras.optimizers.SGD(tf.keras.experimental.CosineDecayRestarts(0.01, 10000)),
+#                           loss=tf.keras.losses.MeanSquaredError(),
+#                           metrics=tf.keras.metrics.RootMeanSquaredError())
 
 stModelCallbacks = [cBacks.batchErrorModel(),
                     cBacks.sinLRScheduler(freq=2, startLR=0.001)]
 
 stModelCallbacks = [cBacks.batchErrorModel(),
-                    cBacks.lrScheduler(refLoss=0.23, gain=.85)]
+                    cBacks.lrScheduler(refLoss=0.1, gain=0.1)]
+
+# Standard Gain from LQR 0.85
 
 
 
 history = standardTestModel.fit(mlpNorm[:, outSize:],
                                 mlpNorm[:, 0:outSize],
-                                batch_size=10,
+                                batch_size=100,
                                 epochs=3,
                                 validation_data = (mlpNormTest[:, outSize:],
                                                    mlpNormTest[:, 0:outSize]),
