@@ -960,3 +960,22 @@ def multiModelEvalPlot(lPats,
         plt.savefig(plotName, bbox_inches='tight')
     
     
+
+def timeTrialPlot(data, modelsToPlot, iterationsToPlot, axToPlot):
+    
+    legendNames = []
+    
+    for i in range(len(modelsToPlot)):
+        for e in iterationsToPlot:
+            data[modelsToPlot[i]]['Loss It. ' f'{e+1}'].plot(ax=axToPlot)
+            
+            if len(iterationsToPlot) > 1:
+                legendNames.append(f'{modelsToPlot[i]}' ' It. ' f'{e+1}')
+            
+            else:
+                legendNames.append(f'{modelsToPlot[i]}')
+        
+    
+    return legendNames
+    
+

@@ -22,6 +22,7 @@ import time
 import math
 import control as ctrl
 import control.matlab as ctrlmat
+from sys import platform
 
 import patient as pat
 import customLayers as cLayers
@@ -75,6 +76,16 @@ lPats = [l1, l2, l3, l4, l5, l6, l7, l8, l9, l10, l11, l12, l13]
 rPats = [r1, r2, r3, r4, r5, r6, r7, r8, r9, r10, r11, r12, r13]
 # patNames = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13]
 patNames = ['Patient' f' {i}' for i in range(1, 14)]
+
+# %% Dictionary Load
+
+if platform == 'win32':
+    with open('time_results.pickle', 'rb') as f:
+        timeResults = pickle.load(f)
+    
+if platform == 'darwin':
+    with open('time_results.pickle', 'rb') as f:
+        timeResults = pickle.load(f)
 
 # %% Timing Testing
 
@@ -171,10 +182,15 @@ jdstModel = cModels.sbSeqModel(H,
                             activators = ["sigmoid", None])
 jdstModel(tf.keras.Input(shape=H))
 
-lr_schedule = tf.keras.optimizers.schedules.ExponentialDecay(
-    initial_learning_rate=1e-2,
-    decay_steps=10000,
-    decay_rate=0.9)
+lr_schedule_standard = tf.keras.optimizers.schedules.ExponentialDecay(
+                                            initial_learning_rate=0.01,
+                                            decay_steps=10000,
+                                            decay_rate=0.9)
+
+lr_schedule_adam = tf.keras.optimizers.schedules.ExponentialDecay(
+                                            initial_learning_rate=0.01,
+                                            decay_steps=10000,
+                                            decay_rate=0.9)
 
 standardModel.compile(optimizer= tf.keras.optimizers.SGD(),
                       loss=tf.keras.losses.MeanSquaredError(), 
@@ -192,14 +208,14 @@ lrScheduledAdamModel.compile(optimizer= tf.keras.optimizers.Adam(),
                           loss=tf.keras.losses.MeanSquaredError(), 
                           metrics=tf.keras.metrics.RootMeanSquaredError())
 
-standardScheduleStandardModel.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule),
+standardScheduleStandardModel.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule_standard),
                                       loss=tf.keras.losses.MeanSquaredError(),
                                       metrics=tf.keras.metrics.RootMeanSquaredError())
 
-standardScheduleAdamModel.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule),
+standardScheduleAdamModel.compile(optimizer=tf.keras.optimizers.SGD(learning_rate=lr_schedule_adam),
                                       loss=tf.keras.losses.MeanSquaredError(),
                                       metrics=tf.keras.metrics.RootMeanSquaredError())
-jdstModel.compile(optimizer= 'SGD', 
+jdstModel.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.01), 
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError())
 
@@ -218,11 +234,7 @@ standardScheduleStandardModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patienc
                                            cBacks.batchErrorModel()]
 standardScheduleAdamModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                                        cBacks.batchErrorModel()]
-jdstModel.callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-                                              min_delta = 0.1,
-                                              patience = 4,
-                                              mode = "min",
-                                              restore_best_weights = False),
+jdstModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                        cBacks.batchErrorModel()]
 
 models['standard'] = standardModel
@@ -246,10 +258,46 @@ standardScheduleAdamModel.save_weights('standardAdamModel.start')
 models['jdst'] = jdstModel
 # jdstModel.save_weights('jdstModel.start')
 
+# modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
+modelNames = list(['standardSchedule', 'standardAdam'])
+
+# %%
 modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
+# modelNames = list(['standardSchedule', 'standardAdam'])
 # modelNames = list(['jdst'])
 
+outDict = optFun.timeTester(lPats,
+                            rPats,
+                            partNum,
+                            partSize,
+                            lag,
+                            models, 
+                            modelNames,
+                            b_size,
+                            40,
+                            trialsToRun,
+                            maxDataSize=1000)
 
+
+# %%
+modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
+# modelNames = list(['standardSchedule', 'standardAdam'])
+
+outDict2 = optFun.timeTester(lPats,
+                            rPats,
+                            partNum,
+                            partSize,
+                            lag,
+                            models,
+                            modelNames,
+                            b_size,
+                            epochs,
+                            trialsToRun,
+                            maxDataSize=10000)
+
+# %%
+# modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
+modelNames = list(['standardSchedule', 'standardAdam'])
 
 outDictAllData = optFun.timeTester(lPats,
                             rPats,
@@ -261,33 +309,23 @@ outDictAllData = optFun.timeTester(lPats,
                             b_size,
                             epochs,
                             trialsToRun,
-                            maxDataSize=None)
+                            maxDataSize=71400)
 
-# %%
+# %% Dictionary Save
 
-outDict = optFun.timeTester(lPats,
-                            rPats,
-                            partNum,
-                            partSize,
-                            lag,
-                            models, 
-                            modelNames,
-                            b_size,
-                            epochs,
-                            trialsToRun,
-                            maxDataSize=1000)
+dictToSave = {}
+dictToSave['n=1000'] = outDict
+dictToSave['n=10000'] = outDict2
+dictToSave['n=71400'] = outDictAllData
 
-outDict2 = optFun.timeTester(lPats,
-                            rPats,
-                            partNum,
-                            partSize,
-                            lag,
-                            models,
-                            modelNames,
-                            10,
-                            epochs,
-                            trialsToRun,
-                            maxDataSize=10000)
+if platform == 'win32':
+    with open("time_results.pickle", "wb") as f:
+        pickle.dump([dictToSave], f)
+
+if platform == 'darwin':
+    with open("time_results.pickle", "wb") as f:
+        pickle.dump([dictToSave], f)
+
 
 # %% Time Results Analysis
 
@@ -333,33 +371,38 @@ for i in range(len(modelNames)):
 
 
 # %% Plots
-fig, ax = plt.subplots(1,1)
+fig1, ax1 = plt.subplots(1,1)
 
 legendNames = []
 # modelstoplot = ['standardSchedule', 'lrStandard', 'lrAdam', 'jdst']
 # modelstoplot = ['standard', 'jdst', 'lrAdam']
 modelstoplot = ['lrAdam', 'standard', 'adam', 'jdst', 'standardAdam']
+modelsToPlot = modelNames
 
 rangeToPlot = range(1,2)
 
-for i in range(len(modelstoplot)):
-    for e in rangeToPlot:
-        outDict2[modelstoplot[i]]['Loss It. ' f'{e+1}'].plot(ax=ax)
+legendNames1 = cPlots.timeTrialPlot(outDict, modelsToPlot, rangeToPlot, ax1)
         
-        if len(rangeToPlot) > 1:
-            legendNames.append(f'{modelstoplot[i]}' ' It. ' f'{e+1}')
-        
-        else:
-            legendNames.append(f'{modelstoplot[i]}')
-        
-ax.legend(legendNames)
-ax.set_xlabel('TIME [s]')
-ax.set_ylabel('LOSS')
-ax.set_title('NETWORK LOSS DURING TRAINING n=10000')
-ax.set_xlim([-0.2, 5])
+ax1.legend(legendNames1)
+ax1.set_xlabel('TIME [s]')
+ax1.set_ylabel('LOSS')
+ax1.set_title('NETWORK LOSS DURING TRAINING n=1000')
+ax1.set_xlim([-0.2, 4])
 
+plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN1000.pdf', bbox_inches='tight')
 
-plt.savefig('C:\Code\glucose-predictor-dev\speedtest.pdf', bbox_inches='tight')
+fig2, ax2 = plt.subplots(1,1)
+
+legendNames2 = cPlots.timeTrialPlot(outDict2, modelsToPlot, rangeToPlot, ax2)
+
+ax2.legend(legendNames2)
+ax2.set_xlabel('TIME [s]')
+ax2.set_ylabel('LOSS')
+ax2.set_title('NETWORK LOSS DURING TRAINING n=10000')
+ax2.set_xlim([-0.1, 10])
+
+plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN10000.pdf', bbox_inches='tight')
+
 
 
 # %% Control Law Testing

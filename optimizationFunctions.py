@@ -81,6 +81,25 @@ def timeTester(lPats,
                trialsToRun,
                maxDataSize=None):
     
+    """Function to run a full time trial of multiple models
+    
+    Inputs:
+        lPats - left arm data to test with
+        rPats - right arm data to test with
+        partNum - number of splits to make for train/validation
+        partSize - train/validation partition fraction 
+        lag - time delay value (should be 6)
+        models - models to test
+        modelNames - list of model names to test
+        b_size - batch size
+        epochs - number of epochs to run
+        trialsToRun - number of repeated trials to run
+        maxDataSize - maximum amount of data to test -> should be divisble by b_size if running JDST model
+        
+    Outputs:
+        lossDict - dictionary of losses and times
+    """
+    
     [lTrainLarge,
      rTrainLarge,
      lTestLarge,
@@ -135,6 +154,22 @@ def runTimeTrials(trainTrialData,
                   epochs,
                   callbacks):
     
+    """Function to run time trials on one model
+    
+    Inputs:
+        trainTrialData - training data to use for fit
+        testTrialData - test data to use for fit
+        models - dictionary of models
+        modelName - name of model to test
+        trialsToRun - number of repeat fits to run
+        b_size - batch size
+        epochs - number of epochs to run
+        callbacks - model callbacks
+    
+    Outputs:
+        batchLossDict - dictionary of losses on a batch level
+    """
+    
     outSize = 4
     
     # optimizers.setLearningRate(optimizerName,
@@ -148,6 +183,8 @@ def runTimeTrials(trainTrialData,
             models[modelName].load_weights(f'{modelName}' 'Model.start')
             
         elif modelName == 'jdst':
+            lr = models[modelName].optimizer.lr
+            
             np.random.seed(1)
             initializer1 = tf.keras.initializers.Constant(np.random.normal(0, 0.005, (3, 4)))
 
@@ -164,15 +201,11 @@ def runTimeTrials(trainTrialData,
                                                    activators = ["sigmoid", None])
             models[modelName](tf.keras.Input(shape=3))
             
-            models[modelName].compile(optimizer= 'SGD', 
+            models[modelName].compile(optimizer= tf.keras.optimizers.SGD(learning_rate=lr), 
                                       loss=tf.keras.losses.MeanSquaredError(), 
                                       metrics=tf.keras.metrics.RootMeanSquaredError())
             
-            models[modelName].callbacks = [tf.keras.callbacks.EarlyStopping(monitor = 'loss',
-                                                                            min_delta = 0.1,
-                                                                            patience = 4,
-                                                                            mode = "min",
-                                                                            restore_best_weights = False),
+            models[modelName].callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                                            cBacks.batchErrorModel()]
         
         history = models[modelName].fit(trainTrialData[:, outSize:],
@@ -199,6 +232,18 @@ def runTimeTrials(trainTrialData,
 
 def findConvergenceTime(dfIn, averageWindow, threshold):
     
+    """Find the convergence time using moving average of model results
+    
+    Inputs:
+        dfIn - batch loss data to find time
+        averageWindow - moving average value
+        threshold - convergence threshold
+    
+    Outputs:
+        timeOut - convergence time
+        
+    """
+    
     dfMean = dfIn.rolling(averageWindow).mean()
     
     timeOut = dfMean[dfMean < threshold].first_valid_index()
@@ -207,13 +252,36 @@ def findConvergenceTime(dfIn, averageWindow, threshold):
 
 def findTimeConstant(dfIn):
     
-    tcVal = dfIn.max()*0.38
+    """Find the time constant from model batch loss training results
+    
+    Inputs:
+        dfIn - batch loss data
+        
+    Outputs:
+        timeConstant - calculated time constant
+        
+    """
+    
+    tcVal = dfIn.max()*0.37
     
     timeConstant = dfIn[dfIn < tcVal].first_valid_index()
     
     return timeConstant
 
 def compileTimeTrialResults(dfIn, modelNames, averageWindow, threshold):
+    
+    """Combine convergence time results into a dataframe
+    
+    Inputs:
+        dfIn - dictionary input of batch losses
+        modelNames - names of models to compile
+        averageWindow - moving average window for convergence function
+        threshold - convergence threshold
+    
+    Outputs:
+        timeDF - dataframe of convergence times
+    
+    """
     
     tempList = []
     timeDF = pd.DataFrame()
