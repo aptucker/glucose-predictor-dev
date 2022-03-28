@@ -174,6 +174,19 @@ standardScheduleStandardModel = tf.keras.Model(inputs=inputs,
 standardScheduleAdamModel = tf.keras.Model(inputs=inputs,
                                            outputs=output)
 
+# R=1, Q=1
+lr84 = tf.keras.Model(inputs=inputs,
+                      outputs=output)
+
+# R=5, Q=5
+lr31 = tf.keras.Model(inputs=inputs,
+                      outputs=output)
+
+# R=10, Q=1
+lr19 = tf.keras.Model(inputs=inputs,
+                      outputs=output)
+
+
 jdstModel = cModels.sbSeqModel(H, 
                             K,
                             use_bias = True,
@@ -219,6 +232,16 @@ jdstModel.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.01),
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError())
 
+lr84.compile(optimizer=tf.keras.optimizers.SGD(),
+             loss=tf.keras.losses.MeanSquaredError(),
+             metrics=tf.keras.metrics.RootMeanSquaredError())
+lr31.compile(optimizer=tf.keras.optimizers.SGD(),
+             loss=tf.keras.losses.MeanSquaredError(),
+             metrics=tf.keras.metrics.RootMeanSquaredError())
+lr19.compile(optimizer=tf.keras.optimizers.SGD(),
+             loss=tf.keras.losses.MeanSquaredError(),
+             metrics=tf.keras.metrics.RootMeanSquaredError())
+
 callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
              cBacks.lrScheduler(refLoss=0.2, gain=0.1)]
 
@@ -237,26 +260,42 @@ standardScheduleAdamModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20
 jdstModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                        cBacks.batchErrorModel()]
 
+lr84.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                  cBacks.lrScheduler(refLoss=0.1, gain=0.84)]
+lr31.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                  cBacks.lrScheduler(refLoss=0.1, gain=0.31)]
+lr19.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                  cBacks.lrScheduler(refLoss=0.1, gain=0.19)]
+
 models['standard'] = standardModel
-standardModel.save_weights('standardModel.start')
+standardModel.save_weights('weights_storage\\standardModel.start')
 
 models['adam'] = adamStandardModel
-adamStandardModel.save_weights('adamModel.start')
+adamStandardModel.save_weights('weights_storage\\adamModel.start')
 
 models['lrStandard'] = lrScheduledStandardModel
-lrScheduledStandardModel.save_weights('lrStandardModel.start')
+lrScheduledStandardModel.save_weights('weights_storage\\lrStandardModel.start')
 
 models['lrAdam'] = lrScheduledAdamModel
-lrScheduledAdamModel.save_weights('lrAdamModel.start')
+lrScheduledAdamModel.save_weights('weights_storage\\lrAdamModel.start')
 
 models['standardSchedule'] = standardScheduleStandardModel
-standardScheduleStandardModel.save_weights('standardScheduleModel.start')
+standardScheduleStandardModel.save_weights('weights_storage\\standardScheduleModel.start')
 
 models['standardAdam'] = standardScheduleAdamModel
-standardScheduleAdamModel.save_weights('standardAdamModel.start')
+standardScheduleAdamModel.save_weights('weights_storage\\standardAdamModel.start')
 
 models['jdst'] = jdstModel
 # jdstModel.save_weights('jdstModel.start')
+
+models['lr84'] = lr84
+lr84.save_weights('weights_storage\\lr84Model.start')
+
+models['lr31'] = lr31
+lr31.save_weights('weights_storage\\lr31Model.start')
+
+models['lr19'] = lr19
+lr19.save_weights('weights_storage\\lr19Model.start')
 
 # modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
 modelNames = list(['standardSchedule', 'standardAdam'])
@@ -297,7 +336,7 @@ outDict2 = optFun.timeTester(lPats,
 
 # %%
 # modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
-modelNames = list(['standardSchedule', 'standardAdam'])
+modelNames = list(['lr84', 'lr31', 'lr19'])
 
 outDictAllData = optFun.timeTester(lPats,
                             rPats,
@@ -310,6 +349,58 @@ outDictAllData = optFun.timeTester(lPats,
                             epochs,
                             trialsToRun,
                             maxDataSize=71400)
+
+# %% Generate System Response
+tempList = []
+tcDF = pd.DataFrame()
+modelsForTC = ['standard']
+
+for i in range(len(modelsForTC)):
+    for e in range(len(timeResults[0]['n=71400'][modelsForTC[i]])):
+        tc = optFun.findTimeConstant(timeResults[0]['n=71400'][modelsForTC[i]]['Loss It. ' f'{e+1}'])
+        
+        tempList.append(tc)
+    
+    tcDF[modelsForTC[i]] = tempList
+    
+    tempList = []
+
+yss = 0.21
+tc = float(tcDF.mean())
+refIn = 0.01
+kG = yss/refIn
+
+x01 = 2
+
+a1 = -12.81
+a5 = -5.11
+a10 = -3.394
+b1 = 4
+b5 = 2
+b10 = 2
+c1 = 3.032
+c5 = 2.212
+c10 = 1.335
+d = 0
+
+h1 = ctrlmat.ss(a1, b1, c1, d)
+h5 = ctrlmat.ss(a5, b5, c5, d)
+h10 = ctrlmat.ss(a10, b10, c10, d)
+
+t = np.linspace(0, 5, 10000)
+u = 0.25*np.ones([len(t), 1])
+
+y1 = ctrlmat.lsim(h1, u, t, x01)
+y5 = ctrlmat.lsim(h5, u, t, x01)
+y10 = ctrlmat.lsim(h10, u, t, x01)
+
+simDF = pd.DataFrame(index=t)
+simDF['lr84Sim'] = y1[0]
+simDF['lr31Sim'] = y5[0]
+simDF['lr19Sim'] = y10[0]
+
+
+# plt.plot(t, y1[0])
 
 # %% Dictionary Save
 
@@ -358,8 +449,8 @@ tempList = []
 tcDF = pd.DataFrame()
 
 for i in range(len(modelNames)):
-    for e in range(len(outDict[modelNames[i]])):
-        tc = optFun.findTimeConstant(outDict2[modelNames[i]]['Loss It. ' f'{e+1}'])
+    for e in range(len(timeResults[0]['n=71400'][modelNames[i]])):
+        tc = optFun.findTimeConstant(timeResults[0]['n=71400'][modelNames[i]]['Loss It. ' f'{e+1}'])
         
         tempList.append(tc)
     
@@ -376,16 +467,16 @@ fig1, ax1 = plt.subplots(1,1)
 legendNames = []
 # modelstoplot = ['standardSchedule', 'lrStandard', 'lrAdam', 'jdst']
 # modelstoplot = ['standard', 'jdst', 'lrAdam']
-modelstoplot = ['lrAdam', 'standard', 'adam', 'jdst', 'standardAdam']
-modelsToPlot = modelNames
+modelsToPlot = ['standard', 'adam', 'jdst', 'lrStandard']
+
 
 rangeToPlot = range(1,2)
 
-legendNames1 = cPlots.timeTrialPlot(outDict, modelsToPlot, rangeToPlot, ax1)
+legendNames1 = cPlots.timeTrialPlot(timeResults[0]['n=1000'], modelsToPlot, rangeToPlot, ax1)
         
 ax1.legend(legendNames1)
 ax1.set_xlabel('TIME [s]')
-ax1.set_ylabel('LOSS')
+ax1.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
 ax1.set_title('NETWORK LOSS DURING TRAINING n=1000')
 ax1.set_xlim([-0.2, 4])
 
@@ -393,17 +484,62 @@ plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN1000.p
 
 fig2, ax2 = plt.subplots(1,1)
 
-legendNames2 = cPlots.timeTrialPlot(outDict2, modelsToPlot, rangeToPlot, ax2)
+legendNames2 = cPlots.timeTrialPlot(timeResults[0]['n=10000'], modelsToPlot, rangeToPlot, ax2)
 
 ax2.legend(legendNames2)
 ax2.set_xlabel('TIME [s]')
-ax2.set_ylabel('LOSS')
+ax2.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
 ax2.set_title('NETWORK LOSS DURING TRAINING n=10000')
 ax2.set_xlim([-0.1, 10])
 
 plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN10000.pdf', bbox_inches='tight')
 
+fig3, ax3 = plt.subplots(1,1)
 
+legendNames3 = cPlots.timeTrialPlot(timeResults[0]['n=71400'], modelsToPlot, rangeToPlot, ax3)
+ax3.legend(legendNames3)
+ax3.set_xlabel('TIME [s]')
+ax3.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
+ax3.set_title('NETWORK LOSS DURING TRAINING n=71400')
+ax3.set_xlim([-0.1, 20])
+
+plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400.pdf', bbox_inches='tight')
+
+# %%
+fig4, ax4 = plt.subplots(1,1)
+
+modelsToPlot = ['lr84', 'lr31', 'lr19']
+
+legendNames4 = cPlots.timeTrialPlot(outDictAllData, modelsToPlot, rangeToPlot, ax4)
+simDF.plot(ax=ax4)
+ax4.legend(legendNames4 + simDF.columns.values.tolist())
+ax4.set_xlabel('TIME [s]')
+ax4.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
+ax4.set_title('NETWORK LOSS vs SIMULATED RESPONSES n=71400')
+ax4.set_xlim([-0.01, 2])
+ax4.set_ylim([0, 3])
+props = dict(boxstyle='round', facecolor='white', alpha=0.25)
+textstr = r'K=0.84 $\rightarrow$ Q=1, R=1' '\n' r'K=0.31 $\rightarrow$ Q=1, R=5' '\n' r'K=0.19 $\rightarrow$ Q=1, R=10'
+ax4.text(0.4, 0.965, textstr, transform=ax4.transAxes, fontsize=10, verticalalignment='top', bbox=props)
+
+plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialLRwSIM.pdf', bbox_inches='tight')
+
+fig5, ax5 = plt.subplots(1, 1)
+
+modelsToPlot = ['lr84', 'lr31', 'lr19']
+
+legendNames5 = cPlots.timeTrialPlot(outDictAllData, modelsToPlot, rangeToPlot, ax5)
+ax5.legend(legendNames5)
+ax5.set_xlabel('TIME [s]')
+ax5.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
+ax5.set_title('NETWORK LOSS DURING TRAINING n=71400')
+ax5.set_xlim([-0.01, 2])
+ax5.set_ylim([0, 3])
+props = dict(boxstyle='round', facecolor='white', alpha=0.25)
+textstr = r'K=0.84 $\rightarrow$ Q=1, R=1' '\n' r'K=0.31 $\rightarrow$ Q=1, R=5' '\n' r'K=0.19 $\rightarrow$ Q=1, R=10'
+ax5.text(0.45, 0.975, textstr, transform=ax4.transAxes, fontsize=10, verticalalignment='top', bbox=props)
+
+plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialLR.pdf', bbox_inches='tight')
 
 # %% Control Law Testing
 

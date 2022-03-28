@@ -226,4 +226,4 @@ class gruH1(tf.keras.Model):
         outputs = self.outLayer(x)
         return outputs
     
-    
+

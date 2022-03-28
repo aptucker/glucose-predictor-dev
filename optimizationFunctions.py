@@ -180,7 +180,7 @@ def runTimeTrials(trainTrialData,
     for i in range(trialsToRun):
         
         if modelName != 'jdst':
-            models[modelName].load_weights(f'{modelName}' 'Model.start')
+            models[modelName].load_weights('weights_storage\\' f'{modelName}' 'Model.start')
             
         elif modelName == 'jdst':
             lr = models[modelName].optimizer.lr

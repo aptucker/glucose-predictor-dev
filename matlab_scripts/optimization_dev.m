@@ -75,23 +75,30 @@ close all
 
 %% 
 
-yss = 0.19;
+% yss = 0.19;
+yss = 0.21;
 % refIn = 0.23;
-refIn=0.001;
+refIn=0.01;
 % tc1 = 0.524;
-tc1 = 0.388;
+
+% n=10000
+% tc1 = 0.388;
+
+% n=71400
+tc1 = 1.46;
 k1 = yss/refIn;
 
 x01 = 2.4;
 
-t1 = linspace(0,26.7, 10000);
+t1 = linspace(0,5, 10000);
 u1 = 0.23*ones(length(t1), 1);
 
 s = tf('s');
 g1 = k1/(tc1*s + 1);
 
 close all
-lsim(ss(g1), u1, t1, x01);
+figure
+lsim(ss(g1), 0.001*ones(length(t1), 1) , t1, 2);
 
 q = 1;
 r = 1;
@@ -99,7 +106,10 @@ r = 1;
 kNew = lqr(ss(g1), q, r);
 h1 = feedback(kNew*g1, 1);
 
-lsim(c2d(ss(feedback(kNew*g1, 1)), 0.001), 0.23*ones(length([0:0.001:1]), 1), [0:0.001:1], x01);
+figure
+lsim(ss(h1), u1, t1, 2);
+% lsim(ss(h1), u1, t1, x01);
+% lsim(c2d(ss(feedback(kNew*g1, 1)), 0.001), 0.23*ones(length([0:0.001:1]), 1), [0:0.001:1], x01);
 
 
 
