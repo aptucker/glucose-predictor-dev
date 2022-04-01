@@ -356,8 +356,8 @@ tcDF = pd.DataFrame()
 modelsForTC = ['standard']
 
 for i in range(len(modelsForTC)):
-    for e in range(len(timeResults[0]['n=71400'][modelsForTC[i]])):
-        tc = optFun.findTimeConstant(timeResults[0]['n=71400'][modelsForTC[i]]['Loss It. ' f'{e+1}'])
+    for e in range(len(timeResults['n=71400'][modelsForTC[i]])):
+        tc = optFun.findTimeConstant(timeResults['n=71400'][modelsForTC[i]]['Loss It. ' f'{e+1}'])
         
         tempList.append(tc)
     
@@ -404,18 +404,23 @@ simDF['lr19Sim'] = y10[0]
 
 # %% Dictionary Save
 
-dictToSave = {}
-dictToSave['n=1000'] = outDict
-dictToSave['n=10000'] = outDict2
-dictToSave['n=71400'] = outDictAllData
+dictToSave = {
+    'n=1000': timeResults['n=1000'],
+    'n=10000': timeResults['n=10000'],
+    'n=71400': timeResults['n=71400']}
 
+dictToSave['n=71400']['lr84'] = outDictAllData['lr84']
+dictToSave['n=71400']['lr31'] = outDictAllData['lr31']
+dictToSave['n=71400']['lr19'] = outDictAllData['lr19']
+
+# %% Pickle Dump
 if platform == 'win32':
     with open("time_results.pickle", "wb") as f:
-        pickle.dump([dictToSave], f)
+        pickle.dump(dictToSave, f)
 
 if platform == 'darwin':
     with open("time_results.pickle", "wb") as f:
-        pickle.dump([dictToSave], f)
+        pickle.dump(dictToSave, f)
 
 
 # %% Time Results Analysis
@@ -472,7 +477,7 @@ modelsToPlot = ['standard', 'adam', 'jdst', 'lrStandard']
 
 rangeToPlot = range(1,2)
 
-legendNames1 = cPlots.timeTrialPlot(timeResults[0]['n=1000'], modelsToPlot, rangeToPlot, ax1)
+legendNames1 = cPlots.timeTrialPlot(timeResults['n=1000'], modelsToPlot, rangeToPlot, ax1)
         
 ax1.legend(legendNames1)
 ax1.set_xlabel('TIME [s]')
@@ -484,7 +489,7 @@ plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN1000.p
 
 fig2, ax2 = plt.subplots(1,1)
 
-legendNames2 = cPlots.timeTrialPlot(timeResults[0]['n=10000'], modelsToPlot, rangeToPlot, ax2)
+legendNames2 = cPlots.timeTrialPlot(timeResults['n=10000'], modelsToPlot, rangeToPlot, ax2)
 
 ax2.legend(legendNames2)
 ax2.set_xlabel('TIME [s]')
@@ -496,21 +501,25 @@ plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN10000.
 
 fig3, ax3 = plt.subplots(1,1)
 
-legendNames3 = cPlots.timeTrialPlot(timeResults[0]['n=71400'], modelsToPlot, rangeToPlot, ax3)
-ax3.legend(legendNames3)
+legendNames3 = cPlots.timeTrialPlot(timeResults['n=71400'], modelsToPlot, rangeToPlot, ax3)
+ax3.legend(['GRU NN', 'GRU NN w/ Adam', 'Feedforward NN', 'GRU w/ Custom Learning Rate'])
+# ax3.legend().set_visible(False)
 ax3.set_xlabel('TIME [s]')
 ax3.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
+# ax3.set_ylabel('ERROR')
 ax3.set_title('NETWORK LOSS DURING TRAINING n=71400')
 ax3.set_xlim([-0.1, 20])
 
-plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400.pdf', bbox_inches='tight')
+# plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400.pdf', bbox_inches='tight')
+# plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400JandS.pdf', bbox_inches='tight')
+# plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400Example.pdf', bbox_inches='tight')
 
 # %%
 fig4, ax4 = plt.subplots(1,1)
 
 modelsToPlot = ['lr84', 'lr31', 'lr19']
 
-legendNames4 = cPlots.timeTrialPlot(outDictAllData, modelsToPlot, rangeToPlot, ax4)
+legendNames4 = cPlots.timeTrialPlot(timeResults['n=71400'], modelsToPlot, rangeToPlot, ax4)
 simDF.plot(ax=ax4)
 ax4.legend(legendNames4 + simDF.columns.values.tolist())
 ax4.set_xlabel('TIME [s]')
@@ -528,7 +537,7 @@ fig5, ax5 = plt.subplots(1, 1)
 
 modelsToPlot = ['lr84', 'lr31', 'lr19']
 
-legendNames5 = cPlots.timeTrialPlot(outDictAllData, modelsToPlot, rangeToPlot, ax5)
+legendNames5 = cPlots.timeTrialPlot(timeResults['n=71400'], modelsToPlot, rangeToPlot, ax5)
 ax5.legend(legendNames5)
 ax5.set_xlabel('TIME [s]')
 ax5.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
