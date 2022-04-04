@@ -507,8 +507,9 @@ ax3.legend(['GRU NN', 'GRU NN w/ Adam', 'Feedforward NN', 'GRU w/ Custom Learnin
 ax3.set_xlabel('TIME [s]')
 ax3.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
 # ax3.set_ylabel('ERROR')
-ax3.set_title('NETWORK LOSS DURING TRAINING n=71400')
+ax3.set_title('NETWORK LOSS DURING TRAINING')
 ax3.set_xlim([-0.1, 20])
+# ax3.get_lines()[0].set_color('black')
 
 # plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400.pdf', bbox_inches='tight')
 # plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400JandS.pdf', bbox_inches='tight')
