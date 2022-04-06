@@ -85,7 +85,8 @@ refIn=0.01;
 % tc1 = 0.388;
 
 % n=71400
-tc1 = 1.46;
+% tc1 = 1.46;
+tc1 = 2.59;
 k1 = yss/refIn;
 
 x01 = 2.4;
@@ -98,7 +99,8 @@ g1 = k1/(tc1*s + 1);
 
 close all
 figure
-lsim(ss(g1), 0.001*ones(length(t1), 1) , t1, 2);
+lsim(ss(g1), 0.01*ones(length(t1), 1) , t1, 1);
+% lsim(ss(g1), u1, t1, 1);
 
 q = 1;
 r = 1;

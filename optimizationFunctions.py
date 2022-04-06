@@ -262,7 +262,8 @@ def findTimeConstant(dfIn):
         
     """
     
-    tcVal = dfIn.max()*0.37
+    # tcVal = dfIn.max()*0.37
+    tcVal = dfIn.iloc[20]*0.37
     
     timeConstant = dfIn[dfIn < tcVal].first_valid_index()
     

@@ -174,16 +174,28 @@ standardScheduleStandardModel = tf.keras.Model(inputs=inputs,
 standardScheduleAdamModel = tf.keras.Model(inputs=inputs,
                                            outputs=output)
 
-# R=1, Q=1
+# R=1, Q=1 OLD
 lr84 = tf.keras.Model(inputs=inputs,
                       outputs=output)
 
-# R=5, Q=5
+# R=5, Q=1 OLD
 lr31 = tf.keras.Model(inputs=inputs,
                       outputs=output)
 
-# R=10, Q=1
+# R=10, Q=1 OLD
 lr19 = tf.keras.Model(inputs=inputs,
+                      outputs=output)
+
+# R=1, Q=1
+lr91 = tf.keras.Model(inputs=inputs,
+                      outputs=output)
+
+# R=5, Q=1
+lr36 = tf.keras.Model(inputs=inputs,
+                      outputs=output)
+
+# R=10, Q=1
+lr23 = tf.keras.Model(inputs=inputs,
                       outputs=output)
 
 
@@ -232,6 +244,7 @@ jdstModel.compile(optimizer= tf.keras.optimizers.SGD(learning_rate=0.01),
               loss=tf.keras.losses.MeanSquaredError(), 
               metrics=tf.keras.metrics.RootMeanSquaredError())
 
+# OLD
 lr84.compile(optimizer=tf.keras.optimizers.SGD(),
              loss=tf.keras.losses.MeanSquaredError(),
              metrics=tf.keras.metrics.RootMeanSquaredError())
@@ -239,6 +252,16 @@ lr31.compile(optimizer=tf.keras.optimizers.SGD(),
              loss=tf.keras.losses.MeanSquaredError(),
              metrics=tf.keras.metrics.RootMeanSquaredError())
 lr19.compile(optimizer=tf.keras.optimizers.SGD(),
+             loss=tf.keras.losses.MeanSquaredError(),
+             metrics=tf.keras.metrics.RootMeanSquaredError())
+
+lr91.compile(optimizer=tf.keras.optimizers.SGD(),
+             loss=tf.keras.losses.MeanSquaredError(),
+             metrics=tf.keras.metrics.RootMeanSquaredError())
+lr36.compile(optimizer=tf.keras.optimizers.SGD(),
+             loss=tf.keras.losses.MeanSquaredError(),
+             metrics=tf.keras.metrics.RootMeanSquaredError())
+lr23.compile(optimizer=tf.keras.optimizers.SGD(),
              loss=tf.keras.losses.MeanSquaredError(),
              metrics=tf.keras.metrics.RootMeanSquaredError())
 
@@ -260,12 +283,20 @@ standardScheduleAdamModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20
 jdstModel.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                        cBacks.batchErrorModel()]
 
+# OLD
 lr84.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                   cBacks.lrScheduler(refLoss=0.1, gain=0.84)]
 lr31.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                   cBacks.lrScheduler(refLoss=0.1, gain=0.31)]
 lr19.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
                   cBacks.lrScheduler(refLoss=0.1, gain=0.19)]
+
+lr91.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                  cBacks.lrScheduler(refLoss=0.1, gain=0.91)]
+lr36.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                  cBacks.lrScheduler(refLoss=0.1, gain=0.36)]
+lr23.callbacks = [cBacks.EarlyStoppingAtMinLoss(patience=20, baseLoss=0.25),
+                  cBacks.lrScheduler(refLoss=0.1, gain=0.23)]
 
 models['standard'] = standardModel
 standardModel.save_weights('weights_storage\\standardModel.start')
@@ -288,6 +319,7 @@ standardScheduleAdamModel.save_weights('weights_storage\\standardAdamModel.start
 models['jdst'] = jdstModel
 # jdstModel.save_weights('jdstModel.start')
 
+# OLD
 models['lr84'] = lr84
 lr84.save_weights('weights_storage\\lr84Model.start')
 
@@ -297,8 +329,17 @@ lr31.save_weights('weights_storage\\lr31Model.start')
 models['lr19'] = lr19
 lr19.save_weights('weights_storage\\lr19Model.start')
 
+models['lr91'] = lr91
+lr91.save_weights('weights_storage\\lr91Model.start')
+
+models['lr36'] = lr36
+lr36.save_weights('weights_storage\\lr36Model.start')
+
+models['lr23'] = lr23
+lr23.save_weights('weights_storage\\lr23Model.start')
+
 # modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
-modelNames = list(['standardSchedule', 'standardAdam'])
+# modelNames = list(['standardSchedule', 'standardAdam'])
 
 # %%
 modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
@@ -336,7 +377,8 @@ outDict2 = optFun.timeTester(lPats,
 
 # %%
 # modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
-modelNames = list(['lr84', 'lr31', 'lr19'])
+# modelNames = list(['lr84', 'lr31', 'lr19'])
+modelNames = list(['lr91', 'lr36', 'lr23'])
 
 outDictAllData = optFun.timeTester(lPats,
                             rPats,
@@ -370,34 +412,51 @@ tc = float(tcDF.mean())
 refIn = 0.01
 kG = yss/refIn
 
-x01 = 2
+x01 = 2.5
 
-a1 = -12.81
-a5 = -5.11
-a10 = -3.394
-b1 = 4
+#OLD VALUES
+# a1 = -12.81
+# a5 = -5.11
+# a10 = -3.394
+# b1 = 4
+# b5 = 2
+# b10 = 2
+# c1 = 3.032
+# c5 = 2.212
+# c10 = 1.335
+
+a0 = -0.38
+a1 = -7.75
+a5 = -3.31
+a10 = -2.28
+b0 = 4
+b1 = 2
 b5 = 2
-b10 = 2
-c1 = 3.032
-c5 = 2.212
-c10 = 1.335
+b10 = 1
+c0 = 2.03
+c1 = 3.68
+c5 = 1.46
+c10 = 1.89
 d = 0
 
+g = ctrlmat.ss(a0, b0, c0, d)
 h1 = ctrlmat.ss(a1, b1, c1, d)
 h5 = ctrlmat.ss(a5, b5, c5, d)
 h10 = ctrlmat.ss(a10, b10, c10, d)
 
-t = np.linspace(0, 5, 10000)
-u = 0.25*np.ones([len(t), 1])
+t = np.linspace(0, 20, 10000)
+u = 0.02*np.ones([len(t), 1])
 
+y0 = ctrlmat.lsim(g, 0.02*np.ones([len(t), 1]), t, 0.9)
 y1 = ctrlmat.lsim(h1, u, t, x01)
 y5 = ctrlmat.lsim(h5, u, t, x01)
 y10 = ctrlmat.lsim(h10, u, t, x01)
 
 simDF = pd.DataFrame(index=t)
-simDF['lr84Sim'] = y1[0]
-simDF['lr31Sim'] = y5[0]
-simDF['lr19Sim'] = y10[0]
+simDF['gSim'] = y0[0]
+simDF['lr91Sim'] = y1[0]
+simDF['lr36Sim'] = y5[0]
+simDF['lr23Sim'] = y10[0]
 
 
 # plt.plot(t, y1[0])
@@ -409,9 +468,13 @@ dictToSave = {
     'n=10000': timeResults['n=10000'],
     'n=71400': timeResults['n=71400']}
 
-dictToSave['n=71400']['lr84'] = outDictAllData['lr84']
-dictToSave['n=71400']['lr31'] = outDictAllData['lr31']
-dictToSave['n=71400']['lr19'] = outDictAllData['lr19']
+# dictToSave['n=71400']['lr84'] = outDictAllData['lr84']
+# dictToSave['n=71400']['lr31'] = outDictAllData['lr31']
+# dictToSave['n=71400']['lr19'] = outDictAllData['lr19']
+
+dictToSave['n=71400']['lr91'] = outDictAllData['lr91']
+dictToSave['n=71400']['lr36'] = outDictAllData['lr36']
+dictToSave['n=71400']['lr23'] = outDictAllData['lr23']
 
 # %% Pickle Dump
 if platform == 'win32':
@@ -462,63 +525,172 @@ for i in range(len(modelNames)):
     tcDF[modelNames[i]] = tempList
     
     tempList = []
+
+# %% Convergence Time Results
+
+modelNames = list(['standard', 'adam', 'lrStandard', 'jdst', 'lr91', 'lr36', 'lr23'])
+
+tempListTC = []
+tempListConv = []
+convDF = pd.DataFrame()
+tcDF = pd.DataFrame()
+
+for i in range(len(modelNames)):
+    for e in range(len(timeResults['n=71400'][modelNames[i]])):
+        convTime = optFun.findConvergenceTime(timeResults['n=71400'][modelNames[i]]['Loss It. ' f'{e+1}'],
+                                              averageWindow=30,
+                                              threshold=0.3)
+        
+        tempListConv.append(convTime)
+    
+    convDF[modelNames[i]] = tempList
+    
+    tempList = []
+
+
     
 
+# %% JDST vs GRU Plot n=71400
+colors = ['#3F7D6E',
+          '#593560',
+          '#A25756',
+          '#E7B56D']
 
+lossLabel = r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]'
 
-# %% Plots
-fig1, ax1 = plt.subplots(1,1)
-
-legendNames = []
-# modelstoplot = ['standardSchedule', 'lrStandard', 'lrAdam', 'jdst']
-# modelstoplot = ['standard', 'jdst', 'lrAdam']
-modelsToPlot = ['standard', 'adam', 'jdst', 'lrStandard']
-
-
-rangeToPlot = range(1,2)
-
-legendNames1 = cPlots.timeTrialPlot(timeResults['n=1000'], modelsToPlot, rangeToPlot, ax1)
-        
-ax1.legend(legendNames1)
-ax1.set_xlabel('TIME [s]')
-ax1.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
-ax1.set_title('NETWORK LOSS DURING TRAINING n=1000')
-ax1.set_xlim([-0.2, 4])
-
-plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN1000.pdf', bbox_inches='tight')
-
-fig2, ax2 = plt.subplots(1,1)
-
-legendNames2 = cPlots.timeTrialPlot(timeResults['n=10000'], modelsToPlot, rangeToPlot, ax2)
-
-ax2.legend(legendNames2)
-ax2.set_xlabel('TIME [s]')
-ax2.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
-ax2.set_title('NETWORK LOSS DURING TRAINING n=10000')
-ax2.set_xlim([-0.1, 10])
-
-plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN10000.pdf', bbox_inches='tight')
+# modelsToPlot = ['standard', 'adam', 'jdst', 'lrStandard']
+modelsToPlot = ['standard', 'jdst']
+rangeToPlot = range(7,8)
 
 fig3, ax3 = plt.subplots(1,1)
+ax3.set_prop_cycle(color=colors)
 
 legendNames3 = cPlots.timeTrialPlot(timeResults['n=71400'], modelsToPlot, rangeToPlot, ax3)
-ax3.legend(['GRU NN', 'GRU NN w/ Adam', 'Feedforward NN', 'GRU w/ Custom Learning Rate'])
+simDF['gSim'].plot(ax=ax3)
+ax3.legend(['GRUNN', 'TDNN', 'Simulated GRUNN'])
+
 # ax3.legend().set_visible(False)
 ax3.set_xlabel('TIME [s]')
 ax3.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
 # ax3.set_ylabel('ERROR')
-ax3.set_title('NETWORK LOSS DURING TRAINING')
+ax3.set_title('NETWORK LOSS DURING TRAINING n=71400')
 ax3.set_xlim([-0.1, 20])
+# simDF['gSim'].plot(ax=ax3)
+
 # ax3.get_lines()[0].set_color('black')
 
 # plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400.pdf', bbox_inches='tight')
-# plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400JandS.pdf', bbox_inches='tight')
+plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400JandSandSim.pdf', bbox_inches='tight')
 # plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400Example.pdf', bbox_inches='tight')
 
-# %%
+# %% GRU vs Simulated GRU
+colors = ['#3F7D6E',
+          '#593560',
+          '#A25756',
+          '#E7B56D']
+
+lossLabel = r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]'
+
+# modelsToPlot = ['standard', 'adam', 'jdst', 'lrStandard']
+modelsToPlot = ['standard']
+rangeToPlot = range(7,8)
+
+fig3, ax3 = plt.subplots(1,1)
+ax3.set_prop_cycle(color=colors)
+
+legendNames3 = cPlots.timeTrialPlot(timeResults['n=71400'], modelsToPlot, rangeToPlot, ax3)
+simDF['gSim'].plot(ax=ax3)
+
+ax3.legend(['GRUNN', 'Simulated Response'])
+ax3.set_xlabel('TIME [s]')
+ax3.set_ylabel(lossLabel)
+ax3.set_title('NETWORK LOSS DURING TRAINING n=71400')
+ax3.set_xlim([-0.1, 20])
+
+plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400SimAndMeasured.pdf', bbox_inches='tight')
+
+# %% GRU vs JDST vs LR vs Adam
+colors = ['#3F7D6E',
+          '#593560',
+          '#A25756',
+          '#E7B56D']
+
+lossLabel = r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]'
+
+modelsToPlot = ['standard', 'adam', 'jdst', 'lrStandard']
+# modelsToPlot = ['standard']
+rangeToPlot = range(7,8)
+
+fig3, ax3 = plt.subplots(1,1)
+ax3.set_prop_cycle(color=colors)
+
+legendNames3 = cPlots.timeTrialPlot(timeResults['n=71400'], modelsToPlot, rangeToPlot, ax3)
+# simDF['gSim'].plot(ax=ax3)
+
+ax3.legend(['GRUNN', 'GRUNN w/Adam', 'TDNN', 'GRUNN w/LQR LR'])
+ax3.set_xlabel('TIME [s]')
+ax3.set_ylabel(lossLabel)
+ax3.set_title('NETWORK LOSS DURING TRAINING n=71400')
+ax3.set_xlim([-0.1, 20])
+
+plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400AllMethods.pdf', bbox_inches='tight')
+
+# %% Different Learning Rates
+colors = ['#3F7D6E',
+          '#593560',
+          '#E7B56D',
+          '#A25756']
+
+modelsToPlot = ['lr91', 'lr36', 'lr23']
+rangeToPlot = range(7,8)
+
+fig5, ax5 = plt.subplots(1, 1)
+ax5.set_prop_cycle(color=colors)
+
+legendNames5 = cPlots.timeTrialPlot(timeResults['n=71400'], modelsToPlot, rangeToPlot, ax5)
+ax5.legend([r'LQR K=0.91 $\rightarrow$ Q=1, R=1',
+            r'LQR K=0.36 $\rightarrow$ Q=1, R=5',
+            r'LQR K=0.23 $\rightarrow$ Q=1, R=10'])
+ax5.set_xlabel('TIME [s]')
+ax5.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
+ax5.set_title('NETWORK LOSS DURING TRAINING n=71400')
+ax5.set_xlim([-0.01, 2])
+ax5.set_ylim([0, 3])
+# props = dict(boxstyle='round', facecolor='white', alpha=0.25)
+# textstr = r'K=0.84 $\rightarrow$ Q=1, R=1' '\n' r'K=0.31 $\rightarrow$ Q=1, R=5' '\n' r'K=0.19 $\rightarrow$ Q=1, R=10'
+# ax5.text(0.45, 0.975, textstr, transform=ax4.transAxes, fontsize=10, verticalalignment='top', bbox=props)
+
+plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialLR.pdf', bbox_inches='tight')
+
+# %% Learning Rate Results n=10000
+colors = ['#3F7D6E',
+          '#593560',
+          '#A25756',
+          '#E7B56D']
+
+lossLabel = r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]'
+
+modelsToPlot = ['standard', 'adam', 'jdst', 'lrStandard']
+rangeToPlot = range(7,8)
+
+fig2, ax2 = plt.subplots(1,1)
+ax2.set_prop_cycle(color=colors)
+
+legendNames2 = cPlots.timeTrialPlot(timeResults['n=10000'], modelsToPlot, rangeToPlot, ax2)
+
+ax2.legend(['GRUNN', 'GRUNN w/Adam', 'TDNN', 'GRUNN w/LQR LR'])
+ax2.set_xlabel('TIME [s]')
+ax2.set_ylabel(lossLabel)
+ax2.set_title('NETWORK LOSS DURING TRAINING n=10000')
+ax2.set_xlim([-0.1, 8])
+
+plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN10000.pdf', bbox_inches='tight')
+
+# %% Different Learning Rates w/SIM
+
 fig4, ax4 = plt.subplots(1,1)
 
-modelsToPlot = ['lr84', 'lr31', 'lr19']
+modelsToPlot = ['lr91', 'lr36', 'lr23']
 
 legendNames4 = cPlots.timeTrialPlot(timeResults['n=71400'], modelsToPlot, rangeToPlot, ax4)
 simDF.plot(ax=ax4)
@@ -532,25 +704,7 @@ props = dict(boxstyle='round', facecolor='white', alpha=0.25)
 textstr = r'K=0.84 $\rightarrow$ Q=1, R=1' '\n' r'K=0.31 $\rightarrow$ Q=1, R=5' '\n' r'K=0.19 $\rightarrow$ Q=1, R=10'
 ax4.text(0.4, 0.965, textstr, transform=ax4.transAxes, fontsize=10, verticalalignment='top', bbox=props)
 
-plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialLRwSIM.pdf', bbox_inches='tight')
-
-fig5, ax5 = plt.subplots(1, 1)
-
-modelsToPlot = ['lr84', 'lr31', 'lr19']
-
-legendNames5 = cPlots.timeTrialPlot(timeResults['n=71400'], modelsToPlot, rangeToPlot, ax5)
-ax5.legend(legendNames5)
-ax5.set_xlabel('TIME [s]')
-ax5.set_ylabel(r'LOSS [$(\frac{\mathrm{mg}}{\mathrm{dL}})^2$]')
-ax5.set_title('NETWORK LOSS DURING TRAINING n=71400')
-ax5.set_xlim([-0.01, 2])
-ax5.set_ylim([0, 3])
-props = dict(boxstyle='round', facecolor='white', alpha=0.25)
-textstr = r'K=0.84 $\rightarrow$ Q=1, R=1' '\n' r'K=0.31 $\rightarrow$ Q=1, R=5' '\n' r'K=0.19 $\rightarrow$ Q=1, R=10'
-ax5.text(0.45, 0.975, textstr, transform=ax4.transAxes, fontsize=10, verticalalignment='top', bbox=props)
-
-plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialLR.pdf', bbox_inches='tight')
-
+# plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialLRwSIM.pdf', bbox_inches='tight')
 # %% Control Law Testing
 
 partNum = 1

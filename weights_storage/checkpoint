@@ -1,2 +1,2 @@
-model_checkpoint_path: "lr19Model.start"
-all_model_checkpoint_paths: "lr19Model.start"
+model_checkpoint_path: "lr23Model.start"
+all_model_checkpoint_paths: "lr23Model.start"
