@@ -532,8 +532,10 @@ modelNames = list(['standard', 'adam', 'lrStandard', 'jdst', 'lr91', 'lr36', 'lr
 
 tempListTC = []
 tempListConv = []
+tempListMin = []
 convDF = pd.DataFrame()
 tcDF = pd.DataFrame()
+minDF = pd.DataFrame()
 
 for i in range(len(modelNames)):
     for e in range(len(timeResults['n=71400'][modelNames[i]])):
@@ -541,14 +543,25 @@ for i in range(len(modelNames)):
                                               averageWindow=30,
                                               threshold=0.3)
         
+        tc = optFun.findTimeConstant(timeResults['n=71400'][modelNames[i]]['Loss It. ' f'{e+1}'])
+        
+        minVal = timeResults['n=71400'][modelNames[i]]['Loss It. ' f'{e+1}'].rolling(30).mean().min().values[0]
+                
         tempListConv.append(convTime)
+        tempListTC.append(tc)
+        tempListMin.append(minVal)
     
-    convDF[modelNames[i]] = tempList
+    convDF[modelNames[i]] = tempListConv
+    tcDF[modelNames[i]] = tempListTC
+    minDF[modelNames[i]] = tempListMin
     
-    tempList = []
+    tempListConv = []
+    tempListTC = []
+    tempListMin = []
 
+convDF.to_excel('G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\convTimesRaw.xlsx', sheet_name='Raw_Python_Data', index=False)
+tcDF.to_excel('G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\tcRaw.xlsx', sheet_name='Raw_Python_Data', index=False)
 
-    
 
 # %% JDST vs GRU Plot n=71400
 colors = ['#3F7D6E',

@@ -103,7 +103,7 @@ lsim(ss(g1), 0.01*ones(length(t1), 1) , t1, 1);
 % lsim(ss(g1), u1, t1, 1);
 
 q = 1;
-r = 1;
+r = 1.1;
 
 kNew = lqr(ss(g1), q, r);
 h1 = feedback(kNew*g1, 1);
