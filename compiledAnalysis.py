@@ -260,6 +260,9 @@ cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MA
 cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'RMSE', 'GRU H=1', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\python_tables.xlsx")
 cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MARD', 'GRU H=1', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\python_tables_mard.xlsx")
 
+cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'RMSE', 'GRU LR', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_rmse_GRULR.xlsx")
+cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MARD', 'GRU LR', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_mard_GRULR.xlsx")
+
 
 # %% Plot Testing
 

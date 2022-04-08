@@ -528,12 +528,14 @@ for i in range(len(modelNames)):
 
 # %% Convergence Time Results
 
-modelNames = list(['standard', 'adam', 'lrStandard', 'jdst', 'lr91', 'lr36', 'lr23'])
+modelNames = list(['standard', 'adam', 'lrStandard', 'jdst'])#, 'lr91', 'lr36', 'lr23'])
 
 tempListTC = []
 tempListConv = []
 tempListMin = []
+tempListConv10 = []
 convDF = pd.DataFrame()
+conv10DF = pd.DataFrame()
 tcDF = pd.DataFrame()
 minDF = pd.DataFrame()
 
@@ -543,24 +545,31 @@ for i in range(len(modelNames)):
                                               averageWindow=30,
                                               threshold=0.3)
         
+        convTime10 = optFun.findConvergenceTime(timeResults['n=10000'][modelNames[i]]['Loss It. ' f'{e+1}'],
+                                              averageWindow=30,
+                                              threshold=0.3)
+        
         tc = optFun.findTimeConstant(timeResults['n=71400'][modelNames[i]]['Loss It. ' f'{e+1}'])
         
         minVal = timeResults['n=71400'][modelNames[i]]['Loss It. ' f'{e+1}'].rolling(30).mean().min().values[0]
                 
         tempListConv.append(convTime)
+        tempListConv10.append(convTime10)
         tempListTC.append(tc)
         tempListMin.append(minVal)
     
     convDF[modelNames[i]] = tempListConv
+    conv10DF[modelNames[i]] = tempListConv10
     tcDF[modelNames[i]] = tempListTC
     minDF[modelNames[i]] = tempListMin
     
     tempListConv = []
+    tempListConv10 = []
     tempListTC = []
     tempListMin = []
 
-convDF.to_excel('G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\convTimesRaw.xlsx', sheet_name='Raw_Python_Data', index=False)
-tcDF.to_excel('G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\tcRaw.xlsx', sheet_name='Raw_Python_Data', index=False)
+# convDF.to_excel('G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\convTimesRaw.xlsx', sheet_name='Raw_Python_Data', index=False)
+# tcDF.to_excel('G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\tcRaw.xlsx', sheet_name='Raw_Python_Data', index=False)
 
 
 # %% JDST vs GRU Plot n=71400
