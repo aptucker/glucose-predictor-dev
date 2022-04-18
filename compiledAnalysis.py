@@ -200,15 +200,25 @@ lCompPerc = []
 rCompPerc = []
 
 for i in range(len(lPats)):
-    lErrorComp.append([np.mean(lPats[i].rmseStorage['GRU H=1']['llRMSE'], axis=0) < np.mean(lPats[i].rmseStorage['JDST']['llRMSE'], axis=0)])
-    rErrorComp.append([np.mean(rPats[i].rmseStorage['GRU H=1']['rrRMSE'], axis=0) < np.mean(rPats[i].rmseStorage['JDST']['rrRMSE'], axis=0)])
+    lTempMeanA = np.mean(lPats[i].rmseStorage['GRU H=1']['llRMSE'], axis=0)
+    lTempMeanB = np.mean(lPats[i].rmseStorage['JDST']['llRMSE'], axis=0)
+    
+    rTempMeanA = np.mean(rPats[i].rmseStorage['GRU H=1']['rrRMSE'], axis=0)
+    rTempMeanB = np.mean(rPats[i].rmseStorage['JDST']['rrRMSE'], axis=0)
+    
+    lTempMeanComp = (np.maximum(lTempMeanA, lTempMeanB) - np.minimum(lTempMeanA, lTempMeanB))/np.maximum(lTempMeanA, lTempMeanB)
+    rTempMeanComp = (np.maximum(rTempMeanA, rTempMeanB) - np.minimum(rTempMeanA, rTempMeanB))/np.maximum(rTempMeanA, rTempMeanB)
+    # lErrorComp.append([np.mean(lPats[i].rmseStorage['GRU H=1']['llRMSE'], axis=0) < np.mean(lPats[i].rmseStorage['JDST']['llRMSE'], axis=0)])
+    # rErrorComp.append([np.mean(rPats[i].rmseStorage['GRU H=1']['rrRMSE'], axis=0) < np.mean(rPats[i].rmseStorage['JDST']['rrRMSE'], axis=0)])
+    
+    lErrorComp.append(lTempMeanComp)
+    rErrorComp.append(rTempMeanComp)
     
     
-    
-    
-print('\n'.join(map(str, lErrorComp)))
-print('\n')
-print('\n'.join(map(str, rErrorComp)))
+lErrorComp = np.reshape(lErrorComp, [len(lPats), 4])
+rErrorComp = np.reshape(rErrorComp, [len(rPats), 4])
+
+
 
 # %% Time Comparisons
 timeDF = pd.DataFrame(index=range(1,14))
@@ -263,6 +273,24 @@ cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MA
 cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'RMSE', 'GRU LR', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_rmse_GRULR.xlsx")
 cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MARD', 'GRU LR', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_mard_GRULR.xlsx")
 
+# %%
+
+varDF = pd.DataFrame()
+
+lStdList = []
+rStdList = []
+
+
+for i in range(len(lPats)):
+    lStdList.append(lPats[i].GenData.std().values[0])
+    rStdList.append(rPats[i].GenData.std().values[0])
+    
+
+
+varDF['Left-Arm CGM Standard Deviation [mg/dL]'] = lStdList
+varDF['Right-Arm CGM Standard Deviation [mg/dL]'] = rStdList
+
+varDF.to_excel('G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\patientStdRaw.xlsx', sheet_name='Raw_Python_Data', index=False)
 
 # %% Plot Testing
 
