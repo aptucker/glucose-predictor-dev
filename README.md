@@ -24,5 +24,6 @@ With the novel observation that CGM location can increase glucose forecasting er
 
 Improving forecasting robustness came with a distinct tradeoff in computational cost resulting in increased training time. Using a control systems engineering technique known as linear quadratic regulated control, I was able to reduce training time for the GRU glucose forecasting algorithm by 10 times over the standard method. With this method, training time was also reduced over both a GRU NN with an Adam optimizer as well as the original time-delay feedforward NN. In the figure, the GRUNN w/LQR LR curve is the result of the new method. 
 
-[timeTrialN71400AllMethodsSmall.pdf](https://github.umn.edu/tucke430/glucose-predictor-dev/files/858/timeTrialN71400AllMethodsSmall.pdf)
+![timeTrialN71400AllMethods](https://media.github.umn.edu/user/20368/files/1eb58e82-2a20-4df2-b52f-f52ae2fcb306)
+
 
