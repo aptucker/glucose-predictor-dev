@@ -69,6 +69,16 @@ class EarlyStoppingAtMinLoss(tf.keras.callbacks.Callback):
 
 class earlyStoppingBatchLoss(tf.keras.callbacks.Callback):
     
+    """A
+    ttempt at callback to stop for a loss achieved on a batch level, DOES 
+    NOT WORK.
+    
+    Inputs:
+        patience - batches to wait after metric is achieved
+        baseLoss - loss to stop
+    
+    """
+    
     def __init__(self, patience=0, baseLoss=0):
         super(earlyStoppingBatchLoss, self).__init__()
         self.patience = patience
@@ -117,6 +127,17 @@ class earlyStoppingBatchLoss(tf.keras.callbacks.Callback):
 
 class GetErrorOnBatch(tf.keras.callbacks.Callback):
     
+    """
+    Initial callback for recording error/loss after every batch.
+    
+    Inputs: 
+        lossList - list of losses to append current loss to
+    
+    Outputs:
+        lossList - new loss appended
+    
+    """
+    
     def __init__(self, lossList):
         super(GetErrorOnBatch, self).__init__()
         self.lossList = lossList
@@ -125,7 +146,20 @@ class GetErrorOnBatch(tf.keras.callbacks.Callback):
     def on_train_batch_end(self, batch, logs=None):
         self.lossList.append(logs['loss'])
         
+        
+
 class batchErrorModel(tf.keras.callbacks.Callback):
+    
+    """
+    Callback which records loss in a dictionary attached to a Keras model
+    as well as training time in a variable attached to a Keras model
+    
+    Inputs: 
+        None
+    Outputs:
+        model.lossDict - dictionary of loss values after each batch
+        model.trainTime - total training time of the model
+    """
     
     def __init__(self):
         super(batchErrorModel, self).__init__()
@@ -149,9 +183,12 @@ class batchErrorModel(tf.keras.callbacks.Callback):
         self.model.trainTime = self.trainStop - self.trainStart
 
 class PlotLearning(tf.keras.callbacks.Callback):
+    
     """
-    Callback to plot the learning curves of the model during training.
+    Callback to plot the learning curves of the model during training. This 
+    came from an online example.
     """
+    
     def on_train_begin(self, logs={}):
         self.metrics = {}
         for metric in logs:
@@ -190,6 +227,21 @@ class PlotLearning(tf.keras.callbacks.Callback):
 
 class lrScheduler(tf.keras.callbacks.Callback):
     
+    """
+    Custom learning rate scheduler with feedback control conditioned on
+    the batch loss.
+    
+    Inputs:
+        refLoss - the loss/input to achieve
+        gain - the gain for the control law
+        
+    Outputs:
+        model.lossDict - dictionary of loss attached to Keras model
+        model.trainTime - total training time attached to Keras model
+    
+    """
+    
+    
     def __init__(self, refLoss, gain):
         super(lrScheduler, self).__init__()
         self.refLoss = refLoss
@@ -212,13 +264,15 @@ class lrScheduler(tf.keras.callbacks.Callback):
         
         dt = self.toc - self.tic
         
+        
+        # Control law with proportional control
         new_lr = float(self.gain * (logs['loss'] - self.refLoss))
         
-        # Derivative Equation
+        # Control law with proportional-derivative control
         # new_lr = float(self.gain * ( (logs['loss'] - self.refLoss)  +  
         #                             1.0*((logs['loss'] - self.lossHistory[-1])/dt) ))
         
-        # Proportional Integral Derivative Equation
+        # Control law with proportional-integral-derivative control
         # new_lr = float(self.gain * ( 0.38*(logs['loss'] - self.refLoss)  +  
         #                             0.0*((logs['loss'] - self.lossHistory[-1])/dt) + 
         #                             (dt/1.0)*(self.refLoss - (logs['loss'] + self.lossHistory[-1])/2 ) ))
@@ -240,6 +294,19 @@ class lrScheduler(tf.keras.callbacks.Callback):
 
 
 class sinLRScheduler(tf.keras.callbacks.Callback):
+    
+    """
+    Callback to schedule learning rate with a sine function - attempt at a
+    warm restart LR.
+    
+    Inputs:
+        freq - sine wave frequency
+        startLR - starting learning rate
+    
+    Outputs:
+        model.trainTime - total model training time attached to Keras model
+        
+    """
     
     def __init__(self, freq, startLR):
         super(sinLRScheduler, self).__init__()
