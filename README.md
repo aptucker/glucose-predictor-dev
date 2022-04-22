@@ -8,8 +8,14 @@ My primary research question can be stated as follows: Can a neural network with
 
 ### Does sensor location affect glucose forecasting error?
 
-First a time-delay feedforward NN was used to produce patient-specific forecasts while isolating CGM location as a testable variable. 5x2 cross validation was used as the comparison method for data gathered from 13 patients with diabetes each wearing a CGM on both arms simultaneously. Results indicated that changes in CGM location can increase forecast errors with algorithms that otherwise perform acceptably. In the figure, every asterisk is an instance where a change in CGM location caused an increase in forecast error. For more, see the publication in the Journal of Diabetes Science and Technology (doi: https://doi.org/10.1177/19322968211018246)
+First, a time-delay feedforward NN was used to produce patient-specific forecasts while isolating CGM location as a testable variable. 5x2 cross validation was used as the comparison method for data gathered from 13 patients with diabetes each wearing a CGM on both arms simultaneously. Results indicated that changes in CGM location can increase forecast errors with algorithms that otherwise perform acceptably. 
+
+Consider comparisons of algorithms trained and tested on different arms: left arm trained - left arm tested versus right arm trained - left arm tested and vice versa. In the figure, every asterisk is an instance where a change in CGM location caused an increase in forecast error within one of the comparison groups (left-left vs right-left and right-right vs left-right). These results held independent of overall glucose variance, for more, see the publication in the Journal of Diabetes Science and Technology (doi: https://doi.org/10.1177/19322968211018246)
 
 ![JDSTErrorSmall](https://media.github.umn.edu/user/20368/files/df934536-d81f-4f6c-a989-4006a0107a05)
+
+### Mitigating the effects of sensor location
+
+
 
 ![TuckerGRU_Figure_5](https://media.github.umn.edu/user/20368/files/223664f7-d23c-4021-b4f6-cb319e338226)
