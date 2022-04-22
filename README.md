@@ -26,4 +26,6 @@ Improving forecasting robustness came with a distinct tradeoff in computational 
 
 ![timeTrialN71400AllMethods](https://media.github.umn.edu/user/20368/files/1eb58e82-2a20-4df2-b52f-f52ae2fcb306)
 
+### Conclusion
 
+My Ph.D. research highlighted 3 novel observations. First, CGM location can affect the error of glucose forecasting. Second, this error can be mitigated through use of neural networks with gated recurrent units. Third, linear quadratic regulated control can be used to reduce NN training time by streamlining the computational cost. For questions about my research, visit aaronptucker.com and contact me there. 
