@@ -4,7 +4,17 @@
 #
 # ----------------------------------------------------------------------------
 """
-Comparison analysis file pulls results from patient trainings; includes plotting
+This is the main analysis file for investigation of error rates between CGMs
+worn on left vs right arms. The results come from the pickle files generated 
+by the individual patient files. 
+
+This utilizes the custom plots from the customPlots module including the 
+statistical eval plot, the model comparison dot chart, and the single model
+error analysis dot chart.
+
+This file also has several sections which produce excel files from the results
+of the RMSEs and MARDs of the various forecasting algorithms. All plots are
+saved in either the misc_plots or ts_plots file. 
 """
 
 import tensorflow as tf
@@ -72,6 +82,13 @@ patNames = ['Patient' f' {i}' for i in range(1, 14)]
     
 # %% Time Series Analysis
 
+"""
+Build the time series comparison plots which include mean over time, the ACF
+the PACF and other stationarity variables. See the customPlots file for the 
+plot generation function.
+"""
+
+# Build single plot
 cPlots.statisticalEvalPlot(l1.GenData,
                            r1.GenData,
                            l1.DayData[1].iloc[1:],
@@ -91,8 +108,7 @@ cPlots.statisticalEvalPlot(l1.GenData.diff(),
                            True,
                            'ts_plots\\Pat1TSAnalysisDiff.pdf')
 
-# for i in range(len(lPats)):
-#     cPlots.statisticalEvalPlot(lPats[i].DayData[1].diff().iloc[1:], rPats[i].DayData[1].diff().iloc[1:], i+1)
+# Build all plots 
 for i in range(len(lPats)):
     cPlots.statisticalEvalPlot(lPats[i].GenData,
                                rPats[i].GenData,
@@ -113,7 +129,13 @@ for i in range(len(lPats)):
                                True, 
                                True,
                                'ts_plots\\Pat'f'{i+1}TSAnalysisDiff.pdf')
+    
 # %% Single patient error analysis
+"""
+Plots for single patient error analysis of multiple models. Not currently
+used in any publications.
+"""
+
 # Model Names
 # JDST
 # Sequential H=2
@@ -143,9 +165,10 @@ cPlots.singlePatientError(l12, r12, modelNames, labels, index, modelDrops, 12)
 cPlots.singlePatientError(l13, r13, modelNames, labels, index, modelDrops, 13)
 
 # %% Single Model Plots
+"""
+The single model error eval plot function is in the customPlots file.
+"""
 
-
-# [e15, e30, e45, e60] = 
 cPlots.modelEvalPlot(lPats, rPats, 'JDST', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\JDSTError.pdf')
 cPlots.modelEvalPlot(lPats, rPats, 'Sequential H=2', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\SeqH2Error.pdf')
 cPlots.modelEvalPlot(lPats, rPats, 'Circadian 1', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\Circ1Error.pdf')
@@ -155,7 +178,11 @@ cPlots.modelEvalPlot(lPats, rPats, 'GRU H=1', labels, index, patNames, True, 'C:
 cPlots.modelEvalPlot(lPats, rPats, 'GRU LR', labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\GRULRError.pdf')
 
 # %% Multi Model Plots
+"""
+Two-model, same-arm comparison plots.
+"""
 
+# Calculate F-statistiic between two models and record it
 for i in range(len(lPats)):
     lPats[i].fStorage['JDSTvGRU H=1'] = {'pValues': trn.fStatistic(
         lPats[i].rmseStorage['GRU H=1']['llRMSE'],
@@ -192,6 +219,9 @@ cPlots.multiModelEvalPlot(lPats, rPats, ['GRU H=1', 'GRU LR'], labels, index, pa
 cPlots.multiModelEvalPlot(lPats, rPats, ['JDST', 'GRU LR'], labels, index, patNames, True, 'C:\\Code\\glucose-predictor-dev\\misc_plots\\JDSTvGRUError.pdf')
 
 # %% Error Comparisons
+"""
+Quick analysis to compare the error differences between forecast methods.
+"""
 
 lErrorComp = []
 rErrorComp = []
@@ -221,6 +251,10 @@ rErrorComp = np.reshape(rErrorComp, [len(rPats), 4])
 
 
 # %% Time Comparisons
+"""
+Quick analysis of overall training time, not currently used.
+"""
+
 timeDF = pd.DataFrame(index=range(1,14))
 tempHolder1 = []
 tempHolder2 = []
@@ -237,6 +271,10 @@ print(timeDF)
     
 
 # %% Export to Excel
+"""
+Excel exports include labels and a plus/minus divider. The pandas function
+is used, when rewriting data, the entire excel file is overwritten. 
+"""
 
 phLabels = [15, None, None, None,
             30, None, None, None,
@@ -274,6 +312,10 @@ cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'RM
 cPlots.excelTableExport(lPats, rPats, phLabels, compLabels, plusMinusLabels, 'MARD', 'GRU LR', "G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\raw_mard_GRULR.xlsx")
 
 # %%
+"""
+Quick analysis of the overall variance/standard deviation of individual patient
+data sets.
+"""
 
 varDF = pd.DataFrame()
 
@@ -291,7 +333,4 @@ varDF['Left-Arm CGM Standard Deviation [mg/dL]'] = lStdList
 varDF['Right-Arm CGM Standard Deviation [mg/dL]'] = rStdList
 
 varDF.to_excel('G:\\My Drive\\Minnesota Files\\Erdman Research\\Final Paper\\patientStdRaw.xlsx', sheet_name='Raw_Python_Data', index=False)
-
-# %% Plot Testing
-
 

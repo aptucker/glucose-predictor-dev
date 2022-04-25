@@ -661,6 +661,20 @@ def dayPredictionPlot(lPatData,
                       saveFile,
                       fileNames):
     
+    """
+    Function to plot a single day of forecasts.
+    
+    Inputs:
+        lPatData - left-arm data to plot
+        rPatData - right-arm data to plot
+        model - model to plot
+        patNumber - which patient to plot
+        saveFile - boolean, True or False
+        fileName - file name to save if True
+    
+    Outputs:
+        pdf plot saved in fileName location
+    """
     
     lPatPlotDF = pd.DataFrame(lPatData.copy())
     rPatPlotDF = pd.DataFrame(rPatData.copy())
@@ -748,39 +762,22 @@ def multiModelEvalPlot(lPats,
                   savePlot,
                   plotName):
     
+    """
+    Function to plot two models to compare the same-arm results.
     
-    # outputDF = pd.DataFrame(phLabels, columns=['Prediction Horizon (min)'])
-    # # outputDF['Algorithm Setup (trained-tested)'] = compLabels
+    Inputs:
+        lPats - list of left-arm patient instances
+        rPats - list of right-arm patient instances
+        modelNames - names of models to compare
+        labels - data set labels (e.g. left-left)
+        index - index for dfs
+        patNames - names of patients for plot labels
+        savePlot - boolean, true or false
+        plotName - name of file to save
     
-    # for e in range(len(lPats)):
-    #     tempDFllMARD = pd.DataFrame(np.mean(lPats[e].mardStorage[modelName]['llMARD'], axis=0))
-    #     tempDFrlMARD = pd.DataFrame(np.mean(lPats[e].mardStorage[modelName]['rlMARD'], axis=0))
-    #     tempDFrrMARD = pd.DataFrame(np.mean(rPats[e].mardStorage[modelName]['rrMARD'], axis=0))
-    #     tempDFlrMARD = pd.DataFrame(np.mean(rPats[e].mardStorage[modelName]['lrMARD'], axis=0))
-        
-    #     tempDFllMARDstd = pd.DataFrame(np.std(lPats[e].mardStorage[modelName]['llMARD'], axis=0))
-    #     tempDFrlMARDstd = pd.DataFrame(np.std(lPats[e].mardStorage[modelName]['rlMARD'], axis=0))
-    #     tempDFrrMARDstd = pd.DataFrame(np.std(rPats[e].mardStorage[modelName]['rrMARD'], axis=0))
-    #     tempDFlrMARDstd = pd.DataFrame(np.std(rPats[e].mardStorage[modelName]['lrMARD'], axis=0))
-        
-    #     patDFmean = pd.DataFrame()
-    #     patDFstd = pd.DataFrame()
-    #     for i in range(3, -1, -1):
-    #         patDFmean = patDFmean.append([tempDFllMARD.iloc[i],
-    #                               tempDFrlMARD.iloc[i],
-    #                               tempDFrrMARD.iloc[i],
-    #                               tempDFlrMARD.iloc[i]])
-    #         patDFstd = patDFstd.append([tempDFllMARDstd.iloc[i],
-    #                               tempDFrlMARDstd.iloc[i],
-    #                               tempDFrrMARDstd.iloc[i],
-    #                               tempDFlrMARDstd.iloc[i]])
-        
-    #     patDFmean = patDFmean.reset_index(drop=True)
-    #     patDFstd = patDFstd.reset_index(drop=True)
-        
-    #     outputDF['Patient ' f'{e+1} ' 'MARD (%)'] = patDFmean
-    #     # outputDF['Patient ' f'{e+1}'] = plusMinusLabels
-    #     outputDF['Patient ' f'{e+1} ' 'STD'] = patDFstd
+    Outputs:
+        pdf file in location of plotName
+    """
     
     llMeans = []
     rlMeans = []
@@ -962,6 +959,18 @@ def multiModelEvalPlot(lPats,
     
 
 def timeTrialPlot(data, modelsToPlot, iterationsToPlot, axToPlot):
+    """
+    Function which plots the training results of multiple models.
+    
+    Inputs:
+        data - dictionary of data with multiple model results to plot
+        modelsToPlot - names of models to plot
+        iterationsToPlot - which iterations of the time trial to show
+        axToPlot - which axes to plot on (generate before function call)
+    
+    Outputs:
+        legendNames - legend names for the plot (model names)
+    """
     
     legendNames = []
     

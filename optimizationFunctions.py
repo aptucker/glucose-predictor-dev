@@ -303,6 +303,9 @@ def compileTimeTrialResults(dfIn, modelNames, averageWindow, threshold):
     return timeDF
 
 class optimizerDict:
+    """
+    Unused.
+    """
     
     def __init__(self):
         super(optimizerDict, self).__init__()
@@ -319,6 +322,9 @@ class optimizerDict:
     
         
 class lrDict:
+    """
+    Unused.
+    """
     
     def __init__(self):
         super(lrDict, self).__init__()

@@ -4,7 +4,19 @@
 #
 # ----------------------------------------------------------------------------
 """
-Optimization analysis 
+This is the file which optimizes for training time. There are numerous model 
+declarations, each has it's own learning rate for testing. Models are saved 
+in a dictionary with the results of their loss over time. 
+
+See the customCallbacks file for custom learning rate and error storage 
+functions. See the optimizationFunctions file for other functions and classes
+used in this analysis file.
+
+This file also includes analysis from the control package, although it is 
+unclear if it always produces the same results as MATLAB. 
+
+Results are stored in the time_results.pickle file. It is currently a large 
+file; a fix is coming.
 """
 
 import tensorflow as tf
@@ -87,7 +99,14 @@ if platform == 'darwin':
     with open('time_results.pickle', 'rb') as f:
         timeResults = pickle.load(f)
 
-# %% Timing Testing
+# %% Model Definitions
+"""
+All model definitions are located in this section. The basic GRU structure is
+defined once, all other models are defined using that same structure. The 
+models are stored in a dictionary for later access.
+
+Initial model weights are stored in the weights_storage file.
+"""
 
 lPat = l2
 rPat = r2
@@ -108,22 +127,11 @@ outSize = 4
 shapes = [H, H, K]
 activators = ['tanh', 'sigmoid', None]
 
+# Combine the data to form larger sets; condition it for use with the models.
 [lPatsTrain,
  rPatsTrain,
  lPatsTest,
  rPatsTest] = optFun.dataCombiner(lPats, rPats, partNum, partSize, lag)
-# lPat.randomizeTrainingData(Kfold, seed=1)
-# lPat.resetData()
-# rPat.resetData()
-
-# lPat.partitionData(partNum, partSize)
-# rPat.partitionData(partNum, partSize)
-
-# pat.createLagData(lPat.trainData, lag, skip = None, dropNaN=True)
-# pat.createLagData(lPat.testData, lag, skip = None, dropNaN=True)
-# pat.createLagData(rPat.trainData, lag, skip = None, dropNaN=True)
-# pat.createLagData(rPat.testData, lag, skip = None, dropNaN=True)
-
 
 [mlpNorm, mean, std] = trn.zscoreData(lPatsTrain.to_numpy())
 [mlpNormTest, testMean, testStd] = trn.zscoreData(lPatsTest.to_numpy())
@@ -149,6 +157,8 @@ epochs = 20
 
 models = {}
 
+
+# General definition of the GRU structure, this is reused for each new model.
 inputs = tf.keras.Input(shape=(H,1))
 gruLayer = tf.keras.layers.GRU(H,
                                activation='tanh',
@@ -341,7 +351,12 @@ lr23.save_weights('weights_storage\\lr23Model.start')
 # modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
 # modelNames = list(['standardSchedule', 'standardAdam'])
 
-# %%
+# %% Time trials for N=1000
+"""
+Time tester function run for only N=1000 observations. See optimizationFunctions
+for function definition. 
+"""
+
 modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
 # modelNames = list(['standardSchedule', 'standardAdam'])
 # modelNames = list(['jdst'])
@@ -359,7 +374,12 @@ outDict = optFun.timeTester(lPats,
                             maxDataSize=1000)
 
 
-# %%
+# %% Time trials for N=10000
+"""
+Time tester function for N=10000 observations. See optimizationFunctions for
+function definition.
+"""
+
 modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
 # modelNames = list(['standardSchedule', 'standardAdam'])
 
@@ -375,7 +395,13 @@ outDict2 = optFun.timeTester(lPats,
                             trialsToRun,
                             maxDataSize=10000)
 
-# %%
+# %% Time trials for N=71400
+"""
+Time tester function for N=71400 observations. The number of observations 
+must be divisible by 10 for this method, therefore N=71400 is the largest amount
+of data divisible by 10.
+"""
+
 # modelNames = list(['standard', 'adam', 'lrStandard', 'lrAdam', 'standardSchedule', 'standardAdam', 'jdst'])
 # modelNames = list(['lr84', 'lr31', 'lr19'])
 modelNames = list(['lr91', 'lr36', 'lr23'])
@@ -392,7 +418,13 @@ outDictAllData = optFun.timeTester(lPats,
                             trialsToRun,
                             maxDataSize=71400)
 
-# %% Generate System Response
+# %% Simulate System Response
+"""
+Use the control package to simulate the system response to the designed
+controller. The values of the A,B,C,D matrices are taken from MATLAB because
+it is unclear if the control package will generate the same values as MATLAB.
+"""
+
 tempList = []
 tcDF = pd.DataFrame()
 modelsForTC = ['standard']
@@ -462,6 +494,10 @@ simDF['lr23Sim'] = y10[0]
 # plt.plot(t, y1[0])
 
 # %% Dictionary Save
+"""
+Load old time trial results dictionary and save any new results that have been
+generated.
+"""
 
 dictToSave = {
     'n=1000': timeResults['n=1000'],
@@ -487,6 +523,9 @@ if platform == 'darwin':
 
 
 # %% Time Results Analysis
+"""
+Find the time constant of the GRU training response.
+"""
 
 timeDF1 = optFun.compileTimeTrialResults(outDict,
                                          modelNames,
@@ -527,6 +566,10 @@ for i in range(len(modelNames)):
     tempList = []
 
 # %% Convergence Time Results
+"""
+Find the convergence times and time constants of training results. Save the
+results to an excel file.
+"""
 
 modelNames = list(['standard', 'adam', 'lrStandard', 'jdst'])#, 'lr91', 'lr36', 'lr23'])
 
@@ -573,6 +616,10 @@ for i in range(len(modelNames)):
 
 
 # %% JDST vs GRU Plot n=71400
+"""
+JDST vs GRU plot for dissertation. Saved in time_trial_plots file.
+"""
+
 colors = ['#3F7D6E',
           '#593560',
           '#A25756',
@@ -606,6 +653,10 @@ plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400J
 # plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400Example.pdf', bbox_inches='tight')
 
 # %% GRU vs Simulated GRU
+"""
+GRU vs Sim GRU plot for dissertation. Saved in time_trial_plots file.
+"""
+
 colors = ['#3F7D6E',
           '#593560',
           '#A25756',
@@ -632,6 +683,11 @@ ax3.set_xlim([-0.1, 20])
 plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400SimAndMeasured.pdf', bbox_inches='tight')
 
 # %% GRU vs JDST vs LR vs Adam
+"""
+JDST vs GRU vs GRULR vs GRU Adam plot for dissertation. Saved in
+time_trial_plots file.
+"""
+
 colors = ['#3F7D6E',
           '#593560',
           '#A25756',
@@ -658,6 +714,10 @@ ax3.set_xlim([-0.1, 20])
 plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN71400AllMethods.pdf', bbox_inches='tight')
 
 # %% Different Learning Rates
+"""
+GRU with different learning rates plot for dissertation for N=71400. Saved in 
+time_trial_plots file.
+"""
 colors = ['#3F7D6E',
           '#593560',
           '#E7B56D',
@@ -685,6 +745,11 @@ ax5.set_ylim([0, 3])
 plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialLR.pdf', bbox_inches='tight')
 
 # %% Learning Rate Results n=10000
+"""
+JDST vs GRU vs GRULR vs GRU Adam plot for dissertation for N=10000. Saved in 
+time_trial_plots file.
+"""
+
 colors = ['#3F7D6E',
           '#593560',
           '#A25756',
@@ -709,6 +774,10 @@ ax2.set_xlim([-0.1, 8])
 plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialN10000.pdf', bbox_inches='tight')
 
 # %% Different Learning Rates w/SIM
+"""
+GRU with different learning rates plot with simulated responses 
+for dissertation for N=71400. Saved in time_trial_plots file.
+"""
 
 fig4, ax4 = plt.subplots(1,1)
 
@@ -727,73 +796,5 @@ textstr = r'K=0.84 $\rightarrow$ Q=1, R=1' '\n' r'K=0.31 $\rightarrow$ Q=1, R=5'
 ax4.text(0.4, 0.965, textstr, transform=ax4.transAxes, fontsize=10, verticalalignment='top', bbox=props)
 
 # plt.savefig('C:\\Code\\glucose-predictor-dev\\time_trial_plots\\timeTrialLRwSIM.pdf', bbox_inches='tight')
-# %% Control Law Testing
-
-partNum = 1
-partSize = [0.1]
-lag = 6
-
-[lPatsTrain,
- rPatsTrain,
- lPatsTest,
- rPatsTest] = optFun.dataCombiner(lPats, rPats, partNum, partSize, lag)
-
-[mlpNorm, mean, std] = trn.zscoreData(lPatsTrain.sample(frac=1).to_numpy())
-[mlpNormTest, testMean, testStd] = trn.zscoreData(lPatsTest.sample(frac=1).to_numpy())
-
-H = 3
-K = 4
-outSize = K
-
-inputs = tf.keras.Input(shape=(H,1))
-gruLayer = tf.keras.layers.GRU(H,
-                               activation='tanh',
-                               recurrent_activation='sigmoid',
-                               use_bias=True,
-                               bias_initializer='ones')
-x = gruLayer(inputs)
-output = tf.keras.layers.Dense(K,
-                               activation=None,
-                               use_bias=True,
-                               bias_initializer='ones')(x)
-
-standardTestModel = tf.keras.Model(inputs=inputs,
-                               outputs=output)
-
-standardTestModel.compile(optimizer=tf.keras.optimizers.Adam(),
-                          loss=tf.keras.losses.MeanSquaredError(),
-                          metrics=tf.keras.metrics.RootMeanSquaredError())
-
-# standardTestModel.compile(optimizer=tf.keras.optimizers.SGD(tf.keras.experimental.CosineDecayRestarts(0.01, 10000)),
-#                           loss=tf.keras.losses.MeanSquaredError(),
-#                           metrics=tf.keras.metrics.RootMeanSquaredError())
-
-stModelCallbacks = [cBacks.batchErrorModel(),
-                    cBacks.sinLRScheduler(freq=2, startLR=0.001)]
-
-stModelCallbacks = [cBacks.batchErrorModel(),
-                    cBacks.lrScheduler(refLoss=0.1, gain=0.1)]
-
-# Standard Gain from LQR 0.85
-
-
-
-history = standardTestModel.fit(mlpNorm[:, outSize:],
-                                mlpNorm[:, 0:outSize],
-                                batch_size=100,
-                                epochs=3,
-                                validation_data = (mlpNormTest[:, outSize:],
-                                                   mlpNormTest[:, 0:outSize]),
-                                callbacks=stModelCallbacks)
-
-
-plt.plot(np.linspace(0, standardTestModel.trainTime, len(standardTestModel.lossDict['newLoss'])), standardTestModel.lossDict['newLoss'])
-
-
-
-
-
-
-
 
 
