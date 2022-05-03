@@ -681,7 +681,7 @@ print("GRU LR Done")
 fileNames = ['C:\Code\glucose-predictor-dev\misc_plots\l13DayPlot.pdf',
              'C:\Code\glucose-predictor-dev\misc_plots\r13DayPlot.pdf']
 
-cPlots.dayPredictionPlot(lPat.DayData[10], rPat.DayData[10], model, 13, True, fileNames)
+cPlots.dayPredictionPlot(lPat.DayData[7], rPat.DayData[1], model, 13, True, fileNames)
 
 # %% Save Results
 

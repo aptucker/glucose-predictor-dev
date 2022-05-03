@@ -204,6 +204,15 @@ def modelEvalPlot(lPats,
         
     """
     
+    if (modelName == 'JDST'):
+        modelPlotName = 'TDNN'
+    elif (modelName == 'GRU H=1'):
+        modelPlotName = 'GRUNN'
+    elif (modelName == 'GRU LR'):
+        modelPlotName = 'GRUNN w/LQR LR'
+    else:
+        modelPlotName = modelName
+    
     llMeans = []
     rlMeans = []
     rrMeans = []
@@ -282,7 +291,7 @@ def modelEvalPlot(lPats,
     ax.yaxis.set_minor_formatter(ticker.FixedFormatter(Comps))
     ax.set_yticklabels(labels=Comps, minor=True, ha='left', fontname='Times New Roman')
     ax.set_yticklabels(labels=patLabs, ha='left', fontname='Times New Roman')
-    ax.set_xlabel(f'{modelName} ' 'ROOT MEAN SQUARE (RMS) PREDICTION ERROR (mg/dL)', fontname='Times New Roman', size=14)
+    ax.set_xlabel(f'{modelPlotName} ' 'FORECAST ROOT MEAN SQUARE ERROR (RMSE) (mg/dL)', fontname='Times New Roman', size=14)
     #plt.title("BLOOD GLUCOSE NEURAL NETWORK PREDICTION ERRORS", fontname='Times New Roman', size=18)
     ax.title.set_position([0.5, 1.01])
     secax = ax.twinx()
